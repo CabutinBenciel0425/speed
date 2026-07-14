@@ -1,19 +1,26 @@
-import { storeRefreshToken } from "./../utils/storeRefreshToken.js";
-import { generateToken } from "./../utils/generateToken.js";
-import type { LoginInput, SignupInput } from "./../schemas/user.schema.js";
 import {
   ConflictError,
   NotFoundError,
   UnauthorizedError,
 } from "../utils/errors.js";
-import { REFRESH_TOKEN_SECRET_KEY } from "../config/envVars.js";
+import { storeRefreshToken } from "./../utils/storeRefreshToken.js";
+import { generateToken } from "./../utils/generateToken.js";
+import type { LoginInput, SignupInput } from "./../schemas/user.schema.js";
+import {
+  RANDOM_PROFILE_URL,
+  REFRESH_TOKEN_SECRET_KEY,
+} from "../config/envVars.js";
 import { redisClient } from "../lib/redis.js";
 import { type Request } from "express";
-
+import { VERIFICATION_TOKEN_LENGTH } from "../config/constants.js";
+import { generateVerificationToken } from "../utils/generateVerificationToken.js";
+import { storeVerificationToken } from "../utils/storeVerificationToken.js";
+import { sendEmail } from "../utils/sendEmail.js";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
-import type { IUser } from "../types/user.types.js";
-import { ApiError } from "../utils/apiError.js";
+import type { UserDocument } from "../types/user.types.js";
+import { imageUpload } from "../utils/imageUpload.js";
+import type { CreateCustomerInput } from "../types/types.js";
 
 export const createCustomerUser = async ({
   firstName,
@@ -21,11 +28,18 @@ export const createCustomerUser = async ({
   email,
   password,
   phoneNumber,
-}: SignupInput) => {
+  avatar,
+}: CreateCustomerInput) => {
   const existingCustomer = await User.findOne({ email });
 
   if (existingCustomer) {
     throw new ConflictError("User already exists");
+  }
+
+  let cloudinaryImageUrl = "";
+
+  if (avatar) {
+    cloudinaryImageUrl = await imageUpload(avatar);
   }
 
   const newCustomer = new User({
@@ -35,6 +49,9 @@ export const createCustomerUser = async ({
     password,
     phoneNumber,
     role: "Customer",
+    avatar:
+      cloudinaryImageUrl ||
+      `${RANDOM_PROFILE_URL}name=${encodeURIComponent(firstName + lastName)}&size=128&background=random&color=fff&bold=true`,
   });
 
   await newCustomer.save();
@@ -76,6 +93,7 @@ export const loginUser = async ({ email, password }: LoginInput) => {
       email: user.email,
       phoneNumber: user.phoneNumber,
       role: user.role,
+      isVerified: user.isVerified,
     },
     accessToken,
     refreshToken,
@@ -120,3 +138,57 @@ export const changeUserPassword = async (email: string, password: string) => {
     },
   };
 };
+
+export const sendCodeFn = async (email: string) => {
+  const token = generateVerificationToken(VERIFICATION_TOKEN_LENGTH);
+  await storeVerificationToken(email, token);
+
+  const sentEmailInfo = await sendEmail(email, token);
+
+  return sentEmailInfo;
+};
+
+export const verifyCode = async (email: string, code: string) => {
+  const storedCode = await redisClient.get(`verificationToken:${email}`);
+
+  if (!storedCode) {
+    throw new NotFoundError("Code is not recognized");
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new NotFoundError("User not found");
+  }
+
+  if (user.isVerified) {
+    throw new ConflictError("User is already verified");
+  }
+
+  user.isVerified = true;
+  user.save();
+
+  return {
+    user: {
+      id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      role: user.role,
+      isVerified: user.isVerified,
+    },
+  };
+};
+
+interface updateData {
+  firstName: String;
+  lastName: String;
+  phoneNumber: String;
+  avatar: String;
+}
+
+export const updateUser = async (
+  user: UserDocument,
+  { firstName, lastName, phoneNumber, avatar }: updateData,
+) => {};

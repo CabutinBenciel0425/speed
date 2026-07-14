@@ -3,6 +3,9 @@ import {
   createCustomerUser,
   loginUser,
   logoutUser,
+  sendCodeFn,
+  updateUser,
+  verifyCode,
 } from "../services/auth.service.js";
 import { setAccessToken, setRefreshToken } from "../utils/setCookie.js";
 import type { LoginInput, SignupInput } from "./../schemas/user.schema.js";
@@ -10,28 +13,30 @@ import { asyncHandler } from "./../utils/asyncHandler.js";
 import type { Response, Request } from "express";
 import { REFRESH_TOKEN_SECRET_KEY } from "../config/envVars.js";
 import { redisClient } from "../lib/redis.js";
-
-import User from "../models/user.model.js";
-import jwt, { type JwtPayload } from "jsonwebtoken";
 import { createAccessToken } from "../utils/generateToken.js";
 import { ApiError } from "../utils/apiError.js";
-import { success } from "zod";
+import jwt, { type JwtPayload } from "jsonwebtoken";
+
+import User from "../models/user.model.js";
+import {
+  ConflictError,
+  NotFoundError,
+  UnauthorizedError,
+} from "../utils/errors.js";
 
 export const customerSignup = asyncHandler(
   async (req: Request, res: Response) => {
-    // const role = Array.isArray(req.params.role)
-    //   ? req.params.role[0]
-    //   : req.params.role;
-
     const body: SignupInput = req.body;
 
     const { firstName, lastName, email, password, phoneNumber } = body;
+
     const newCustomer = await createCustomerUser({
       firstName,
       lastName,
       email,
       password,
       phoneNumber,
+      avatar: req.file,
     });
 
     res.status(201).json({
@@ -50,7 +55,6 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     email,
     password,
   });
-
   setAccessToken(res, accessToken);
   setRefreshToken(res, refreshToken);
 
@@ -95,6 +99,9 @@ export const userProfile = asyncHandler(async (req: Request, res: Response) => {
 
 export const recreateAccessToken = asyncHandler(
   async (req: Request, res: Response) => {
+    if (!req.user) {
+      throw new UnauthorizedError("User not found");
+    }
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
@@ -121,7 +128,7 @@ export const recreateAccessToken = asyncHandler(
       throw new ApiError(409, "Invalid refresh token");
     }
 
-    const newAccessToken = createAccessToken(req.user._id);
+    const newAccessToken = createAccessToken(req.user._id.toString());
     setAccessToken(res, newAccessToken);
 
     res.status(201).json({
@@ -155,6 +162,84 @@ export const resetPassword = asyncHandler(
       success: false,
       message: "Password successfully updated",
       data: updatedUser,
+    });
+  },
+);
+
+export const sendVerificationCode = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { email } = req.body ?? {};
+    if (!email) {
+      throw new ApiError(400, "Email is required");
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    if (user.isVerified) {
+      throw new ConflictError("User is already verified");
+    }
+
+    await sendCodeFn(email);
+
+    res.status(200).json({
+      success: true,
+      message: "Verification email sent",
+    });
+  },
+);
+
+export const codeVerification = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { email, code } = req.body ?? {};
+
+    const updatedUser = await verifyCode(email, code);
+
+    res.status(200).json({
+      success: true,
+      message: "Verification email sent",
+      data: updatedUser,
+    });
+  },
+);
+
+export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const deletedUser = await User.findByIdAndDelete(id);
+
+  if (!deletedUser) {
+    throw new NotFoundError("User not found");
+  }
+
+  res.status(200).json({
+    success: true,
+    data: {
+      deletedUser: {
+        id: deletedUser._id,
+        firstName: deletedUser.firstName,
+        lastName: deletedUser.lastName,
+        email: deletedUser.email,
+        phoneNumber: deletedUser.phoneNumber,
+        role: deletedUser.role,
+        isVerified: deletedUser.isVerified,
+      },
+    },
+  });
+});
+
+export const updateUserDetails = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.user) {
+      throw new UnauthorizedError("Not authenticated");
+    }
+
+    const updatedUser = await updateUser(req.user, req.body);
+
+    res.status(200).json({
+      success: true,
     });
   },
 );
