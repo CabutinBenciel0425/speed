@@ -4,11 +4,15 @@ import {
   loginUser,
   logoutUser,
   sendCodeFn,
-  updateUser,
+  updateCustomerUser,
   verifyCode,
 } from "../services/auth.service.js";
 import { setAccessToken, setRefreshToken } from "../utils/setCookie.js";
-import type { LoginInput, SignupInput } from "./../schemas/user.schema.js";
+import type {
+  LoginInput,
+  SignupInput,
+  UpdateInput,
+} from "./../schemas/user.schema.js";
 import { asyncHandler } from "./../utils/asyncHandler.js";
 import type { Response, Request } from "express";
 import { REFRESH_TOKEN_SECRET_KEY } from "../config/envVars.js";
@@ -43,6 +47,7 @@ export const customerSignup = asyncHandler(
       success: true,
       message: "User successfully created",
       data: newCustomer,
+      date: new Date().toLocaleString(),
     });
   },
 );
@@ -57,11 +62,17 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   });
   setAccessToken(res, accessToken);
   setRefreshToken(res, refreshToken);
-
+  console.log("\n" + "=".repeat(50));
+  console.log("🔐🔐🔐 YOU HIT THE LOGIN ENDPOINT 🔐🔐🔐");
+  console.log("=".repeat(50));
+  console.log(`📧 Email: ${email}`);
+  console.log(`⏰ Time: ${new Date().toISOString()}`);
+  console.log("=".repeat(50) + "\n");
   res.status(200).json({
     success: true,
     message: "User successfully logged in",
     data: user,
+    date: new Date().toISOString(),
   });
 });
 
@@ -89,7 +100,7 @@ export const myProfile = asyncHandler(async (req: Request, res: Response) => {
 export const userProfile = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.params.id;
 
-  const user = await User.findById({ userId });
+  const user = await User.findById(userId);
 
   res.status(200).json({
     success: true,
@@ -159,7 +170,7 @@ export const resetPassword = asyncHandler(
     const updatedUser = await changeUserPassword(email, password);
 
     res.status(200).json({
-      success: false,
+      success: true,
       message: "Password successfully updated",
       data: updatedUser,
     });
@@ -230,16 +241,24 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+// type UpdateWithIsVerified = UpdateInput & { isVerified: boolean };
+
 export const updateUserDetails = asyncHandler(
   async (req: Request, res: Response) => {
     if (!req.user) {
-      throw new UnauthorizedError("Not authenticated");
+      throw new UnauthorizedError("Unauthorized access");
     }
+    console.log(req.body);
 
-    const updatedUser = await updateUser(req.user, req.body);
+    const updatedCustomer = await updateCustomerUser(req.user._id.toString(), {
+      ...req.body,
+      avatar: req.file,
+    });
 
     res.status(200).json({
       success: true,
+      message: "User details successfully updated",
+      data: updatedCustomer,
     });
   },
 );

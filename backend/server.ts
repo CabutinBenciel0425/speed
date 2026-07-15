@@ -4,11 +4,13 @@ import { errorMiddleware } from "./middlewares/error.middleware.js";
 import { notFoundMiddleware } from "./middlewares/notFound.middleware.js";
 import { connectDB } from "./lib/db.js";
 
+import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import express from "express";
 
 const app = express();
 
+app.use(morgan("dev"));
 app.use(express.json({ limit: "5mb" }));
 app.use(cookieParser());
 

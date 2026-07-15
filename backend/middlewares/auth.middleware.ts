@@ -4,7 +4,7 @@ import { UnauthorizedError } from "../utils/errors.js";
 import { ACCESS_TOKEN_SECRET_KEY } from "../config/envVars.js";
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
-import type { IUser } from "../types/user.types.js";
+import type { IUser, UserDocument } from "../types/user.types.js";
 
 interface JwtPayload {
   userId: string;
@@ -40,7 +40,7 @@ export const protectRoute = asyncHandler(
       throw new UnauthorizedError("Not authenticated. Please log in");
     }
 
-    req.user = user as IUser;
+    req.user = user as UserDocument;
 
     next();
   },
@@ -48,7 +48,7 @@ export const protectRoute = asyncHandler(
 
 export const customersOnly = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const user: IUser = req.user;
+    const user = req.user;
 
     if (!user) {
       throw new UnauthorizedError("Not authenticated. Please log in");
@@ -65,7 +65,7 @@ export const customersOnly = asyncHandler(
 
 export const restaurantOwnerOnly = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const user: IUser = req.user;
+    const user = req.user;
 
     if (!user) {
       throw new UnauthorizedError("Not authenticated. Please log in");
@@ -82,7 +82,7 @@ export const restaurantOwnerOnly = asyncHandler(
 
 export const driverOnly = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    const user: IUser = req.user;
+    const user = req.user;
 
     if (!user) {
       throw new UnauthorizedError("Not authenticated. Please log in");

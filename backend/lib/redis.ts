@@ -1,6 +1,5 @@
-import Redis from "ioredis";
-import { REDIS_URL } from "../config/envVars";
-import { ApiError } from "../utils/apiError";
+import { Redis } from "ioredis";
+import { REDIS_URL } from "../config/envVars.js";
 
 if (!REDIS_URL) {
   throw new Error("REDIS_URL is required in environment variables");

@@ -18,7 +18,7 @@ export const userSchema = z.object({
   role: z
     .enum(["Customer", "RestaurantOwner", "Driver", "Admin"])
     .default("Customer"),
-  avatar: z.string().optional(),
+  isVerified: z.boolean(),
 });
 
 export const signupSchema = userSchema.pick({

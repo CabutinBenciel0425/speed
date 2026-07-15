@@ -5,7 +5,7 @@ import {
 } from "../utils/errors.js";
 import { storeRefreshToken } from "./../utils/storeRefreshToken.js";
 import { generateToken } from "./../utils/generateToken.js";
-import type { LoginInput, SignupInput } from "./../schemas/user.schema.js";
+import type { LoginInput } from "./../schemas/user.schema.js";
 import {
   RANDOM_PROFILE_URL,
   REFRESH_TOKEN_SECRET_KEY,
@@ -16,11 +16,14 @@ import { VERIFICATION_TOKEN_LENGTH } from "../config/constants.js";
 import { generateVerificationToken } from "../utils/generateVerificationToken.js";
 import { storeVerificationToken } from "../utils/storeVerificationToken.js";
 import { sendEmail } from "../utils/sendEmail.js";
-import jwt from "jsonwebtoken";
+import jwt, { type JwtPayload } from "jsonwebtoken";
 import User from "../models/user.model.js";
-import type { UserDocument } from "../types/user.types.js";
+import type { IUser, UserDocument } from "../types/user.types.js";
 import { imageUpload } from "../utils/imageUpload.js";
-import type { CreateCustomerInput } from "../types/types.js";
+import type {
+  CreateCustomerInput,
+  UpdateCustomerInput,
+} from "../types/types.js";
 
 export const createCustomerUser = async ({
   firstName,
@@ -109,9 +112,11 @@ export const logoutUser = async (req: Request) => {
         "REFRESH_TOKEN_SECRET_KEY is required in environment variables",
       );
     }
-    const decoded = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET_KEY);
-    console.log(decoded);
-    await redisClient.del(`refresh_token:${decoded}`);
+    const decoded = jwt.verify(
+      refreshToken,
+      REFRESH_TOKEN_SECRET_KEY,
+    ) as JwtPayload;
+    await redisClient.del(`refresh_token:${decoded.userId}`);
   }
 
   return true;
@@ -152,7 +157,7 @@ export const verifyCode = async (email: string, code: string) => {
   const storedCode = await redisClient.get(`verificationToken:${email}`);
 
   if (!storedCode) {
-    throw new NotFoundError("Code is not recognized");
+    throw new ConflictError("Wrong code");
   }
 
   const user = await User.findOne({ email });
@@ -165,8 +170,20 @@ export const verifyCode = async (email: string, code: string) => {
     throw new ConflictError("User is already verified");
   }
 
+  if (code !== storedCode) {
+    throw new ConflictError("Code is not recognized");
+  }
+
   user.isVerified = true;
-  user.save();
+  await user.save();
+
+  const exists = await redisClient.exists(`verificationToken:${email}`);
+  if (exists) {
+    await redisClient.del(`verificationToken:${email}`);
+    console.log(`✅ Verification token for ${email} deleted`);
+  } else {
+    console.log(`⚠️ No verification token found for ${email}`);
+  }
 
   return {
     user: {
@@ -181,14 +198,76 @@ export const verifyCode = async (email: string, code: string) => {
   };
 };
 
-interface updateData {
-  firstName: String;
-  lastName: String;
-  phoneNumber: String;
-  avatar: String;
-}
+export const updateCustomerUser = async (
+  userId: string,
+  { firstName, lastName, email, phoneNumber, avatar }: UpdateCustomerInput,
+) => {
+  const user = await User.findById(userId);
 
-export const updateUser = async (
-  user: UserDocument,
-  { firstName, lastName, phoneNumber, avatar }: updateData,
-) => {};
+  if (!user) {
+    throw new NotFoundError("User not found");
+  }
+
+  const updateData: Partial<IUser> = {};
+
+  if (firstName !== undefined) {
+    updateData.firstName = firstName;
+  }
+
+  if (lastName !== undefined) {
+    updateData.lastName = lastName;
+  }
+
+  if (phoneNumber !== undefined) {
+    updateData.phoneNumber = phoneNumber;
+  }
+
+  if (email !== undefined && email !== user.email) {
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      throw new ConflictError("Email already exists");
+    }
+
+    updateData.email = email;
+    updateData.isVerified = false;
+  }
+
+  if (avatar) {
+    const cloudinaryImageUrl = await imageUpload(avatar);
+
+    updateData.avatar = cloudinaryImageUrl;
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    {
+      $set: updateData,
+    },
+    {
+      new: true,
+      runValidators: true,
+    },
+  );
+
+  if (!updatedUser) {
+    throw new ConflictError(
+      "Cannot update the details. Please try again later",
+    );
+  }
+
+  return {
+    user: {
+      id: updatedUser._id,
+      firstName: updatedUser.firstName,
+      lastName: updatedUser.lastName,
+      email: updatedUser.email,
+      phoneNumber: updatedUser.phoneNumber,
+      role: updatedUser.role,
+      avatar: updatedUser.avatar,
+      isVerified: updatedUser.isVerified,
+    },
+  };
+};
+
+//if email is updated, then isVerified will be false
