@@ -18,12 +18,15 @@ import { storeVerificationToken } from "../utils/storeVerificationToken.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import User from "../models/user.model.js";
-import type { IUser, UserDocument } from "../types/user.types.js";
-import { imageUpload } from "../utils/imageUpload.js";
+import type { IUser } from "../types/user.types.js";
 import type {
   CreateCustomerInput,
+  CreateMerchantInput,
   UpdateCustomerInput,
 } from "../types/types.js";
+import type { merchantInput } from "../schemas/merchant.schema.js";
+import Merchant from "../models/merchant.model.js";
+import { imageUpload } from "../utils/imageUpload.js";
 
 export const createCustomerUser = async ({
   firstName,
@@ -42,7 +45,7 @@ export const createCustomerUser = async ({
   let cloudinaryImageUrl = "";
 
   if (avatar) {
-    cloudinaryImageUrl = await imageUpload(avatar);
+    cloudinaryImageUrl = await imageUpload(avatar, "customer");
   }
 
   const newCustomer = new User({
@@ -69,6 +72,36 @@ export const createCustomerUser = async ({
       role: newCustomer.role,
     },
   };
+};
+
+export const createMerchant = async (
+  userId: string,
+  data: CreateMerchantInput,
+) => {
+  const logoUrl = data.logo
+    ? await imageUpload(data.logo, `merchant/${data.merchantName}_logo`)
+    : undefined;
+
+  const bannerUrl = data.banner
+    ? await imageUpload(data.banner, `merchant/${data.merchantName}_banner`)
+    : undefined;
+
+  const newMerchant = new Merchant({
+    owner: userId,
+    merchantName: data.merchantName,
+    description: data.description ?? null,
+    phoneNumber: data.phoneNumber,
+    logo: logoUrl,
+    banner: bannerUrl,
+    address: data.address,
+    operatingHours: data.operatingHours,
+    deliveryFee: data.deliveryFee,
+    minimumOrder: data.minimumOrder,
+  });
+
+  await newMerchant.save();
+
+  return newMerchant;
 };
 
 export const loginUser = async ({ email, password }: LoginInput) => {
@@ -234,7 +267,7 @@ export const updateCustomerUser = async (
   }
 
   if (avatar) {
-    const cloudinaryImageUrl = await imageUpload(avatar);
+    const cloudinaryImageUrl = await imageUpload(avatar, "customer");
 
     updateData.avatar = cloudinaryImageUrl;
   }

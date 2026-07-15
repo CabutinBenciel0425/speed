@@ -12,12 +12,13 @@ import {
   codeVerification,
   deleteUser,
   updateUserDetails,
+  merchantSignup,
 } from "../controller/auth.controller.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import { loginSchema, signupSchema } from "../schemas/user.schema.js";
 import { adminOnly, protectRoute } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/upload.middleware.js";
-import type { Response } from "express";
+import { merchantSchema } from "../schemas/merchant.schema.js";
 
 export const userRoute = Router();
 
@@ -29,11 +30,22 @@ userRoute.post(
   customerSignup,
 );
 
-userRoute.post("/login", validate(loginSchema), login);
+userRoute.post(
+  "/sign-up/merchant",
+  upload.fields([
+    { name: "logo", maxCount: 1 },
+    { name: "banner", maxCount: 1 },
+  ]),
+  validate(merchantSchema),
+  protectRoute,
+  merchantSignup,
+);
 
-// userRoute.get("/test", () => {
-//   console.log(`📅 Started at: ${new Date().toISOString()}`);
-// });
+userRoute.get("/sign-up/test", () => {
+  console.log("test endpoint");
+});
+
+userRoute.post("/login", validate(loginSchema), login);
 
 //user routes
 userRoute.post("/logout", protectRoute, logout);
@@ -43,7 +55,6 @@ userRoute.patch("/forgot-password", forgotPassword);
 userRoute.patch("/reset-password", protectRoute, resetPassword);
 userRoute.post("/send-code", sendVerificationCode);
 userRoute.post("/verify-code", codeVerification);
-userRoute.delete("/:id", protectRoute, deleteUser);
 userRoute.patch(
   "/update-user",
   upload.single("avatar"),
@@ -53,4 +64,4 @@ userRoute.patch(
 
 //admin only routes
 userRoute.get("/profile/:id", protectRoute, adminOnly, userProfile);
-//get all profiles by admin, delete a user by admin, update a user by admin
+userRoute.delete("/:id", protectRoute, adminOnly, deleteUser);

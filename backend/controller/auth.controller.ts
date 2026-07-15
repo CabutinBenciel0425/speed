@@ -6,27 +6,25 @@ import {
   sendCodeFn,
   updateCustomerUser,
   verifyCode,
+  createMerchant,
 } from "../services/auth.service.js";
 import { setAccessToken, setRefreshToken } from "../utils/setCookie.js";
-import type {
-  LoginInput,
-  SignupInput,
-  UpdateInput,
-} from "./../schemas/user.schema.js";
+import type { LoginInput, SignupInput } from "./../schemas/user.schema.js";
 import { asyncHandler } from "./../utils/asyncHandler.js";
 import type { Response, Request } from "express";
 import { REFRESH_TOKEN_SECRET_KEY } from "../config/envVars.js";
 import { redisClient } from "../lib/redis.js";
 import { createAccessToken } from "../utils/generateToken.js";
 import { ApiError } from "../utils/apiError.js";
-import jwt, { type JwtPayload } from "jsonwebtoken";
-
-import User from "../models/user.model.js";
 import {
   ConflictError,
   NotFoundError,
   UnauthorizedError,
 } from "../utils/errors.js";
+import jwt, { type JwtPayload } from "jsonwebtoken";
+
+import User from "../models/user.model.js";
+import type { merchantInput } from "../schemas/merchant.schema.js";
 
 export const customerSignup = asyncHandler(
   async (req: Request, res: Response) => {
@@ -47,7 +45,35 @@ export const customerSignup = asyncHandler(
       success: true,
       message: "User successfully created",
       data: newCustomer,
-      date: new Date().toLocaleString(),
+    });
+  },
+);
+
+export const merchantSignup = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+    const data: merchantInput = req.body;
+    const files = req.files as {
+      logo?: Express.Multer.File[];
+      banner?: Express.Multer.File[];
+    };
+
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    console.log(data);
+
+    const merchant = await createMerchant(user?._id.toString(), {
+      ...data,
+      logo: files.logo?.[0],
+      banner: files.banner?.[0],
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Restaurant Owner successfully created",
+      data: merchant,
     });
   },
 );
@@ -72,7 +98,6 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     success: true,
     message: "User successfully logged in",
     data: user,
-    date: new Date().toISOString(),
   });
 });
 
@@ -240,8 +265,6 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
     },
   });
 });
-
-// type UpdateWithIsVerified = UpdateInput & { isVerified: boolean };
 
 export const updateUserDetails = asyncHandler(
   async (req: Request, res: Response) => {

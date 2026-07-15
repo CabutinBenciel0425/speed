@@ -1,11 +1,20 @@
 import cloudinary from "../config/cloudinary.js";
 import { Readable } from "stream";
 
-export const imageUpload = (file: Express.Multer.File): Promise<string> => {
+export const imageUpload = (
+  file: Express.Multer.File,
+  from: string,
+): Promise<string> => {
+  const folderPath =
+    from === "customer"
+      ? "images/customer/avatar"
+      : from.includes("merchant")
+        ? `images/${from}`
+        : "images/driver/avatar";
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        folder: "productImages",
+        folder: folderPath,
       },
       (error, result) => {
         if (error) {
