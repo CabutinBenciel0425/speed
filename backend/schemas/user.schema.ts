@@ -15,9 +15,7 @@ export const userSchema = z.object({
     .string()
     .min(1, "Phone number is required")
     .regex(/^(\+63|0)[0-9]{10}$/, "Invalid Philippine phone number format"),
-  role: z
-    .enum(["Customer", "RestaurantOwner", "Driver", "Admin"])
-    .default("Customer"),
+  role: z.enum(["Customer", "Merchant", "Driver", "Admin"]).default("Customer"),
   isVerified: z.boolean(),
 });
 

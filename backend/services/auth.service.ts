@@ -21,12 +21,15 @@ import User from "../models/user.model.js";
 import type { IUser } from "../types/user.types.js";
 import type {
   CreateCustomerInput,
+  CreateDriverInput,
   CreateMerchantInput,
   UpdateCustomerInput,
 } from "../types/types.js";
-import type { merchantInput } from "../schemas/merchant.schema.js";
 import Merchant from "../models/merchant.model.js";
 import { imageUpload } from "../utils/imageUpload.js";
+import Driver from "../models/driver.model.js";
+import { addUserRole } from "../utils/addRole.js";
+import cloudinary from "../config/cloudinary.js";
 
 export const createCustomerUser = async ({
   firstName,
@@ -79,11 +82,11 @@ export const createMerchant = async (
   data: CreateMerchantInput,
 ) => {
   const logoUrl = data.logo
-    ? await imageUpload(data.logo, `merchant/${data.merchantName}_logo`)
+    ? await imageUpload(data.logo, `merchant/logo`)
     : undefined;
 
   const bannerUrl = data.banner
-    ? await imageUpload(data.banner, `merchant/${data.merchantName}_banner`)
+    ? await imageUpload(data.banner, `merchant/banner`)
     : undefined;
 
   const newMerchant = new Merchant({
@@ -101,7 +104,53 @@ export const createMerchant = async (
 
   await newMerchant.save();
 
-  return newMerchant;
+  const updatedUser = await addUserRole(userId, "Merchant");
+
+  return {
+    newMerchant: {
+      owner: userId,
+      merchantName: data.merchantName,
+      description: data.description ?? null,
+      phoneNumber: data.phoneNumber,
+      address: data.address,
+      operatingHours: data.operatingHours,
+      deliveryFee: data.deliveryFee,
+      minimumOrder: data.minimumOrder,
+    },
+    updatedUser,
+  };
+};
+
+export const createDriver = async (userId: string, data: CreateDriverInput) => {
+  let cloudinaryImageUrl = "";
+
+  if (data.avatar) {
+    cloudinaryImageUrl = await imageUpload(data.avatar, "customer");
+  }
+
+  const newDriver = new Driver({
+    user: userId,
+    vehicleType: data.vehicleType,
+    plateNumber: data.plateNumber,
+    avatar:
+      cloudinaryImageUrl ||
+      "https://res.cloudinary.com/dwqlvkvup/image/upload/v1784193492/default-avatar_mxorjt.jpg",
+  });
+
+  await newDriver.save();
+
+  const updatedUser = await addUserRole(userId, "Driver");
+
+  console.log(updatedUser);
+
+  return {
+    newDriver: {
+      user: userId,
+      vehicleType: newDriver.vehicleType,
+      plateNumber: newDriver.plateNumber,
+    },
+    updatedUser,
+  };
 };
 
 export const loginUser = async ({ email, password }: LoginInput) => {
@@ -267,6 +316,18 @@ export const updateCustomerUser = async (
   }
 
   if (avatar) {
+    if (user.avatar) {
+      const publicId = user.avatar.split("/").pop()?.split(".")[0];
+      if (publicId) {
+        const deletedPublicId = await cloudinary.uploader.destroy(
+          `productImages/${publicId}`,
+        );
+
+        if (!deletedPublicId) {
+          throw new NotFoundError("Error in deleting image in cloudinary");
+        }
+      }
+    }
     const cloudinaryImageUrl = await imageUpload(avatar, "customer");
 
     updateData.avatar = cloudinaryImageUrl;
@@ -302,5 +363,3 @@ export const updateCustomerUser = async (
     },
   };
 };
-
-//if email is updated, then isVerified will be false

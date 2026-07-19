@@ -7,6 +7,8 @@ import { connectDB } from "./lib/db.js";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import express from "express";
+import categoryRouter from "./routes/category.route.js";
+import { createDefaultAdmin } from "./scripts/seed-admin.js";
 
 const app = express();
 
@@ -15,11 +17,14 @@ app.use(express.json({ limit: "5mb" }));
 app.use(cookieParser());
 
 app.use("/api/v1/auth", userRoute);
+app.use("/api/v1/category", categoryRouter);
+// app.use("/api/v1/addresses", addressesRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
 
-app.listen(PORT || 3000, () => {
+app.listen(PORT || 3000, async () => {
   console.log(`Server running in port ${PORT}`);
-  connectDB();
+  await connectDB();
+  await createDefaultAdmin();
 });

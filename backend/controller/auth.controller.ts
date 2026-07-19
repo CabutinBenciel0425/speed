@@ -7,6 +7,7 @@ import {
   updateCustomerUser,
   verifyCode,
   createMerchant,
+  createDriver,
 } from "../services/auth.service.js";
 import { setAccessToken, setRefreshToken } from "../utils/setCookie.js";
 import type { LoginInput, SignupInput } from "./../schemas/user.schema.js";
@@ -25,6 +26,8 @@ import jwt, { type JwtPayload } from "jsonwebtoken";
 
 import User from "../models/user.model.js";
 import type { merchantInput } from "../schemas/merchant.schema.js";
+import type { DriverInput } from "../schemas/driver.schema.js";
+import cloudinary from "../config/cloudinary.js";
 
 export const customerSignup = asyncHandler(
   async (req: Request, res: Response) => {
@@ -62,18 +65,52 @@ export const merchantSignup = asyncHandler(
       throw new NotFoundError("User not found");
     }
 
-    console.log(data);
+    if (!user.isVerified) {
+      throw new ConflictError("User email need to verify first.");
+    }
 
-    const merchant = await createMerchant(user?._id.toString(), {
-      ...data,
-      logo: files.logo?.[0],
-      banner: files.banner?.[0],
-    });
+    const { updatedUser, newMerchant } = await createMerchant(
+      user?._id.toString(),
+      {
+        ...data,
+        logo: files.logo?.[0],
+        banner: files.banner?.[0],
+      },
+    );
 
     res.status(201).json({
       success: true,
       message: "Restaurant Owner successfully created",
-      data: merchant,
+      data: { updatedUser, newMerchant },
+    });
+  },
+);
+
+export const driverSignup = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+    const data: DriverInput = req.body;
+
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    if (!user.isVerified) {
+      throw new ConflictError("User email need to verify first.");
+    }
+
+    const { updatedUser, newDriver } = await createDriver(
+      user?._id.toString(),
+      {
+        ...data,
+        avatar: req.file,
+      },
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Restaurant Owner successfully created",
+      data: { newDriver, updatedUser },
     });
   },
 );
@@ -244,23 +281,36 @@ export const codeVerification = asyncHandler(
 
 export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
   const id = req.params.id;
-  const deletedUser = await User.findByIdAndDelete(id);
+  const user = await User.findByIdAndDelete(id);
 
-  if (!deletedUser) {
+  if (!user) {
     throw new NotFoundError("User not found");
+  }
+
+  if (user.avatar) {
+    const publicId = user.avatar.split("/").pop()?.split(".")[0];
+    if (publicId) {
+      const deletedPublicId = await cloudinary.uploader.destroy(
+        `productImages/${publicId}`,
+      );
+
+      if (!deletedPublicId) {
+        throw new NotFoundError("Error in deleting image in cloudinary");
+      }
+    }
   }
 
   res.status(200).json({
     success: true,
     data: {
-      deletedUser: {
-        id: deletedUser._id,
-        firstName: deletedUser.firstName,
-        lastName: deletedUser.lastName,
-        email: deletedUser.email,
-        phoneNumber: deletedUser.phoneNumber,
-        role: deletedUser.role,
-        isVerified: deletedUser.isVerified,
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        role: user.role,
+        isVerified: user.isVerified,
       },
     },
   });

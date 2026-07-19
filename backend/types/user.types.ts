@@ -1,6 +1,6 @@
 import { type HydratedDocument, Model } from "mongoose";
 
-export type UserRole = "Customer" | "RestaurantOwner" | "Driver" | "Admin";
+export type UserRole = "Customer" | "Merchant" | "Driver" | "Admin";
 
 export interface IUser {
   firstName: string;
@@ -9,7 +9,7 @@ export interface IUser {
   password: string;
   phoneNumber: string;
 
-  role: UserRole;
+  role: UserRole[];
 
   avatar?: string;
 

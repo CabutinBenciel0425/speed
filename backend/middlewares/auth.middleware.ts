@@ -54,7 +54,7 @@ export const customersOnly = asyncHandler(
       throw new UnauthorizedError("Not authenticated. Please log in");
     }
 
-    if (user.role !== "Customer") {
+    if (user.role.indexOf("Customer") === -1) {
       throw new UnauthorizedError(
         "You are not authorized on this endpoint. Customers only",
       );
@@ -63,7 +63,7 @@ export const customersOnly = asyncHandler(
   },
 );
 
-export const restaurantOwnerOnly = asyncHandler(
+export const merchantOnly = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user;
 
@@ -71,9 +71,9 @@ export const restaurantOwnerOnly = asyncHandler(
       throw new UnauthorizedError("Not authenticated. Please log in");
     }
 
-    if (user.role !== "RestaurantOwner") {
+    if (user.role.indexOf("Merchant") === -1) {
       throw new UnauthorizedError(
-        "You are not authorized on this endpoint. RestaurantOwners only",
+        "You are not authorized on this endpoint. Merchant only",
       );
     }
     next();
@@ -88,7 +88,7 @@ export const driverOnly = asyncHandler(
       throw new UnauthorizedError("Not authenticated. Please log in");
     }
 
-    if (user.role !== "Driver") {
+    if (user.role.indexOf("Driver") === -1) {
       throw new UnauthorizedError(
         "You are not authorized on this endpoint. Drivers only",
       );
@@ -105,7 +105,7 @@ export const adminOnly = asyncHandler(
       throw new UnauthorizedError("Not authenticated. Please log in");
     }
 
-    if (user.role !== "Admin") {
+    if (user.role.indexOf("Admin") === -1) {
       throw new UnauthorizedError(
         "You are not authorized on this endpoint. Admin only",
       );

@@ -13,16 +13,17 @@ import {
   deleteUser,
   updateUserDetails,
   merchantSignup,
+  driverSignup,
 } from "../controller/auth.controller.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import { loginSchema, signupSchema } from "../schemas/user.schema.js";
 import { adminOnly, protectRoute } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/upload.middleware.js";
 import { merchantSchema } from "../schemas/merchant.schema.js";
+import { driverSchema } from "../schemas/driver.schema.js";
 
 export const userRoute = Router();
 
-//public routes
 userRoute.post(
   "/sign-up/customer",
   upload.single("avatar"),
@@ -41,11 +42,19 @@ userRoute.post(
   merchantSignup,
 );
 
+userRoute.post(
+  "/sign-up/driver",
+  upload.single("avatar"),
+  protectRoute,
+  validate(driverSchema),
+  driverSignup,
+);
+
+userRoute.post("/login", validate(loginSchema), login);
+
 userRoute.get("/sign-up/test", () => {
   console.log("test endpoint");
 });
-
-userRoute.post("/login", validate(loginSchema), login);
 
 //user routes
 userRoute.post("/logout", protectRoute, logout);

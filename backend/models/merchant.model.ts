@@ -296,10 +296,12 @@ export const merchantSchema = new Schema({
   deliveryFee: {
     type: Number,
     required: true,
+    min: [0, "Delivery fee cannot be a negative number"],
   },
   minimumOrder: {
     type: Number,
     required: true,
+    min: [0, "Minimum order cannot be a negative number"],
   },
   status: {
     type: String,

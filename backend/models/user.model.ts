@@ -17,6 +17,7 @@ export const userSchema = new Schema<IUser, UserModel, IUserMethods>(
     email: {
       type: String,
       required: true,
+      unique: true,
     },
     password: {
       type: String,
@@ -28,10 +29,10 @@ export const userSchema = new Schema<IUser, UserModel, IUserMethods>(
       required: true,
     },
     role: {
-      type: String,
+      type: [String],
       required: true,
-      enum: ["Customer", "RestaurantOwner", "Driver", "Admin"],
-      default: "Customer",
+      enum: ["Customer", "Merchant", "Driver", "Admin"],
+      default: ["Customer"],
     },
     avatar: {
       type: String,

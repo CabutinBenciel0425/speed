@@ -1,16 +1,12 @@
 import cloudinary from "../config/cloudinary.js";
 import { Readable } from "stream";
+import { folderPathIdentifier } from "./forlderPathIdentifier.js";
 
 export const imageUpload = (
   file: Express.Multer.File,
   from: string,
 ): Promise<string> => {
-  const folderPath =
-    from === "customer"
-      ? "images/customer/avatar"
-      : from.includes("merchant")
-        ? `images/${from}`
-        : "images/driver/avatar";
+  const folderPath = folderPathIdentifier(from);
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
