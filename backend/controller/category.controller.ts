@@ -74,5 +74,3 @@ export const toggleIsActive = asyncHandler(
     });
   },
 );
-
-//toggling isActive

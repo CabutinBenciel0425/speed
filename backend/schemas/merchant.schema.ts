@@ -68,13 +68,14 @@ export const merchantSchema = z.object({
     .min(1, "Phone number is required")
     .regex(/^(\+63|0)[0-9]{10}$/, "Invalid Philippine phone number format"),
   address: z.object({
-    mapCoordinates: z.object({
-      lat: z.coerce.number().min(1, "Latitude is required"),
-      lng: z.coerce.number().min(1, "Longitude is required"),
+    location: z.object({
+      type: z.enum(["Point"]).default("Point"),
+      coodinates: z.array(z.number()),
     }),
     street: z.string().min(1, "Street is required"),
+    barangay: z.string().min(1, "Barangay is required"),
     city: z.string().min(1, "City is required"),
-    instructions: z.string().optional(),
+    province: z.string().min(1, "Province is required"),
   }),
   operatingHours: operatingHoursSchema,
   deliveryFee: z.coerce.number().min(0),

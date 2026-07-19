@@ -9,6 +9,7 @@ import cookieParser from "cookie-parser";
 import express from "express";
 import categoryRouter from "./routes/category.route.js";
 import { createDefaultAdmin } from "./scripts/seed-admin.js";
+import addressRouter from "./routes/address.route.js";
 
 const app = express();
 
@@ -18,7 +19,7 @@ app.use(cookieParser());
 
 app.use("/api/v1/auth", userRoute);
 app.use("/api/v1/category", categoryRouter);
-// app.use("/api/v1/addresses", addressesRouter);
+app.use("/api/v1/address", addressRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
