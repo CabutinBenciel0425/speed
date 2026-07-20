@@ -13,8 +13,8 @@ export const addressSchema = z.object({
   province: z.string(),
   mapCoordinates: z
     .object({
-      lat: z.coerce.number(),
-      lng: z.coerce.number(),
+      latitude: z.coerce.number(),
+      longitude: z.coerce.number(),
     })
     .optional(),
   landmark: z.string().optional(),
@@ -22,4 +22,17 @@ export const addressSchema = z.object({
   isDefault: z.boolean().default(false),
 });
 
+const updateSchemaInput = addressSchema.partial({
+  label: true,
+  recipientName: true,
+  phoneNumber: true,
+  street: true,
+  barangay: true,
+  city: true,
+  province: true,
+  mapCoordinates: true,
+  landmark: true,
+});
+
 export type AddressInput = z.infer<typeof addressSchema>;
+export type UpdateAddressInput = z.infer<typeof updateSchemaInput>;

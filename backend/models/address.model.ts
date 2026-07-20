@@ -1,6 +1,24 @@
-import mongoose, { model, Schema } from "mongoose";
+import mongoose, { model, Schema, Types, Document } from "mongoose";
 
-export const addressSchema = new Schema(
+export interface IAddress extends Document {
+  user: Types.ObjectId;
+  label: "Home" | "Work" | "Other";
+  recipientName?: string;
+  phoneNumber: string;
+  street: string;
+  barangay: string;
+  city: string;
+  province: string;
+  mapCoordinates?: {
+    latitude?: number | null;
+    longitude?: number | null;
+  } | null;
+  landmark?: string;
+  instructions?: string;
+  isDefault?: boolean;
+}
+
+export const addressSchema = new Schema<IAddress>(
   {
     user: {
       type: mongoose.Types.ObjectId,
@@ -57,5 +75,5 @@ export const addressSchema = new Schema(
   { timestamps: true },
 );
 
-const Address = model("Address", addressSchema);
+const Address = model<IAddress>("Address", addressSchema);
 export default Address;
