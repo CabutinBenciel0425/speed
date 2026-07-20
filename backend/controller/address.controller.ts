@@ -7,6 +7,7 @@ import type { Request, Response } from "express";
 import { NotFoundError } from "../utils/errors.js";
 import {
   createNewAddress,
+  deleteUserAddress,
   toggleDefaultAddress,
   updateAddressDetails,
 } from "../services/address.service.js";
@@ -74,6 +75,24 @@ export const toggleIsDefault = asyncHandler(
     res.status(201).json({
       success: true,
       data: addresses,
+    });
+  },
+);
+
+export const deleteAddress = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+    const addressType = req.params.addressType as AddressType;
+
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    const address = await deleteUserAddress(user._id.toString(), addressType);
+
+    res.status(201).json({
+      success: true,
+      data: address,
     });
   },
 );

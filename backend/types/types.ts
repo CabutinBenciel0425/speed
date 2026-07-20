@@ -23,4 +23,4 @@ export type CreateDriverInput = DriverInput & {
   avatar?: Express.Multer.File | undefined;
 };
 
-export type AddressType = "home" | "work" | "other" | undefined;
+export type AddressType = "Home" | "Work" | "Other" | undefined;

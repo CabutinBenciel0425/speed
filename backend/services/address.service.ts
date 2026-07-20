@@ -129,3 +129,25 @@ export const toggleDefaultAddress = async (
 
   return addresses;
 };
+
+export const deleteUserAddress = async (
+  userId: string,
+  addressType: AddressType,
+) => {
+  if (!addressType) {
+    throw new NotFoundError("Address type not found");
+  }
+  const formattedAddressType =
+    addressType.charAt(0).toUpperCase() + addressType.slice(1);
+
+  const address = await Address.findOneAndDelete({
+    user: userId,
+    label: formattedAddressType,
+  } as any);
+
+  if (!address) {
+    throw new NotFoundError("Address");
+  }
+
+  return address;
+};
