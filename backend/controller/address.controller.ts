@@ -12,6 +12,22 @@ import {
   updateAddressDetails,
 } from "../services/address.service.js";
 import type { AddressType } from "../types/types.js";
+import Address from "../models/address.model.js";
+
+export const getAllAddress = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+    if (!user) {
+      throw new NotFoundError("User");
+    }
+    const allAddress = await Address.find({ user: user._id }).populate("user");
+
+    res.status(200).json({
+      success: true,
+      data: allAddress,
+    });
+  },
+);
 
 export const addAddress = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
@@ -20,7 +36,7 @@ export const addAddress = asyncHandler(async (req: Request, res: Response) => {
   console.log(req.body);
 
   if (!user) {
-    throw new NotFoundError("User not found");
+    throw new NotFoundError("User");
   }
 
   const newAddress = await createNewAddress(payload, user._id.toString());
@@ -39,7 +55,7 @@ export const updateAddress = asyncHandler(
     const payload: UpdateAddressInput = req.body;
 
     if (!user) {
-      throw new NotFoundError("User not found");
+      throw new NotFoundError("User");
     }
 
     const updatedAddress = await updateAddressDetails(
@@ -62,15 +78,13 @@ export const toggleIsDefault = asyncHandler(
     const addressType = req.params.addressType as AddressType;
 
     if (!user) {
-      throw new NotFoundError("User not found");
+      throw new NotFoundError("User");
     }
 
     const addresses = await toggleDefaultAddress(
       user._id.toString(),
       addressType,
     );
-
-    addresses.forEach((address) => address.populate("user"));
 
     res.status(201).json({
       success: true,
@@ -85,7 +99,7 @@ export const deleteAddress = asyncHandler(
     const addressType = req.params.addressType as AddressType;
 
     if (!user) {
-      throw new NotFoundError("User not found");
+      throw new NotFoundError("User");
     }
 
     const address = await deleteUserAddress(user._id.toString(), addressType);

@@ -61,7 +61,7 @@ export const updateAddressDetails = async (
   } as any);
 
   if (!address) {
-    throw new NotFoundError("Address not found");
+    throw new NotFoundError("Address");
   }
 
   if (payload.label) {
@@ -112,10 +112,10 @@ export const toggleDefaultAddress = async (
   userId: string,
   addressType: AddressType,
 ) => {
-  const addresses = await Address.find({ user: userId });
+  const addresses = await Address.find({ user: userId }).populate("user");
 
   if (!addressType) {
-    throw new NotFoundError("Address type is undefined");
+    throw new NotFoundError("Address type");
   }
 
   addresses.map((address) => {
@@ -135,7 +135,7 @@ export const deleteUserAddress = async (
   addressType: AddressType,
 ) => {
   if (!addressType) {
-    throw new NotFoundError("Address type not found");
+    throw new NotFoundError("Address type");
   }
   const formattedAddressType =
     addressType.charAt(0).toUpperCase() + addressType.slice(1);

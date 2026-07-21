@@ -62,7 +62,7 @@ export const merchantSignup = asyncHandler(
     };
 
     if (!user) {
-      throw new NotFoundError("User not found");
+      throw new NotFoundError("User");
     }
 
     if (!user.isVerified) {
@@ -92,7 +92,7 @@ export const driverSignup = asyncHandler(
     const data: DriverInput = req.body;
 
     if (!user) {
-      throw new NotFoundError("User not found");
+      throw new NotFoundError("User");
     }
 
     if (!user.isVerified) {
@@ -249,7 +249,7 @@ export const sendVerificationCode = asyncHandler(
     const user = await User.findOne({ email });
 
     if (!user) {
-      throw new NotFoundError("User not found");
+      throw new NotFoundError("User");
     }
 
     if (user.isVerified) {
@@ -284,7 +284,7 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
   const user = await User.findByIdAndDelete(id);
 
   if (!user) {
-    throw new NotFoundError("User not found");
+    throw new NotFoundError("User");
   }
 
   if (user.avatar) {
@@ -295,7 +295,7 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
       );
 
       if (!deletedPublicId) {
-        throw new NotFoundError("Error in deleting image in cloudinary");
+        throw new NotFoundError("Error in deleting image in cloudinary, image");
       }
     }
   }

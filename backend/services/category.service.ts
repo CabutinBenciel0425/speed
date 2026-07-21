@@ -42,7 +42,7 @@ export const updateDetailsCategory = async (
   const category = await Category.findById(categoryId);
 
   if (!category) {
-    throw new NotFoundError("Category not found");
+    throw new NotFoundError("Category");
   }
 
   if (data.name) {
@@ -70,7 +70,9 @@ export const updateDetailsCategory = async (
         );
 
         if (!deletedPublicId) {
-          throw new NotFoundError("Error in deleting image in cloudinary");
+          throw new NotFoundError(
+            "Error in deleting image in cloudinary, image",
+          );
         }
       }
     }

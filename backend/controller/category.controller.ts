@@ -41,7 +41,7 @@ export const updateCategory = asyncHandler(
     const image: Express.Multer.File | undefined = req.file;
 
     if (!categoryId) {
-      throw new NotFoundError("Category id not found");
+      throw new NotFoundError("Category id");
     }
 
     const updatedCategory = await updateDetailsCategory(
@@ -61,7 +61,7 @@ export const toggleIsActive = asyncHandler(
     const category = await Category.findById(req.params.id);
 
     if (!category) {
-      throw new NotFoundError("Category not found");
+      throw new NotFoundError("Category");
     }
 
     category.isActive = !category.isActive;

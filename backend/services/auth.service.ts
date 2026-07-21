@@ -208,7 +208,7 @@ export const changeUserPassword = async (email: string, password: string) => {
   const user = await User.findOne({ email });
 
   if (!user) {
-    throw new NotFoundError("User not found");
+    throw new NotFoundError("User");
   }
 
   user.password = password;
@@ -245,7 +245,7 @@ export const verifyCode = async (email: string, code: string) => {
   const user = await User.findOne({ email });
 
   if (!user) {
-    throw new NotFoundError("User not found");
+    throw new NotFoundError("User");
   }
 
   if (user.isVerified) {
@@ -287,7 +287,7 @@ export const updateCustomerUser = async (
   const user = await User.findById(userId);
 
   if (!user) {
-    throw new NotFoundError("User not found");
+    throw new NotFoundError("User");
   }
 
   const updateData: Partial<IUser> = {};
@@ -324,7 +324,9 @@ export const updateCustomerUser = async (
         );
 
         if (!deletedPublicId) {
-          throw new NotFoundError("Error in deleting image in cloudinary");
+          throw new NotFoundError(
+            "Error in deleting image in cloudinary, image",
+          );
         }
       }
     }

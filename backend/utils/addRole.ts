@@ -21,7 +21,7 @@ export const addUserRole = async (userId: string, role: string) => {
       },
     );
     if (!user) {
-      throw new NotFoundError("User not found");
+      throw new NotFoundError("User");
     }
     return user;
   } catch (error) {
