@@ -16,6 +16,10 @@ const productSchema = new Schema(
       required: true,
       min: 2,
     },
+    slug: {
+      type: String,
+      required: true,
+    },
     description: {
       type: String,
     },
@@ -25,6 +29,30 @@ const productSchema = new Schema(
     },
     image: {
       type: String,
+    },
+    preparationTime: {
+      type: Number,
+      required: true,
+    },
+    ingredients: [
+      {
+        type: String,
+      },
+    ],
+    tags: [
+      {
+        type: String,
+      },
+    ],
+    isAvailable: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
+    isFeatured: {
+      type: Boolean,
+      required: true,
+      default: false,
     },
   },
   { timestamps: true },

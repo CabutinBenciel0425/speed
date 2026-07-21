@@ -13,7 +13,7 @@ export const merchantSchema = new Schema(
       unique: [true, "This merchant name is taken"],
       min: [2, "Merchant name must be atleast 2 character long"],
     },
-    desciption: {
+    description: {
       type: String,
     },
     phoneNumber: {
@@ -37,6 +37,7 @@ export const merchantSchema = new Schema(
         coordinates: {
           type: [Number],
           required: true,
+          index: "2dsphere",
         },
       },
 
