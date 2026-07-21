@@ -16,7 +16,11 @@ import {
   driverSignup,
 } from "../controller/auth.controller.js";
 import { validate } from "../middlewares/validate.middleware.js";
-import { loginSchema, signupSchema } from "../schemas/user.schema.js";
+import {
+  loginSchema,
+  signupSchema,
+  updateSchema,
+} from "../schemas/user.schema.js";
 import { adminOnly, protectRoute } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/upload.middleware.js";
 import { merchantSchema } from "../schemas/merchant.schema.js";
@@ -66,6 +70,7 @@ userRoute.post("/send-code", sendVerificationCode);
 userRoute.post("/verify-code", codeVerification);
 userRoute.patch(
   "/update-user",
+  validate(updateSchema),
   upload.single("avatar"),
   protectRoute,
   updateUserDetails,

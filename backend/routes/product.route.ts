@@ -3,7 +3,6 @@ import { merchantOnly, protectRoute } from "../middlewares/auth.middleware.js";
 import { addProduct } from "../controller/product.controller.js";
 import { productSchema } from "../schemas/product.schema.js";
 import { validate } from "../middlewares/validate.middleware.js";
-import { upload } from "../middlewares/upload.middleware.js";
 
 const productRouter = Router();
 
@@ -15,6 +14,6 @@ productRouter.post(
   addProduct,
 );
 
-//add validation on each of endpoints in routes file
+//use UserDocument on user parameters
 
 export default productRouter;

@@ -4,7 +4,7 @@ import { UnauthorizedError } from "../utils/errors.js";
 import { ACCESS_TOKEN_SECRET_KEY } from "../config/envVars.js";
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
-import type { IUser, UserDocument } from "../types/user.types.js";
+import type { UserDocument } from "../types/user.types.js";
 
 interface JwtPayload {
   userId: string;

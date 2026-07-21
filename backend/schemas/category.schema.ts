@@ -7,7 +7,14 @@ export const categorySchema = z.object({
   displayOrder: z.number().default(0),
 });
 
-const categoryUpdateSchema = categorySchema.partial({
+export const createCategorySchema = categorySchema.pick({
+  name: true,
+  slug: true,
+  description: true,
+  displayOrder: true,
+});
+
+export const categoryUpdateSchema = categorySchema.partial({
   name: true,
   slug: true,
   description: true,

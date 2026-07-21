@@ -22,7 +22,20 @@ export const addressSchema = z.object({
   isDefault: z.boolean().default(false),
 });
 
-const updateSchemaInput = addressSchema.partial({
+export const addressInputSchema = addressSchema.pick({
+  label: true,
+  recipientName: true,
+  phoneNumber: true,
+  street: true,
+  barangay: true,
+  city: true,
+  province: true,
+  mapCoordinates: true,
+  landmark: true,
+  instructions: true,
+});
+
+export const updateSchemaInput = addressSchema.partial({
   label: true,
   recipientName: true,
   phoneNumber: true,
@@ -33,6 +46,8 @@ const updateSchemaInput = addressSchema.partial({
   mapCoordinates: true,
   landmark: true,
 });
+
+export const toggleIsDefaultInput = addressSchema.pick({ isDefault: true });
 
 export type AddressInput = z.infer<typeof addressSchema>;
 export type UpdateAddressInput = z.infer<typeof updateSchemaInput>;

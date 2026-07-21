@@ -7,6 +7,11 @@ import {
   updateCategory,
 } from "../controller/category.controller.js";
 import { upload } from "../middlewares/upload.middleware.js";
+import { validate } from "../middlewares/validate.middleware.js";
+import {
+  categoryUpdateSchema,
+  createCategorySchema,
+} from "../schemas/category.schema.js";
 
 const categoryRouter = Router();
 
@@ -14,6 +19,7 @@ categoryRouter.get("/", protectRoute, adminOnly, allCategory);
 
 categoryRouter.post(
   "/create",
+  validate(createCategorySchema),
   upload.single("image"),
   protectRoute,
   adminOnly,
@@ -22,6 +28,7 @@ categoryRouter.post(
 
 categoryRouter.patch(
   "/:id",
+  validate(categoryUpdateSchema),
   upload.single("image"),
   protectRoute,
   adminOnly,

@@ -1,7 +1,5 @@
-import Merchant from "../models/merchant.model.js";
 import Product from "../models/product.model.js";
 import type { ProductInput } from "../schemas/product.schema.js";
-import type { UserDocument } from "../types/user.types.js";
 import { ConflictError } from "../utils/errors.js";
 
 export const createNewProduct = async (
