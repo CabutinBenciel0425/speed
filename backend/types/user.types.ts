@@ -14,6 +14,7 @@ export interface IUser {
   avatar?: string;
 
   isVerified: boolean;
+  isDeleted: boolean;
 }
 
 export interface IUserMethods {

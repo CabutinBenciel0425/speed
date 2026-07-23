@@ -1,15 +1,25 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import type { Request, Response } from "express";
 import { NotFoundError } from "../utils/errors.js";
-import { createNewProduct } from "../services/product.service.js";
-import type { ProductInput } from "../schemas/product.schema.js";
+import {
+  createNewProduct,
+  updateProductDetails,
+} from "../services/product.service.js";
+import type {
+  ProductInput,
+  UpdateProductInput,
+} from "../schemas/product.schema.js";
+import Product from "../models/product.model.js";
+import { DEFAULT_PRODUCT_IMAGE } from "../config/constants.js";
+import cloudinary from "../config/cloudinary.js";
 
 export const addProduct = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
-  const merchantId = Array.isArray(req.params.id)
-    ? req.params.id[0]
-    : req.params.id;
+  const merchantId = Array.isArray(req.params.merchantId)
+    ? req.params.merchantId[0]
+    : req.params.merchantId;
   const payload: ProductInput = req.body;
+  const image = req.file;
 
   if (!user) {
     throw new NotFoundError("User");
@@ -19,7 +29,7 @@ export const addProduct = asyncHandler(async (req: Request, res: Response) => {
     throw new NotFoundError("Merchant is undefined or");
   }
 
-  const newProduct = await createNewProduct(merchantId, payload);
+  const newProduct = await createNewProduct(merchantId, payload, image);
 
   await newProduct.populate("merchant");
 
@@ -28,3 +38,104 @@ export const addProduct = asyncHandler(async (req: Request, res: Response) => {
     data: newProduct,
   });
 });
+
+export const updateProduct = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+    const productId = Array.isArray(req.params.id)
+      ? req.params.id[0]
+      : req.params.id;
+    const payload: UpdateProductInput = req.body;
+    const image = req.file;
+
+    if (!user) {
+      throw new NotFoundError("User");
+    }
+
+    if (!productId) {
+      throw new NotFoundError("Merchant is undefined or");
+    }
+
+    const updatedProduct = await updateProductDetails(
+      productId,
+      payload,
+      image,
+    );
+
+    await updatedProduct.populate("merchant");
+
+    res.status(201).json({
+      success: true,
+      data: updatedProduct,
+    });
+  },
+);
+
+export const toggleAvailability = asyncHandler(
+  async (req: Request, res: Response) => {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      throw new NotFoundError("Product");
+    }
+
+    product.isAvailable = !product.isAvailable;
+
+    await product.save();
+
+    res.status(200).json({
+      success: true,
+      data: product,
+    });
+  },
+);
+
+export const toggleFeatured = asyncHandler(
+  async (req: Request, res: Response) => {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      throw new NotFoundError("Product");
+    }
+
+    product.isFeatured = !product.isFeatured;
+
+    await product.save();
+
+    res.status(200).json({
+      success: true,
+      data: product,
+    });
+  },
+);
+
+export const deleteProduct = asyncHandler(
+  async (req: Request, res: Response) => {
+    const product = await Product.findByIdAndDelete(req.params.id);
+
+    if (!product) {
+      throw new NotFoundError("Product");
+    }
+
+    if (product.image && product.image !== DEFAULT_PRODUCT_IMAGE) {
+      const publicId = product.image.split("/").pop()?.split(".")[0];
+
+      if (publicId) {
+        const deletedPublicId = await cloudinary.uploader.destroy(
+          `merchant/products/${publicId}`,
+        );
+
+        if (!deletedPublicId) {
+          throw new NotFoundError(
+            "Error in deleting image in cloudinary, image",
+          );
+        }
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      data: product,
+    });
+  },
+);

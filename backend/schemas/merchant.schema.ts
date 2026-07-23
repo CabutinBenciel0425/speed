@@ -85,8 +85,6 @@ export const merchantSchema = z.object({
   status: z.enum(["Pending", "Operating", "Closed"]).default("Pending"),
 });
 
-//TODO: TRY THE MERCHANT SIGN UP-TO ALSO TRY THE ADDING PRODUCT TO THE MERCHANT
-
 const merchantSignUpInput = merchantSchema.pick({
   merchantName: true,
   description: true,
@@ -96,5 +94,8 @@ const merchantSignUpInput = merchantSchema.pick({
   deliveryFee: true,
   minimumOrder: true,
 });
+
+//add merchant endpoints
+//updating -
 
 export type merchantInput = z.infer<typeof merchantSignUpInput>;

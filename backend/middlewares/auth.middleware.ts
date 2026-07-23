@@ -40,6 +40,10 @@ export const protectRoute = asyncHandler(
       throw new UnauthorizedError("Not authenticated. Please log in");
     }
 
+    if (user.isDeleted) {
+      throw new UnauthorizedError("Account has been deactivated");
+    }
+
     req.user = user as UserDocument;
 
     next();

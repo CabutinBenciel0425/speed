@@ -37,19 +37,19 @@ userRoute.post(
 
 userRoute.post(
   "/sign-up/merchant",
+  protectRoute,
   upload.fields([
     { name: "logo", maxCount: 1 },
     { name: "banner", maxCount: 1 },
   ]),
   validate(merchantSchema),
-  protectRoute,
   merchantSignup,
 );
 
 userRoute.post(
   "/sign-up/driver",
-  upload.single("avatar"),
   protectRoute,
+  upload.single("avatar"),
   validate(driverSchema),
   driverSignup,
 );
@@ -70,9 +70,9 @@ userRoute.post("/send-code", sendVerificationCode);
 userRoute.post("/verify-code", codeVerification);
 userRoute.patch(
   "/update-user",
-  validate(updateSchema),
-  upload.single("avatar"),
   protectRoute,
+  upload.single("avatar"),
+  validate(updateSchema),
   updateUserDetails,
 );
 

@@ -41,9 +41,18 @@ export const userSchema = new Schema<IUser, UserModel, IUserMethods>(
       type: Boolean,
       default: false,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true },
 );
+
+userSchema.pre(/^find/, function (this: any) {
+  if (this.getOptions().includeDeleted) return;
+  this.where({ isDeleted: false });
+});
 
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;

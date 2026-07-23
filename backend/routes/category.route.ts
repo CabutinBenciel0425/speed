@@ -19,19 +19,19 @@ categoryRouter.get("/", protectRoute, adminOnly, allCategory);
 
 categoryRouter.post(
   "/create",
-  validate(createCategorySchema),
-  upload.single("image"),
   protectRoute,
   adminOnly,
+  upload.single("image"),
+  validate(createCategorySchema),
   createCategory,
 );
 
 categoryRouter.patch(
   "/:id",
-  validate(categoryUpdateSchema),
-  upload.single("image"),
   protectRoute,
   adminOnly,
+  upload.single("image"),
+  validate(categoryUpdateSchema),
   updateCategory,
 );
 

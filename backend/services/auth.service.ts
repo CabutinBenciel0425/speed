@@ -12,7 +12,10 @@ import {
 } from "../config/envVars.js";
 import { redisClient } from "../lib/redis.js";
 import { type Request } from "express";
-import { VERIFICATION_TOKEN_LENGTH } from "../config/constants.js";
+import {
+  DEFAULT_DRIVER_AVATAR,
+  VERIFICATION_TOKEN_LENGTH,
+} from "../config/constants.js";
 import { generateVerificationToken } from "../utils/generateVerificationToken.js";
 import { storeVerificationToken } from "../utils/storeVerificationToken.js";
 import { sendEmail } from "../utils/sendEmail.js";
@@ -316,7 +319,7 @@ export const updateCustomerUser = async (
   }
 
   if (avatar) {
-    if (user.avatar) {
+    if (user.avatar && user.avatar !== DEFAULT_DRIVER_AVATAR) {
       const publicId = user.avatar.split("/").pop()?.split(".")[0];
       if (publicId) {
         const deletedPublicId = await cloudinary.uploader.destroy(

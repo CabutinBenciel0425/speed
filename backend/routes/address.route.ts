@@ -17,17 +17,17 @@ import {
 const addressRouter = Router();
 
 addressRouter.get("/", protectRoute, getAllAddress);
-addressRouter.post("/", validate(addressInputSchema), protectRoute, addAddress);
+addressRouter.post("/", protectRoute, validate(addressInputSchema), addAddress);
 addressRouter.patch(
   "/",
-  validate(updateSchemaInput),
   protectRoute,
+  validate(updateSchemaInput),
   updateAddress,
 );
 addressRouter.patch(
   "/:addressType",
-  validate(toggleIsDefaultInput),
   protectRoute,
+  validate(toggleIsDefaultInput),
   toggleIsDefault,
 );
 addressRouter.delete("/:addressType", protectRoute, deleteAddress);

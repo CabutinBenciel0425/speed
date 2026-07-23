@@ -28,6 +28,7 @@ import User from "../models/user.model.js";
 import type { merchantInput } from "../schemas/merchant.schema.js";
 import type { DriverInput } from "../schemas/driver.schema.js";
 import cloudinary from "../config/cloudinary.js";
+import { DEFAULT_DRIVER_AVATAR } from "../config/constants.js";
 
 export const customerSignup = asyncHandler(
   async (req: Request, res: Response) => {
@@ -287,11 +288,11 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
     throw new NotFoundError("User");
   }
 
-  if (user.avatar) {
+  if (user.avatar && user.avatar !== DEFAULT_DRIVER_AVATAR) {
     const publicId = user.avatar.split("/").pop()?.split(".")[0];
     if (publicId) {
       const deletedPublicId = await cloudinary.uploader.destroy(
-        `productImages/${publicId}`,
+        `driver/${publicId}`,
       );
 
       if (!deletedPublicId) {

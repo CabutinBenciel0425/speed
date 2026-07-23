@@ -10,6 +10,8 @@ export const folderPathIdentifier = (from: string) => {
       return "/images/driver";
     case "category":
       return "/images/category";
+    case "product":
+      return "/images/merchant/products";
     default:
       return "/images";
   }
