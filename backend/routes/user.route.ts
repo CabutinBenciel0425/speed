@@ -56,18 +56,14 @@ userRoute.post(
 
 userRoute.post("/login", validate(loginSchema), login);
 
-userRoute.get("/sign-up/test", () => {
-  console.log("test endpoint");
-});
-
 //user routes
 userRoute.post("/logout", protectRoute, logout);
 userRoute.get("/profile", protectRoute, myProfile);
-userRoute.post("/refresh", protectRoute, recreateAccessToken);
+userRoute.post("/refresh", recreateAccessToken);
 userRoute.patch("/forgot-password", forgotPassword);
-userRoute.patch("/reset-password", protectRoute, resetPassword);
-userRoute.post("/send-code", sendVerificationCode);
-userRoute.post("/verify-code", codeVerification);
+userRoute.patch("/reset-password", resetPassword);
+userRoute.post("/send-code", protectRoute, sendVerificationCode);
+userRoute.post("/verify-code", protectRoute, codeVerification);
 userRoute.patch(
   "/update-user",
   protectRoute,

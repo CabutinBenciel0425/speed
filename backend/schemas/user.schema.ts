@@ -34,7 +34,24 @@ export const loginSchema = z.object({
 
 export const updateSchema = userSchema.partial();
 
+export const forgotPasswordSchema = z.object({
+  email: z.email("Invalid email format"),
+});
+
+export const resetPasswordSchema = z.object({
+  email: z.email("Invalid email format"),
+  code: z.string().length(6, "Code must be 6 digits"),
+  password: z
+    .string()
+    .min(8, "Password must be atleast 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number"),
+});
+
 export type SignupInput = z.infer<typeof signupSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type UpdateInput = z.infer<typeof updateSchema>;
 export type UserInput = z.infer<typeof userSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

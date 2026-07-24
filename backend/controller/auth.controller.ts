@@ -126,12 +126,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   });
   setAccessToken(res, accessToken);
   setRefreshToken(res, refreshToken);
-  console.log("\n" + "=".repeat(50));
-  console.log("🔐🔐🔐 YOU HIT THE LOGIN ENDPOINT 🔐🔐🔐");
-  console.log("=".repeat(50));
-  console.log(`📧 Email: ${email}`);
-  console.log(`⏰ Time: ${new Date().toISOString()}`);
-  console.log("=".repeat(50) + "\n");
+
   res.status(200).json({
     success: true,
     message: "User successfully logged in",
@@ -173,9 +168,6 @@ export const userProfile = asyncHandler(async (req: Request, res: Response) => {
 
 export const recreateAccessToken = asyncHandler(
   async (req: Request, res: Response) => {
-    if (!req.user) {
-      throw new UnauthorizedError("User not found");
-    }
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
@@ -202,7 +194,7 @@ export const recreateAccessToken = asyncHandler(
       throw new ApiError(409, "Invalid refresh token");
     }
 
-    const newAccessToken = createAccessToken(req.user._id.toString());
+    const newAccessToken = createAccessToken(decoded.userId);
     setAccessToken(res, newAccessToken);
 
     res.status(201).json({
@@ -216,12 +208,12 @@ export const forgotPassword = asyncHandler(
   async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
-    const updatedUser = await changeUserPassword(email, password);
+    await changeUserPassword(email, password);
 
     res.status(200).json({
       success: true,
-      message: "Password successfully updated",
-      data: updatedUser,
+      message:
+        "If an account with that email exists, a reset code has been sent.",
     });
   },
 );

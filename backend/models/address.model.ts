@@ -9,10 +9,10 @@ export interface IAddress extends Document {
   barangay: string;
   city: string;
   province: string;
-  mapCoordinates?: {
-    latitude?: number | null;
-    longitude?: number | null;
-  } | null;
+  location: {
+    type: "Point";
+    coordinates?: number[];
+  };
   landmark?: string;
   instructions?: string;
   isDefault?: boolean;
@@ -53,12 +53,35 @@ export const addressSchema = new Schema<IAddress>(
       type: String,
       required: true,
     },
-    mapCoordinates: {
-      latitude: {
-        type: Number,
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
       },
-      longitude: {
-        type: Number,
+      coordinates: {
+        type: [Number],
+        required: true,
+        index: "2dsphere",
+        validate: {
+          validator: function (v: number[] | undefined): v is number[] {
+            if (!v) return false;
+            if (v.length !== 2) return false;
+
+            const lng = v[0];
+            const lat = v[1];
+
+            return (
+              typeof lng === "number" &&
+              typeof lat === "number" &&
+              lng >= -180 &&
+              lng <= 180 &&
+              lat >= -90 &&
+              lat <= 90
+            );
+          },
+          message: "Coordinates must be [longitude latitude] with valid ranges",
+        },
       },
     },
     landmark: {

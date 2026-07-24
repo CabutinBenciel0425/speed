@@ -20,4 +20,6 @@ export const {
   ADMIN_EMAIL,
   ADMIN_PASS,
   ADMIN_PHONENUMBER,
+  CLIENT_URL,
+  GRAPHHOPPER_API_KEY,
 } = process.env;

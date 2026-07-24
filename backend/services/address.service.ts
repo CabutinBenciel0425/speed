@@ -35,9 +35,9 @@ export const createNewAddress = async (
     barangay: payload.barangay,
     city: payload.city,
     province: payload.province,
-    mapCoordinates: {
-      latitude: payload.mapCoordinates?.latitude,
-      longitude: payload.mapCoordinates?.longitude,
+    location: {
+      type: payload.location?.type || "Point",
+      coordinates: payload.location?.coordinates,
     },
     landmark: payload.landmark,
     instructions: payload.instructions,
@@ -91,8 +91,11 @@ export const updateAddressDetails = async (
     address.province = payload.province;
   }
 
-  if (payload.mapCoordinates) {
-    address.mapCoordinates = payload.mapCoordinates;
+  if (payload.location) {
+    address.location = {
+      type: "Point",
+      coordinates: payload.location.coordinates || address.location.coordinates,
+    };
   }
 
   if (payload.landmark) {
@@ -112,20 +115,27 @@ export const toggleDefaultAddress = async (
   userId: string,
   addressType: AddressType,
 ) => {
-  const addresses = await Address.find({ user: userId }).populate("user");
-
   if (!addressType) {
     throw new NotFoundError("Address type");
   }
 
-  addresses.map((address) => {
-    if (address.label.toLowerCase() === addressType.toLowerCase()) {
-      address.isDefault = true;
-    }
-    if (address.label.toLowerCase() !== addressType.toLowerCase()) {
-      address.isDefault = false;
-    }
-  });
+  const addresses = await Address.find({ user: userId }).populate("user");
+
+  const matchExists = addresses.some(
+    (address) => address.label.toLowerCase() === addressType.toLowerCase(),
+  );
+
+  if (!matchExists) {
+    throw new NotFoundError("Address");
+  }
+
+  await Promise.all(
+    addresses.map((address) => {
+      address.isDefault =
+        address.label.toLowerCase() === addressType.toLowerCase();
+      return address.save();
+    }),
+  );
 
   return addresses;
 };

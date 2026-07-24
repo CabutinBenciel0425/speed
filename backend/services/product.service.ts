@@ -7,6 +7,7 @@ import type {
   UpdateProductInput,
 } from "../schemas/product.schema.js";
 import { ConflictError, NotFoundError } from "../utils/errors.js";
+import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";
 import { imageUpload } from "../utils/imageUpload.js";
 import { Types } from "mongoose";
 
@@ -99,15 +100,12 @@ export const updateProductDetails = async (
 
   if (image) {
     if (product.image && product.image !== DEFAULT_PRODUCT_IMAGE) {
-      const publicId = product.image.split("/").pop()?.split(".")[0];
+      const publicId = extractPublicIdFromUrl(product.image);
       if (publicId) {
-        const deletedPublicId = await cloudinary.uploader.destroy(
-          `merchant/products/${publicId}`,
-        );
-
-        if (!deletedPublicId) {
-          throw new NotFoundError(
-            "Error in deleting image in cloudinary, image",
+        const result = await cloudinary.uploader.destroy(publicId);
+        if (result.result !== "ok") {
+          console.warn(
+            `Cloudinary cleanup failed for ${publicId}: ${result.result}`,
           );
         }
       }

@@ -2,6 +2,7 @@ import cloudinary from "../config/cloudinary.js";
 import Category from "../models/category.model.js";
 import type { CategoryUpdateInput } from "../schemas/category.schema.js";
 import { NotFoundError } from "../utils/errors.js";
+import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";
 import { imageUpload } from "../utils/imageUpload.js";
 
 export const createNewCategory = async (
@@ -63,15 +64,12 @@ export const updateDetailsCategory = async (
 
   if (image) {
     if (category.image) {
-      const publicId = category.image.split("/").pop()?.split(".")[0];
+      const publicId = extractPublicIdFromUrl(category.image);
       if (publicId) {
-        const deletedPublicId = await cloudinary.uploader.destroy(
-          `productImages/${publicId}`,
-        );
-
-        if (!deletedPublicId) {
-          throw new NotFoundError(
-            "Error in deleting image in cloudinary, image",
+        const result = await cloudinary.uploader.destroy(publicId);
+        if (result.result !== "ok") {
+          console.warn(
+            `Cloudinary cleanup failed for ${publicId}: ${result.result}`,
           );
         }
       }

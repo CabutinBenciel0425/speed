@@ -12,6 +12,7 @@ import type {
 import Product from "../models/product.model.js";
 import { DEFAULT_PRODUCT_IMAGE } from "../config/constants.js";
 import cloudinary from "../config/cloudinary.js";
+import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";
 
 export const addProduct = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
@@ -118,16 +119,13 @@ export const deleteProduct = asyncHandler(
     }
 
     if (product.image && product.image !== DEFAULT_PRODUCT_IMAGE) {
-      const publicId = product.image.split("/").pop()?.split(".")[0];
+      const publicId = extractPublicIdFromUrl(product.image);
 
       if (publicId) {
-        const deletedPublicId = await cloudinary.uploader.destroy(
-          `merchant/products/${publicId}`,
-        );
-
-        if (!deletedPublicId) {
-          throw new NotFoundError(
-            "Error in deleting image in cloudinary, image",
+        const result = await cloudinary.uploader.destroy(publicId);
+        if (result.result !== "ok") {
+          console.warn(
+            `Cloudinary cleanup failed for ${publicId}: ${result.result}`,
           );
         }
       }

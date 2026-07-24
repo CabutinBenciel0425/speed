@@ -33,6 +33,7 @@ import { imageUpload } from "../utils/imageUpload.js";
 import Driver from "../models/driver.model.js";
 import { addUserRole } from "../utils/addRole.js";
 import cloudinary from "../config/cloudinary.js";
+import { storePasswordResetToken } from "../utils/storePasswordRefreshToken.js";
 
 export const createCustomerUser = async ({
   firstName,
@@ -207,15 +208,38 @@ export const logoutUser = async (req: Request) => {
   return true;
 };
 
-export const changeUserPassword = async (email: string, password: string) => {
+export const requestPasswordReset = async (email: string) => {
+  const user = await User.findOne({ email });
+
+  if (!user) return;
+
+  const resetToken = generateVerificationToken(VERIFICATION_TOKEN_LENGTH);
+  await storePasswordResetToken(email, resetToken);
+  await sendEmail(email, resetToken);
+};
+
+export const resetUserPassword = async (
+  email: string,
+  code: string,
+  newPassword: string,
+) => {
+  const storedCode = await redisClient.get(`passwordReset:${email}`);
+
+  if (!storedCode || storedCode !== code) {
+    throw new UnauthorizedError("Invalid or expired reset code");
+  }
+
   const user = await User.findOne({ email });
 
   if (!user) {
     throw new NotFoundError("User");
   }
 
-  user.password = password;
+  user.password = newPassword;
   await user.save();
+
+  await redisClient.del(`passwordReset:${email}`);
+  await redisClient.del(`refresh_token:${user._id.toString()}`);
 
   return {
     updatedUser: {
@@ -227,6 +251,19 @@ export const changeUserPassword = async (email: string, password: string) => {
       isVerified: user.isVerified,
     },
   };
+};
+
+export const changeUserPassword = async (email: string, password: string) => {
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new NotFoundError("User");
+  }
+
+  user.password = password;
+  await user.save();
+
+  return true;
 };
 
 export const sendCodeFn = async (email: string) => {
@@ -265,9 +302,6 @@ export const verifyCode = async (email: string, code: string) => {
   const exists = await redisClient.exists(`verificationToken:${email}`);
   if (exists) {
     await redisClient.del(`verificationToken:${email}`);
-    console.log(`✅ Verification token for ${email} deleted`);
-  } else {
-    console.log(`⚠️ No verification token found for ${email}`);
   }
 
   return {

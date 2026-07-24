@@ -11,10 +11,10 @@ export const addressSchema = z.object({
   barangay: z.string(),
   city: z.string(),
   province: z.string(),
-  mapCoordinates: z
+  location: z
     .object({
-      latitude: z.coerce.number(),
-      longitude: z.coerce.number(),
+      type: z.string().optional(),
+      coordinates: z.array(z.coerce.number()),
     })
     .optional(),
   landmark: z.string().optional(),
@@ -30,7 +30,7 @@ export const addressInputSchema = addressSchema.pick({
   barangay: true,
   city: true,
   province: true,
-  mapCoordinates: true,
+  location: true,
   landmark: true,
   instructions: true,
 });
@@ -43,7 +43,7 @@ export const updateSchemaInput = addressSchema.partial({
   barangay: true,
   city: true,
   province: true,
-  mapCoordinates: true,
+  location: true,
   landmark: true,
 });
 
