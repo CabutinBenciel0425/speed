@@ -24,12 +24,7 @@ addressRouter.patch(
   validate(updateSchemaInput),
   updateAddress,
 );
-addressRouter.patch(
-  "/:addressType",
-  protectRoute,
-  validate(toggleIsDefaultInput),
-  toggleIsDefault,
-);
+addressRouter.patch("/:addressType", protectRoute, toggleIsDefault);
 addressRouter.delete("/:addressType", protectRoute, deleteAddress);
 
 export default addressRouter;

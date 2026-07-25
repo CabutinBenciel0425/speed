@@ -15,7 +15,6 @@ export async function sendEmail(email: string, token: string) {
   const mailOptions = mailConstructor(email, token);
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent: " + info.messageId);
     return info;
   } catch (error) {
     console.error("Error sending email:", error);

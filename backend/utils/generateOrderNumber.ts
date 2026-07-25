@@ -8,5 +8,5 @@ export function generateOrderNumber(length: number = 6) {
     (value) => chars[value % chars.length],
   ).join("");
 
-  return `SPD-${code}`;
+  return `SPD-${new Date().getFullYear()}-${code}`;
 }

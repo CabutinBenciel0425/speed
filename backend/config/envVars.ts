@@ -21,5 +21,5 @@ export const {
   ADMIN_PASS,
   ADMIN_PHONENUMBER,
   CLIENT_URL,
-  GRAPHHOPPER_API_KEY,
+  OPENROUTE_API_KEY,
 } = process.env;

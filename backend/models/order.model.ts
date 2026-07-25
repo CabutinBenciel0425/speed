@@ -89,11 +89,11 @@ const orderSchema = new Schema({
     },
   },
   payment: {
-    method: {
-      type: String,
-      required: true,
-      enum: ["Cash", "Card", "GCash", "Maya"],
-    },
+    // method: {
+    //   type: String,
+    //   required: true,
+    //   enum: ["Cash", "Card", "GCash", "Maya"],
+    // },
     status: {
       type: String,
       required: true,
@@ -109,21 +109,21 @@ const orderSchema = new Schema({
         "Transaction id is required when the payment status is 'PAID' or  'CANCELLED'",
     },
   },
-  pricing: {
-    subtotal: {
-      type: Number,
-      required: true,
-    },
-    deliveryFee: {
-      type: Number,
-      required: true,
-      default: 0,
-    },
-    total: {
-      type: Number,
-      required: true,
-    },
-  },
+  // pricing: {
+  //   subtotal: {
+  //     type: Number,
+  //     required: true,
+  //   },
+  //   deliveryFee: {
+  //     type: Number,
+  //     required: true,
+  //     default: 0,
+  //   },
+  //   total: {
+  //     type: Number,
+  //     required: true,
+  //   },
+  // },
   status: {
     type: String,
     required: true,
@@ -139,17 +139,17 @@ const orderSchema = new Schema({
     ],
     default: "Pending",
   },
-  customerNote: {
-    type: String,
-  },
-  estimatedPreparationTime: {
-    type: Number,
-    required: true,
-  },
-  estimatedDeliveryTime: {
-    type: Number,
-    required: true,
-  },
+  // customerNote: {
+  //   type: String,
+  // },
+  // estimatedPreparationTime: {
+  //   type: Number,
+  //   required: true,
+  // },
+  // estimatedDeliveryTime: {
+  //   type: Number,
+  //   required: true,
+  // },
   driverAssignedAt: {
     type: Date,
     required: true,

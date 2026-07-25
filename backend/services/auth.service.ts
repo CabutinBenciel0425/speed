@@ -145,8 +145,6 @@ export const createDriver = async (userId: string, data: CreateDriverInput) => {
 
   const updatedUser = await addUserRole(userId, "Driver");
 
-  console.log(updatedUser);
-
   return {
     newDriver: {
       user: userId,

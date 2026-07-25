@@ -81,6 +81,8 @@ export const toggleIsDefault = asyncHandler(
       throw new NotFoundError("User");
     }
 
+    console.log(addressType, user, req.params);
+
     const addresses = await toggleDefaultAddress(
       user._id.toString(),
       addressType,

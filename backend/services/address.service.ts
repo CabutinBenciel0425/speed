@@ -46,8 +46,6 @@ export const createNewAddress = async (
 
   await newAddress.save();
 
-  console.log(newAddress);
-
   return newAddress;
 };
 
