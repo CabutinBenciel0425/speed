@@ -23,23 +23,25 @@ export const orderSchema = z.object({
   payment: z.object({
     method: z.enum(["Cash", "Card", "GCash", "Maya"]),
     status: z.enum(["Pending", "Paid", "Cancelled"]).default("Pending"),
-    transactionId: z.string(),
+    transactionId: z.nullable(z.string()).default(null),
   }),
   pricing: z.object({
     subtotal: z.number(),
     deliveryFee: z.number(),
     total: z.number(),
   }),
-  //   status: z.enum([
-  //     "Pending",
-  //     "Preparing",
-  //     "ReadyForPickup",
-  //     "PickedUp",
-  //     "OnTheWay",
-  //     "Delivered",
-  //     "Cancelled",
-  //     "Rejected",
-  //   ]),
+  status: z
+    .enum([
+      "Pending",
+      "Preparing",
+      "ReadyForPickup",
+      "PickedUp",
+      "OnTheWay",
+      "Delivered",
+      "Cancelled",
+      "Rejected",
+    ])
+    .default("Pending"),
   customerNote: z.string().optional(),
   estimatedPreparationTime: z.date(),
   estimatedDeliveryTime: z.date(),
@@ -55,15 +57,7 @@ export const orderSchema = z.object({
 });
 
 export const createOrderSchema = orderSchema.pick({
-  merchant: true,
-  items: true,
-  payment: true,
-  pricing: true,
   customerNote: true,
 });
 
 export type createOrderInput = z.infer<typeof createOrderSchema>;
-
-//create order schema
-
-//change the toggleDefaultAddress from array.map to for...of loop

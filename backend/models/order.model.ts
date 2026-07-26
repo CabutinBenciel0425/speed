@@ -15,7 +15,6 @@ const orderSchema = new Schema({
     type: mongoose.Types.ObjectId,
     ref: "Driver",
     default: null,
-    required: true,
   },
   orderNumber: {
     type: String,
@@ -152,7 +151,6 @@ const orderSchema = new Schema({
   },
   driverAssignedAt: {
     type: Date,
-    required: true,
   },
   driverArrivedAtMerchantAt: {
     type: Date,
