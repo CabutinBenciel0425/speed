@@ -176,6 +176,38 @@ export const addItemToCart = async (
   return recalculatedCart;
 };
 
+export const changeNote = async (
+  userId: string,
+  productId: string,
+  note: string,
+) => {
+  const cart = await Cart.findOne({ customer: userId });
+  if (!cart) {
+    throw new NotFoundError("Cart");
+  }
+
+  const item = cart.items.find(
+    (item) => item.product.toString() === productId.toString(),
+  );
+
+  if (!item) {
+    throw new Error("Product in the cart");
+  }
+
+  item.notes = note;
+
+  await cart.save();
+
+  recalculateCart(userId);
+
+  // const recalculatedCart = await recalculateCart(userId);
+  // await recalculatedCart.populate("items.product");
+
+  // return recalculatedCart;
+
+  return cart;
+};
+
 export const toggleQuantityItem = async (
   userId: string,
   productId: string,

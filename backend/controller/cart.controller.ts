@@ -1,6 +1,7 @@
 import type { addToCartInput } from "../schemas/cart.schema.js";
 import {
   addItemToCart,
+  changeNote,
   deleteItemInCart,
   toggleQuantityItem,
 } from "../services/cart.service.js";
@@ -47,6 +48,24 @@ export const addToCart = asyncHandler(async (req: Request, res: Response) => {
     data: updatedCart,
   });
 });
+
+export const changeItemNote = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+    const { productId, note } = req.body;
+
+    if (!user) {
+      throw new NotFoundError("User");
+    }
+
+    const updatedCart = await changeNote(user._id.toString(), productId, note);
+
+    res.status(201).json({
+      success: true,
+      data: updatedCart,
+    });
+  },
+);
 
 export const toggleQuantity = asyncHandler(
   async (req: Request, res: Response) => {
