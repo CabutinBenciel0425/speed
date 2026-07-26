@@ -8,9 +8,15 @@ import {
   verifyCode,
   createMerchant,
   createDriver,
+  resetUserPassword,
 } from "../services/auth.service.js";
 import { setAccessToken, setRefreshToken } from "../utils/setCookie.js";
-import type { LoginInput, SignupInput } from "./../schemas/user.schema.js";
+import type {
+  ForgotPasswordInput,
+  LoginInput,
+  ResetPasswordInput,
+  SignupInput,
+} from "./../schemas/user.schema.js";
 import { asyncHandler } from "./../utils/asyncHandler.js";
 import type { Response, Request } from "express";
 import { REFRESH_TOKEN_SECRET_KEY } from "../config/envVars.js";
@@ -81,7 +87,7 @@ export const merchantSignup = asyncHandler(
 
     res.status(201).json({
       success: true,
-      message: "Restaurant Owner successfully created",
+      message: "Merchant account successfully created",
       data: { updatedUser, newMerchant },
     });
   },
@@ -110,7 +116,7 @@ export const driverSignup = asyncHandler(
 
     res.status(201).json({
       success: true,
-      message: "Restaurant Owner successfully created",
+      message: "Driver account successfully created",
       data: { newDriver, updatedUser },
     });
   },
@@ -206,7 +212,11 @@ export const recreateAccessToken = asyncHandler(
 
 export const forgotPassword = asyncHandler(
   async (req: Request, res: Response) => {
-    const { email, password } = req.body;
+    const { email, password }: ForgotPasswordInput = req.body;
+
+    if (!email || !password) {
+      throw new NotFoundError("Required credentials");
+    }
 
     await changeUserPassword(email, password);
 
@@ -220,9 +230,9 @@ export const forgotPassword = asyncHandler(
 
 export const resetPassword = asyncHandler(
   async (req: Request, res: Response) => {
-    const { email, password } = req.body;
+    const { email, code, password }: ResetPasswordInput = req.body;
 
-    const updatedUser = await changeUserPassword(email, password);
+    const updatedUser = await resetUserPassword(email, code, password);
 
     res.status(200).json({
       success: true,

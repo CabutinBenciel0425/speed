@@ -20,7 +20,7 @@ export const getCart = asyncHandler(async (req: Request, res: Response) => {
   const cart = await Cart.findOne({ customer: user._id });
 
   if (!cart) {
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "You have nothing on your cart",
     });
@@ -83,7 +83,7 @@ export const toggleQuantity = asyncHandler(
     );
 
     if (!cart) {
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
         message: "Your cart is now empty",
       });
@@ -108,7 +108,7 @@ export const deleteItem = asyncHandler(async (req: Request, res: Response) => {
   const cart = await deleteItemInCart(user._id.toString(), productId);
 
   if (!cart) {
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Your cart is now empty",
     });

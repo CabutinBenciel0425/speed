@@ -1,4 +1,7 @@
-import type { DriverInput } from "../schemas/driver.schema.js";
+import type {
+  DriverInput,
+  DriverUpdateInput,
+} from "../schemas/driver.schema.js";
 import type { merchantInput } from "../schemas/merchant.schema.js";
 import type { SignupInput, UpdateInput } from "../schemas/user.schema.js";
 
@@ -20,6 +23,10 @@ export type CreateMerchantInput = merchantInput & {
 // };
 
 export type CreateDriverInput = DriverInput & {
+  avatar?: Express.Multer.File | undefined;
+};
+
+export type UpdateDriverInputWithImage = DriverUpdateInput & {
   avatar?: Express.Multer.File | undefined;
 };
 

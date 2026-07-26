@@ -199,14 +199,10 @@ export const changeNote = async (
 
   await cart.save();
 
-  recalculateCart(userId);
+  const recalculatedCart = await recalculateCart(userId);
+  await recalculatedCart.populate("items.product");
 
-  // const recalculatedCart = await recalculateCart(userId);
-  // await recalculatedCart.populate("items.product");
-
-  // return recalculatedCart;
-
-  return cart;
+  return recalculatedCart;
 };
 
 export const toggleQuantityItem = async (
@@ -250,9 +246,10 @@ export const toggleQuantityItem = async (
 
   await cart.save();
 
-  await recalculateCart(userId);
+  const recalculatedCart = await recalculateCart(userId);
+  await recalculatedCart.populate("items.product");
 
-  return cart;
+  return recalculatedCart;
 };
 
 export const deleteItemInCart = async (userId: string, productId: string) => {
@@ -286,9 +283,10 @@ export const deleteItemInCart = async (userId: string, productId: string) => {
 
   await cart.save();
 
-  await recalculateCart(userId);
+  const recalculatedCart = await recalculateCart(userId);
+  await recalculatedCart.populate("items.product");
 
-  return cart;
+  return recalculatedCart;
 };
 
 export const recalculateCart = async (userId: string) => {

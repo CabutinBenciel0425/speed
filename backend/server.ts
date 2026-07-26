@@ -14,6 +14,7 @@ import productRouter from "./routes/product.route.js";
 import orderRouter from "./routes/order.route.js";
 import cors from "cors";
 import cartRouter from "./routes/cart.route.js";
+import driverRouter from "./routes/driver.route.js";
 
 const app = express();
 app.use(
@@ -33,6 +34,7 @@ app.use("/api/v1/address", addressRouter);
 app.use("/api/v1/product", productRouter);
 app.use("/api/v1/orders", orderRouter);
 app.use("/api/v1/cart", cartRouter);
+app.use("/api/v1/driver", driverRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

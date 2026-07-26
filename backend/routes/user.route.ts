@@ -17,7 +17,9 @@ import {
 } from "../controller/auth.controller.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import {
+  forgotPasswordSchema,
   loginSchema,
+  resetPasswordSchema,
   signupSchema,
   updateSchema,
 } from "../schemas/user.schema.js";
@@ -60,8 +62,18 @@ userRoute.post("/login", validate(loginSchema), login);
 userRoute.post("/logout", protectRoute, logout);
 userRoute.get("/profile", protectRoute, myProfile);
 userRoute.post("/refresh", recreateAccessToken);
-userRoute.patch("/forgot-password", forgotPassword);
-userRoute.patch("/reset-password", resetPassword);
+userRoute.patch(
+  "/forgot-password",
+  protectRoute,
+  validate(forgotPasswordSchema),
+  forgotPassword,
+);
+userRoute.patch(
+  "/reset-password",
+  protectRoute,
+  validate(resetPasswordSchema),
+  resetPassword,
+);
 userRoute.post("/send-code", protectRoute, sendVerificationCode);
 userRoute.post("/verify-code", protectRoute, codeVerification);
 userRoute.patch(

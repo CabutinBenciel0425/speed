@@ -36,7 +36,6 @@ export const orderSchema = z.object({
       "Preparing",
       "ReadyForPickup",
       "PickedUp",
-      "OnTheWay",
       "Delivered",
       "Cancelled",
       "Rejected",

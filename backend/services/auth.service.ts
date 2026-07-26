@@ -219,7 +219,7 @@ export const requestPasswordReset = async (email: string) => {
 export const resetUserPassword = async (
   email: string,
   code: string,
-  newPassword: string,
+  password: string,
 ) => {
   const storedCode = await redisClient.get(`passwordReset:${email}`);
 
@@ -233,7 +233,7 @@ export const resetUserPassword = async (
     throw new NotFoundError("User");
   }
 
-  user.password = newPassword;
+  user.password = password;
   await user.save();
 
   await redisClient.del(`passwordReset:${email}`);

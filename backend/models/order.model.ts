@@ -102,10 +102,9 @@ const orderSchema = new Schema({
     transactionId: {
       type: String,
       required: function () {
-        return this.status !== "Pending";
+        return this.status === "Paid";
       },
-      message:
-        "Transaction id is required when the payment status is 'PAID' or  'CANCELLED'",
+      message: "Transaction id is required when the payment status is 'PAID'",
     },
   },
   pricing: {
@@ -131,7 +130,6 @@ const orderSchema = new Schema({
       "Preparing",
       "ReadyForPickup",
       "PickedUp",
-      "OnTheWay",
       "Delivered",
       "Cancelled",
       "Rejected",
@@ -150,9 +148,6 @@ const orderSchema = new Schema({
     required: true,
   },
   driverAssignedAt: {
-    type: Date,
-  },
-  driverArrivedAtMerchantAt: {
     type: Date,
   },
   preparingAt: {
