@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import type { addToCartInput } from "../schemas/cart.schema.js";
 import { ConflictError, NotFoundError } from "../utils/errors.js";
 import User from "../models/user.model.js";
@@ -303,6 +304,10 @@ export const recalculateCart = async (userId: string) => {
 
       if (!product) {
         throw new NotFoundError("Product");
+      }
+
+      if (!product.isAvailable) {
+        throw new ConflictError("Product not available at the moment");
       }
 
       return {
