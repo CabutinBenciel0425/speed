@@ -14,7 +14,7 @@ export const addressSchema = z.object({
   location: z
     .object({
       type: z.string().optional(),
-      coordinates: z.array(z.coerce.number()),
+      coordinates: z.array(z.coerce.number()).length(2),
     })
     .optional(),
   landmark: z.string().optional(),

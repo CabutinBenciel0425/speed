@@ -1,5 +1,5 @@
 import cloudinary from "../config/cloudinary.js";
-import Category from "../models/category.model.js";
+import Category, { type ICategory } from "../models/category.model.js";
 import type { CategoryUpdateInput } from "../schemas/category.schema.js";
 import { NotFoundError } from "../utils/errors.js";
 import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";

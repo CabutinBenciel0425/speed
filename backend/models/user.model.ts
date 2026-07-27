@@ -1,10 +1,22 @@
 import { BCRYPT_SALT_ROUNDS } from "./../config/constants.js";
-import { model, Schema } from "mongoose";
+import { model, Schema, Document } from "mongoose";
 
 import bcrypt from "bcryptjs";
-import type { IUser, IUserMethods, UserModel } from "../types/user.types.js";
 
-export const userSchema = new Schema<IUser, UserModel, IUserMethods>(
+export interface IUser extends Document {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phoneNumber: string;
+  role: [string];
+  avatar: string;
+  isVerified: boolean;
+  isDeleted: boolean;
+  comparePassword(password: string): Promise<boolean>;
+}
+
+export const userSchema = new Schema<IUser>(
   {
     firstName: {
       type: String,
@@ -54,16 +66,16 @@ userSchema.pre(/^find/, function (this: any) {
   this.where({ isDeleted: false });
 });
 
-userSchema.pre("save", async function () {
+userSchema.pre("save", async function (this: IUser) {
   if (!this.isModified("password")) return;
 
   const salt = await bcrypt.genSalt(BCRYPT_SALT_ROUNDS);
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-userSchema.methods.comparePassword = async function (password) {
+userSchema.methods.comparePassword = async function (password: string) {
   return bcrypt.compare(password, this.password);
 };
 
-const User = model<IUser, UserModel>("User", userSchema);
+const User = model<IUser>("User", userSchema);
 export default User;

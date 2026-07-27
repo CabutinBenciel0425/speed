@@ -1,6 +1,78 @@
-import mongoose, { model, Schema } from "mongoose";
+import mongoose, { model, Schema, Document, Types } from "mongoose";
 
-export const merchantSchema = new Schema(
+export interface IMerchant extends Document {
+  owner: Types.ObjectId;
+  merchantName: string;
+  description?: string;
+  phoneNumber: string;
+  logo: string;
+  banner: string;
+  address: {
+    location: {
+      type: string;
+      coordinates: number[];
+    };
+    street: string;
+    barangay: string;
+    city: string;
+    province: string;
+  };
+  operatingHours: {
+    Monday: {
+      isOpen: boolean;
+      openHour: number;
+      openMinute: number;
+      closeHour: number;
+      closeMinute: number;
+    };
+    Tuesday: {
+      isOpen: boolean;
+      openHour: number;
+      openMinute: number;
+      closeHour: number;
+      closeMinute: number;
+    };
+    Wednesday: {
+      isOpen: boolean;
+      openHour: number;
+      openMinute: number;
+      closeHour: number;
+      closeMinute: number;
+    };
+    Thursday: {
+      isOpen: boolean;
+      openHour: number;
+      openMinute: number;
+      closeHour: number;
+      closeMinute: number;
+    };
+    Friday: {
+      isOpen: boolean;
+      openHour: number;
+      openMinute: number;
+      closeHour: number;
+      closeMinute: number;
+    };
+    Saturday: {
+      isOpen: boolean;
+      openHour: number;
+      openMinute: number;
+      closeHour: number;
+      closeMinute: number;
+    };
+    Sunday: {
+      isOpen: boolean;
+      openHour: number;
+      openMinute: number;
+      closeHour: number;
+      closeMinute: number;
+    };
+  };
+  minimumOrder: number;
+  status: "Pending" | "Approved" | "Rejected" | "Open" | "Closed" | "Suspended";
+}
+
+export const merchantSchema = new Schema<IMerchant>(
   {
     owner: {
       type: mongoose.Types.ObjectId,
@@ -38,6 +110,26 @@ export const merchantSchema = new Schema(
           type: [Number],
           required: true,
           index: "2dsphere",
+          validate: {
+            validator: function (v: number[] | undefined): v is number[] {
+              if (!v) return false;
+              if (v.length !== 2) return false;
+
+              const lng = v[0];
+              const lat = v[1];
+
+              return (
+                typeof lng === "number" &&
+                typeof lat === "number" &&
+                lng >= -180 &&
+                lng <= 180 &&
+                lat >= -90 &&
+                lat <= 90
+              );
+            },
+            message:
+              "Coordinates must be [longitude latitude] with valid ranges",
+          },
         },
       },
 
@@ -65,7 +157,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 23,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -73,7 +165,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 59,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -81,7 +173,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 23,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -89,7 +181,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 59,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -100,7 +192,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 23,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -108,7 +200,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 59,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -116,7 +208,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 23,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -124,7 +216,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 59,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -135,7 +227,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 23,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -143,7 +235,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 59,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -151,7 +243,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 23,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -159,7 +251,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 59,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -170,7 +262,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 23,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -178,7 +270,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 59,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -186,7 +278,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 23,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -194,7 +286,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 59,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -205,7 +297,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 23,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -213,7 +305,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 59,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -221,7 +313,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 23,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -229,7 +321,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 59,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -240,7 +332,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 23,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -248,7 +340,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 59,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -256,7 +348,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 23,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -264,7 +356,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 59,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -275,7 +367,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 23,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -283,7 +375,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 59,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -291,7 +383,7 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 23,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
@@ -299,16 +391,11 @@ export const merchantSchema = new Schema(
           type: Number,
           min: 0,
           max: 59,
-          required: function () {
+          required: function (this: any) {
             return this.isOpen === true;
           },
         },
       },
-    },
-    deliveryFee: {
-      type: Number,
-      required: true,
-      min: [0, "Delivery fee cannot be a negative number"],
     },
     minimumOrder: {
       type: Number,
@@ -327,5 +414,5 @@ merchantSchema.index({
   "address.location": "2dsphere",
 });
 
-const Merchant = model("Merchant", merchantSchema);
+const Merchant = model<IMerchant>("Merchant", merchantSchema);
 export default Merchant;

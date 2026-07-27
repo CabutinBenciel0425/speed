@@ -7,13 +7,12 @@ import Order from "../models/order.model.js";
 
 export const createOrder = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
-  const payload: createOrderInput = req.body;
 
   if (!user) {
     throw new NotFoundError("User");
   }
 
-  const newOrder = await createNewOrder(user._id.toString(), payload);
+  const newOrder = await createNewOrder(user._id.toString());
 
   res.status(201).json({
     success: true,
@@ -57,6 +56,7 @@ export const getOrder = asyncHandler(async (req: Request, res: Response) => {
 export const cancelOrder = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
   const orderId = req.params.orderId;
+  const cancellationReason: string = req.body;
 
   if (!user) {
     throw new NotFoundError("User");
@@ -74,11 +74,21 @@ export const cancelOrder = asyncHandler(async (req: Request, res: Response) => {
     throw new NotFoundError("Payment information not found");
   }
 
+  if (!cancellationReason) {
+    throw new NotFoundError("Cancellation reason must be provided");
+  }
+
+  //TODO:
+  //this will change - the user can cancel the order if the driver not yet arrived at the merchant.
+  //if the user payment method is not "Cash", then the transactionId will remain as is (not null).
+  //then the cancelled order will appear on the drivers order history
+
   order.payment.status = "Cancelled";
   order.payment.transactionId = null;
   order.status = "Cancelled";
 
   order.cancelledAt = new Date();
+  order.cancellationReason = cancellationReason;
 
   await order.save();
 

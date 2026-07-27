@@ -25,6 +25,7 @@ export const createCategory = asyncHandler(
     });
   },
 );
+
 export const allCategory = asyncHandler(async (req: Request, res: Response) => {
   const allCategory = await Category.find({});
 

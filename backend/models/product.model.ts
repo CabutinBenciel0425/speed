@@ -1,6 +1,21 @@
-import mongoose, { model, Schema } from "mongoose";
+import mongoose, { model, Schema, Document, Types } from "mongoose";
 
-const productSchema = new Schema(
+export interface IProduct extends Document {
+  merchant: Types.ObjectId;
+  category: Types.ObjectId;
+  name: string;
+  slug: string;
+  description: string;
+  price: number;
+  image?: string;
+  preparationTime: number;
+  ingredients: string[];
+  tags: string[];
+  isAvailable: boolean;
+  isFeatured: boolean;
+}
+
+const productSchema = new Schema<IProduct>(
   {
     merchant: {
       type: mongoose.Types.ObjectId,
@@ -37,11 +52,13 @@ const productSchema = new Schema(
     ingredients: [
       {
         type: String,
+        required: true,
       },
     ],
     tags: [
       {
         type: String,
+        required: true,
       },
     ],
     isAvailable: {
@@ -58,5 +75,5 @@ const productSchema = new Schema(
   { timestamps: true },
 );
 
-const Product = model("Product", productSchema);
+const Product = model<IProduct>("Product", productSchema);
 export default Product;

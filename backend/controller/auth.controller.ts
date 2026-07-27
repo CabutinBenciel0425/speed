@@ -23,11 +23,7 @@ import { REFRESH_TOKEN_SECRET_KEY } from "../config/envVars.js";
 import { redisClient } from "../lib/redis.js";
 import { createAccessToken } from "../utils/generateToken.js";
 import { ApiError } from "../utils/apiError.js";
-import {
-  ConflictError,
-  NotFoundError,
-  UnauthorizedError,
-} from "../utils/errors.js";
+import { ConflictError, NotFoundError } from "../utils/errors.js";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 
 import User from "../models/user.model.js";
@@ -321,12 +317,11 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
 
 export const updateUserDetails = asyncHandler(
   async (req: Request, res: Response) => {
-    if (!req.user) {
-      throw new UnauthorizedError("Unauthorized access");
+    const user = req.user;
+    if (!user) {
+      throw new NotFoundError("User");
     }
-    console.log(req.body);
-
-    const updatedCustomer = await updateCustomerUser(req.user._id.toString(), {
+    const updatedCustomer = await updateCustomerUser(user, {
       ...req.body,
       avatar: req.file,
     });

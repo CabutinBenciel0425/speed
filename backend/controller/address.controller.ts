@@ -13,6 +13,7 @@ import {
 } from "../services/address.service.js";
 import type { AddressType } from "../types/types.js";
 import Address from "../models/address.model.js";
+import type { IUser } from "../models/user.model.js";
 
 export const getAllAddress = asyncHandler(
   async (req: Request, res: Response) => {
@@ -33,15 +34,13 @@ export const addAddress = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
   const payload: AddressInput = req.body;
 
-  console.log(req.body);
-
   if (!user) {
     throw new NotFoundError("User");
   }
 
-  const newAddress = await createNewAddress(payload, user._id.toString());
+  const newAddress = await createNewAddress(payload, user);
 
-  await newAddress.populate("user");
+  await newAddress.populate<"user">("user");
 
   res.status(201).json({
     success: true,
@@ -58,10 +57,7 @@ export const updateAddress = asyncHandler(
       throw new NotFoundError("User");
     }
 
-    const updatedAddress = await updateAddressDetails(
-      user._id.toString(),
-      payload,
-    );
+    const updatedAddress = await updateAddressDetails(user, payload);
 
     await updatedAddress.populate("user");
 
@@ -81,12 +77,7 @@ export const toggleIsDefault = asyncHandler(
       throw new NotFoundError("User");
     }
 
-    console.log(addressType, user, req.params);
-
-    const addresses = await toggleDefaultAddress(
-      user._id.toString(),
-      addressType,
-    );
+    const addresses = await toggleDefaultAddress(user, addressType);
 
     res.status(201).json({
       success: true,
@@ -104,7 +95,7 @@ export const deleteAddress = asyncHandler(
       throw new NotFoundError("User");
     }
 
-    const address = await deleteUserAddress(user._id.toString(), addressType);
+    const address = await deleteUserAddress(user, addressType);
 
     res.status(201).json({
       success: true,

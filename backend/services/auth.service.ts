@@ -20,8 +20,7 @@ import { generateVerificationToken } from "../utils/generateVerificationToken.js
 import { storeVerificationToken } from "../utils/storeVerificationToken.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import jwt, { type JwtPayload } from "jsonwebtoken";
-import User from "../models/user.model.js";
-import type { IUser } from "../types/user.types.js";
+import User, { type IUser } from "../models/user.model.js";
 import type {
   CreateCustomerInput,
   CreateDriverInput,
@@ -34,6 +33,7 @@ import Driver from "../models/driver.model.js";
 import { addUserRole } from "../utils/addRole.js";
 import cloudinary from "../config/cloudinary.js";
 import { storePasswordResetToken } from "../utils/storePasswordRefreshToken.js";
+import type { HydratedDocument } from "mongoose";
 
 export const createCustomerUser = async ({
   firstName,
@@ -102,7 +102,6 @@ export const createMerchant = async (
     banner: bannerUrl,
     address: data.address,
     operatingHours: data.operatingHours,
-    deliveryFee: data.deliveryFee,
     minimumOrder: data.minimumOrder,
   });
 
@@ -118,7 +117,6 @@ export const createMerchant = async (
       phoneNumber: data.phoneNumber,
       address: data.address,
       operatingHours: data.operatingHours,
-      deliveryFee: data.deliveryFee,
       minimumOrder: data.minimumOrder,
     },
     updatedUser,
@@ -156,7 +154,7 @@ export const createDriver = async (userId: string, data: CreateDriverInput) => {
 };
 
 export const loginUser = async ({ email, password }: LoginInput) => {
-  const user = await User.findOne({ email });
+  const user: HydratedDocument<IUser> | null = await User.findOne({ email });
 
   if (!user) {
     throw new UnauthorizedError("Invalid email or password");
@@ -316,15 +314,9 @@ export const verifyCode = async (email: string, code: string) => {
 };
 
 export const updateCustomerUser = async (
-  userId: string,
+  user: HydratedDocument<IUser>,
   { firstName, lastName, email, phoneNumber, avatar }: UpdateCustomerInput,
 ) => {
-  const user = await User.findById(userId);
-
-  if (!user) {
-    throw new NotFoundError("User");
-  }
-
   const updateData: Partial<IUser> = {};
 
   if (firstName !== undefined) {
@@ -371,7 +363,7 @@ export const updateCustomerUser = async (
   }
 
   const updatedUser = await User.findByIdAndUpdate(
-    userId,
+    user._id,
     {
       $set: updateData,
     },

@@ -5,12 +5,12 @@ import {
   acceptOrder,
   deliveredOrder,
   getCurrentOrder,
-  getLocation,
   getOrderHistory,
   getProfile,
   headingToMerchant,
   pickUpOrder,
   toggleDriverAvailability,
+  updateCurrentLocation,
   updateProfile,
 } from "../controller/driver.controller.js";
 import { updateDriverSchema } from "../schemas/driver.schema.js";
@@ -31,40 +31,35 @@ driverRouter.patch(
   driverOnly,
   toggleDriverAvailability,
 );
-driverRouter.patch("/location", protectRoute, driverOnly, getLocation);
+driverRouter.patch(
+  "/location",
+  protectRoute,
+  driverOnly,
+  updateCurrentLocation,
+);
 
-driverRouter.get(
-  "/driver/orders/current",
-  protectRoute,
-  driverOnly,
-  getCurrentOrder,
-);
-driverRouter.get(
-  "/driver/orders/history",
-  protectRoute,
-  driverOnly,
-  getOrderHistory,
-);
-driverRouter.get(
-  "/driver/orders/:orderId/accept",
+driverRouter.get("/orders/current", protectRoute, driverOnly, getCurrentOrder);
+driverRouter.get("/orders/history", protectRoute, driverOnly, getOrderHistory);
+driverRouter.patch(
+  "/orders/:orderId/accept",
   protectRoute,
   driverOnly,
   acceptOrder,
 );
-driverRouter.get(
-  "/driver/order/:orderId/heading-to-merchant",
+driverRouter.patch(
+  "/order/:orderId/heading-to-merchant",
   protectRoute,
   driverOnly,
   headingToMerchant,
 );
-driverRouter.get(
-  "/driver/orders/:orderId/picked-up",
+driverRouter.patch(
+  "/orders/:orderId/picked-up",
   protectRoute,
   driverOnly,
   pickUpOrder,
 );
-driverRouter.get(
-  "/driver/orders/:orderId/delivered",
+driverRouter.patch(
+  "/orders/:orderId/delivered",
   protectRoute,
   driverOnly,
   deliveredOrder,

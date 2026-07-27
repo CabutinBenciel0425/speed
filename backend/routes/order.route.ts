@@ -1,7 +1,5 @@
 import { Router } from "express";
 import { protectRoute } from "../middlewares/auth.middleware.js";
-import { validate } from "../middlewares/validate.middleware.js";
-import { createOrderSchema } from "../schemas/order.schema.js";
 import {
   createOrder,
   getOrders,
@@ -11,7 +9,7 @@ import {
 
 const orderRouter = Router();
 
-orderRouter.post("/", protectRoute, validate(createOrderSchema), createOrder);
+orderRouter.post("/", protectRoute, createOrder);
 orderRouter.get("/", protectRoute, getOrders);
 orderRouter.post("/:orderId", protectRoute, getOrder);
 orderRouter.patch("/:orderId/cancel", protectRoute, cancelOrder);

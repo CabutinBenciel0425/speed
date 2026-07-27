@@ -1,7 +1,7 @@
-import { Types } from "mongoose";
+import { type HydratedDocument } from "mongoose";
 import type { addToCartInput } from "../schemas/cart.schema.js";
 import { ConflictError, NotFoundError } from "../utils/errors.js";
-import User from "../models/user.model.js";
+import { type IUser } from "../models/user.model.js";
 import Cart from "../models/cart.model.js";
 import Product from "../models/product.model.js";
 import Address from "../models/address.model.js";
@@ -10,16 +10,12 @@ import Merchant from "../models/merchant.model.js";
 import { ADDITIONAL_PREPARATION_TIME_PER_PIECE } from "../config/constants.js";
 
 export const addItemToCart = async (
-  userId: string,
+  user: HydratedDocument<IUser>,
   addingItem: addToCartInput,
 ) => {
   let updatedCart;
-  const user = await User.findById(userId);
-  if (!user) {
-    throw new NotFoundError("User");
-  }
 
-  const address = await Address.findOne({ user: userId, isDefault: true });
+  const address = await Address.findOne({ user: user._id, isDefault: true });
 
   if (!address) {
     throw new NotFoundError("Address not found");
@@ -171,7 +167,7 @@ export const addItemToCart = async (
     ).populate("items.product");
   }
 
-  const recalculatedCart = await recalculateCart(userId);
+  const recalculatedCart = await recalculateCart(user._id.toString());
   await recalculatedCart.populate("items.product");
 
   return recalculatedCart;
@@ -239,7 +235,7 @@ export const toggleQuantityItem = async (
     item.quantity = quantity;
   }
 
-  if (cart.items.length === 0) {
+  if ((cart.items.length as number) === 0) {
     await Cart.findByIdAndDelete(cart._id);
     return null;
   }
@@ -276,7 +272,7 @@ export const deleteItemInCart = async (userId: string, productId: string) => {
 
   cart.items.splice(itemIndex, 1);
 
-  if (cart.items.length === 0) {
+  if ((cart.items.length as number) === 0) {
     await Cart.findByIdAndDelete(cart._id);
     return null;
   }

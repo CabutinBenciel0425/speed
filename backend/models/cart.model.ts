@@ -1,6 +1,42 @@
-import mongoose, { model, Schema } from "mongoose";
+import mongoose, { model, Schema, Types, Document } from "mongoose";
 
-const cartSchema = new Schema({
+export interface ICart extends Document {
+  customer: Types.ObjectId;
+  merchant: Types.ObjectId;
+  items: [
+    {
+      product: Types.ObjectId;
+      quantity: number;
+      notes: string;
+    },
+  ];
+  deliveryAddress: {
+    address: Types.ObjectId;
+    street: string;
+    barangay: string;
+    city: string;
+    province: string;
+    location: {
+      type: string;
+      coordinates: number[];
+    };
+  };
+  payment: {
+    method: "Cash" | "Card" | "GCash" | "Maya";
+  };
+  pricing: {
+    subtotal: number;
+    serviceFee: number;
+    discount: number;
+    deliveryFee: number;
+    total: number;
+  };
+  customerNote?: string;
+  estimatedPreparationTime: number;
+  estimatedDeliveryTime: number;
+}
+
+const cartSchema = new Schema<ICart>({
   customer: {
     type: mongoose.Types.ObjectId,
     ref: "User",
@@ -58,6 +94,25 @@ const cartSchema = new Schema({
       coordinates: {
         type: [Number],
         required: true,
+        validate: {
+          validator: function (v: number[] | undefined): v is number[] {
+            if (!v) return false;
+            if (v.length !== 2) return false;
+
+            const lng = v[0];
+            const lat = v[1];
+
+            return (
+              typeof lng === "number" &&
+              typeof lat === "number" &&
+              lng >= -180 &&
+              lng <= 180 &&
+              lat >= -90 &&
+              lat <= 90
+            );
+          },
+          message: "Coordinates must be [longitude latitude] with valid ranges",
+        },
       },
     },
   },
@@ -108,31 +163,5 @@ const cartSchema = new Schema({
   },
 });
 
-const Cart = model("Cart", cartSchema);
+const Cart = model<ICart>("Cart", cartSchema);
 export default Cart;
-
-// cart
-// {
-//     customer,
-//     merchant,
-//     items,
-
-//     deliveryAddress,
-
-//     payment: {
-//         method
-//     },
-
-//     pricing: {
-//         subtotal,
-//         deliveryFee,
-//         serviceFee,
-//         discount,
-//         total
-//     },
-
-//     customerNote,
-
-//     estimatedPreparationTime,
-//     estimatedDeliveryTime
-// }

@@ -80,7 +80,6 @@ export const merchantSchema = z.object({
     province: z.string().min(1, "Province is required"),
   }),
   operatingHours: operatingHoursSchema,
-  deliveryFee: z.coerce.number().min(0),
   minimumOrder: z.coerce.number().min(1),
   status: z.enum(["Pending", "Operating", "Closed"]).default("Pending"),
 });
@@ -91,11 +90,7 @@ const merchantSignUpInput = merchantSchema.pick({
   phoneNumber: true,
   address: true,
   operatingHours: true,
-  deliveryFee: true,
   minimumOrder: true,
 });
-
-//add merchant endpoints
-//updating -
 
 export type merchantInput = z.infer<typeof merchantSignUpInput>;

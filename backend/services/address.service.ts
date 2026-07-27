@@ -1,4 +1,6 @@
-import Address from "../models/address.model.js";
+import type { HydratedDocument, QueryFilter } from "mongoose";
+import Address, { type IAddress } from "../models/address.model.js";
+import type { IUser } from "../models/user.model.js";
 import type {
   AddressInput,
   UpdateAddressInput,
@@ -6,11 +8,8 @@ import type {
 import type { AddressType } from "../types/types.js";
 import { ConflictError, NotFoundError } from "../utils/errors.js";
 
-export const createNewAddress = async (
-  payload: AddressInput,
-  userId: string,
-) => {
-  const existingAddresses = await Address.find({ user: userId });
+export const createNewAddress = async (payload: AddressInput, user: IUser) => {
+  const existingAddresses = await Address.find({ user: user._id });
 
   const existingLabels = existingAddresses.map((addr) => addr.label);
 
@@ -27,7 +26,7 @@ export const createNewAddress = async (
   }
 
   const newAddress = new Address({
-    user: userId,
+    user: user._id,
     label: payload.label,
     recipientName: payload.recipientName,
     phoneNumber: payload.phoneNumber,
@@ -50,13 +49,13 @@ export const createNewAddress = async (
 };
 
 export const updateAddressDetails = async (
-  userId: string,
+  user: HydratedDocument<IUser>,
   payload: UpdateAddressInput,
 ) => {
   const address = await Address.findOne({
-    user: userId,
+    user: user._id,
     label: payload.label,
-  } as any);
+  } as QueryFilter<IAddress>);
 
   if (!address) {
     throw new NotFoundError("Address");
@@ -92,7 +91,7 @@ export const updateAddressDetails = async (
   if (payload.location) {
     address.location = {
       type: "Point",
-      coordinates: payload.location.coordinates || address.location.coordinates,
+      coordinates: payload.location.coordinates,
     };
   }
 
@@ -110,14 +109,16 @@ export const updateAddressDetails = async (
 };
 
 export const toggleDefaultAddress = async (
-  userId: string,
+  user: HydratedDocument<IUser>,
   addressType: AddressType,
 ) => {
   if (!addressType) {
     throw new NotFoundError("Address type");
   }
 
-  const addresses = await Address.find({ user: userId }).populate("user");
+  const addresses = await Address.find({ user: user._id }).populate<"user">(
+    "user",
+  );
 
   const matchExists = addresses.some(
     (address) => address.label.toLowerCase() === addressType.toLowerCase(),
@@ -139,7 +140,7 @@ export const toggleDefaultAddress = async (
 };
 
 export const deleteUserAddress = async (
-  userId: string,
+  user: HydratedDocument<IUser>,
   addressType: AddressType,
 ) => {
   if (!addressType) {
@@ -149,7 +150,7 @@ export const deleteUserAddress = async (
     addressType.charAt(0).toUpperCase() + addressType.slice(1);
 
   const address = await Address.findOneAndDelete({
-    user: userId,
+    user: user._id,
     label: formattedAddressType,
   } as any);
 

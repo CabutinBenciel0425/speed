@@ -1,4 +1,31 @@
-import mongoose, { model, Schema } from "mongoose";
+import mongoose, { model, Schema, Document, Types } from "mongoose";
+import { number } from "zod";
+
+export interface IDriver extends Document {
+  user: Types.ObjectId;
+  avatar?: string;
+  vehicleType: "Motorcycle" | "Bicycle";
+  plateNumber: string;
+  status: "Pending" | "Operational" | "Suspended";
+  isAvailable: boolean;
+  workingStatus:
+    | "Offline"
+    | "Available"
+    | "Assigned"
+    | "HeadingToMerchant"
+    | "Delivering";
+  activeOrder: Types.ObjectId;
+  currentLocation: {
+    types: string;
+    coordinates: number[];
+  };
+  rating: number;
+  completedDeliveries: number;
+  cancelledDeliveries: number;
+  totalEarnings: number;
+  ratingCount: number;
+  ratingAverage: number;
+}
 
 const driverSchema = new Schema(
   {
@@ -59,6 +86,25 @@ const driverSchema = new Schema(
       coordinates: {
         type: [Number],
         default: [0, 0],
+        validate: {
+          validator: function (v: number[] | undefined): v is number[] {
+            if (!v) return false;
+            if (v.length !== 2) return false;
+
+            const lng = v[0];
+            const lat = v[1];
+
+            return (
+              typeof lng === "number" &&
+              typeof lat === "number" &&
+              lng >= -180 &&
+              lng <= 180 &&
+              lat >= -90 &&
+              lat <= 90
+            );
+          },
+          message: "Coordinates must be [longitude latitude] with valid ranges",
+        },
       },
     },
     rating: {
@@ -82,12 +128,30 @@ const driverSchema = new Schema(
       min: [0, "Total earnings cannot be a negative number"],
       default: 0,
     },
+    ratingCount: {
+      type: number,
+      default: 0,
+    },
+    ratingAverage: {
+      type: number,
+      default: 0,
+    },
   },
   { timestamps: true },
 );
 
 driverSchema.index({
   currentLocation: "2dsphere",
+});
+
+driverSchema.index({
+  activeOrder: 1,
+});
+
+driverSchema.index({
+  status: 1,
+  workingStatus: 1,
+  isAvailable: 1,
 });
 
 const Driver = model("Driver", driverSchema);

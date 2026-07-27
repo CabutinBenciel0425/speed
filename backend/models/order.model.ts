@@ -1,6 +1,66 @@
-import mongoose, { model, Schema } from "mongoose";
+import mongoose, { model, Schema, Document, Types } from "mongoose";
 
-const orderSchema = new Schema({
+export interface IOrder extends Document {
+  customer: Types.ObjectId;
+  merchant: Types.ObjectId;
+  driver?: Types.ObjectId;
+  orderNumber: string;
+  items: [
+    {
+      product: Types.ObjectId;
+      productName: string;
+      image?: string;
+      quantity: number;
+      unitPrice: number;
+      subtotal: number;
+      notes: string;
+    },
+  ];
+  deliveryAddress: {
+    address: Types.ObjectId;
+    street: string;
+    barangay: string;
+    city: string;
+    province: string;
+    location: {
+      type: string;
+      coordinates: number[];
+    };
+  };
+  payment: {
+    method: "Cash" | "Card" | "GCash" | "Maya";
+    status: "Pending" | "Paid" | "Cancelled";
+    transactionId?: string | null;
+  };
+  pricing: {
+    subtotal: number;
+    deliveryFee: number;
+    total: number;
+  };
+  status:
+    | "Pending"
+    | "Preparing"
+    | "ReadyForPickup"
+    | "PickedUp"
+    | "Delivered"
+    | "Cancelled"
+    | "Rejected";
+  customerNote: string;
+  estimatedPreparationTime: number;
+  estimatedDeliveryTime: number;
+  driverAssignedAt: Date;
+  acceptedAt: Date;
+  merchantReceivedAt: Date;
+  preparingAt: Date;
+  readyForPickupAt: Date;
+  pickedUpAt: Date;
+  deliveredAt: Date;
+  rejectedAt: Date;
+  cancelledAt: Date;
+  cancellationReason: string;
+}
+
+const orderSchema = new Schema<IOrder>({
   customer: {
     type: mongoose.Types.ObjectId,
     ref: "User",
@@ -84,6 +144,26 @@ const orderSchema = new Schema({
       coordinates: {
         type: [Number],
         required: true,
+        index: "2dsphere",
+        validate: {
+          validator: function (v: number[] | undefined): v is number[] {
+            if (!v) return false;
+            if (v.length !== 2) return false;
+
+            const lng = v[0];
+            const lat = v[1];
+
+            return (
+              typeof lng === "number" &&
+              typeof lat === "number" &&
+              lng >= -180 &&
+              lng <= 180 &&
+              lat >= -90 &&
+              lat <= 90
+            );
+          },
+          message: "Coordinates must be [longitude latitude] with valid ranges",
+        },
       },
     },
   },
@@ -101,10 +181,11 @@ const orderSchema = new Schema({
     },
     transactionId: {
       type: String,
-      required: function () {
+      required: function (this: any) {
         return this.status === "Paid";
       },
       message: "Transaction id is required when the payment status is 'PAID'",
+      default: null,
     },
   },
   pricing: {
@@ -131,8 +212,8 @@ const orderSchema = new Schema({
       "ReadyForPickup",
       "PickedUp",
       "Delivered",
-      "Cancelled",
-      "Rejected",
+      "Cancelled", //cancelled by customer - (order can be cancelled by customer if the driver is not yet on the merchant). driver cannot cancel the order unless driver contacts, customer support - so, there is cancellation of order by admin
+      "Rejected", //rejected by merchant
     ],
     default: "Pending",
   },
@@ -147,7 +228,13 @@ const orderSchema = new Schema({
     type: Number,
     required: true,
   },
+  acceptedAt: {
+    type: Date,
+  },
   driverAssignedAt: {
+    type: Date,
+  },
+  merchantReceivedAt: {
     type: Date,
   },
   preparingAt: {
@@ -170,8 +257,9 @@ const orderSchema = new Schema({
   },
   cancellationReason: {
     type: String,
+    required: true,
   },
 });
 
-const Order = model("Order", orderSchema);
+const Order = model<IOrder>("Order", orderSchema);
 export default Order;

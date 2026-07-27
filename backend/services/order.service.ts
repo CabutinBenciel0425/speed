@@ -9,10 +9,7 @@ import { recalculateCart } from "./cart.service.js";
 import Cart from "../models/cart.model.js";
 import { generateOrderNumber } from "../utils/generateOrderNumber.js";
 
-export const createNewOrder = async (
-  userId: string,
-  payload: createOrderInput,
-) => {
+export const createNewOrder = async (userId: string) => {
   await recalculateCart(userId);
 
   const cart = await Cart.findOne({ customer: userId });

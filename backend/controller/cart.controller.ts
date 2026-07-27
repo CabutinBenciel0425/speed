@@ -40,7 +40,7 @@ export const addToCart = asyncHandler(async (req: Request, res: Response) => {
     throw new NotFoundError("User");
   }
 
-  const updatedCart = await addItemToCart(user._id.toString(), item);
+  const updatedCart = await addItemToCart(user, item);
 
   res.status(201).json({
     success: true,

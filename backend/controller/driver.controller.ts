@@ -1,10 +1,19 @@
+import { type QueryFilter } from "mongoose";
 import Driver from "../models/driver.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import type { Request, Response } from "express";
 import { NotFoundError } from "../utils/errors.js";
 import type { DriverUpdateInput } from "../schemas/driver.schema.js";
-import { updateDriverProfile } from "../services/driver.service.js";
-import Order from "../models/order.model.js";
+import {
+  acceptOrderService,
+  deliveredOrderService,
+  getDriverProfile,
+  headingToMerchantService,
+  pickUpOrderService,
+  updateCurrentLocationService,
+  updateDriverProfile,
+} from "../services/driver.service.js";
+import Order, { type IOrder } from "../models/order.model.js";
 
 export const getProfile = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
@@ -13,9 +22,7 @@ export const getProfile = asyncHandler(async (req: Request, res: Response) => {
     throw new NotFoundError("User");
   }
 
-  const driverProfile = await Driver.findOne({ user: user._id }).populate(
-    "user",
-  );
+  const driverProfile = await getDriverProfile(user._id.toString());
 
   res.status(200).json({
     success: true,
@@ -56,13 +63,7 @@ export const toggleDriverAvailability = asyncHandler(
       throw new NotFoundError("User");
     }
 
-    const driverProfile = await Driver.findOne({ user: user._id }).populate(
-      "user",
-    );
-
-    if (!driverProfile) {
-      throw new NotFoundError("Driver profile");
-    }
+    const driverProfile = await getDriverProfile(user._id.toString());
 
     driverProfile.isAvailable = !driverProfile.isAvailable;
 
@@ -75,33 +76,26 @@ export const toggleDriverAvailability = asyncHandler(
   },
 );
 
-export const getLocation = asyncHandler(async (req: Request, res: Response) => {
-  const user = req.user;
-  const location: [number, number] = req.body;
-  if (!user) {
-    throw new NotFoundError("User");
-  }
+export const updateCurrentLocation = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+    const { latitude, longitude } = req.body;
+    if (!user) {
+      throw new NotFoundError("User");
+    }
+    const driverCoords: [number, number] = [longitude, latitude];
 
-  const driverProfile = await Driver.findOne({ user: user._id }).populate(
-    "user",
-  );
+    const updatedDriverProfile = await updateCurrentLocationService(
+      user._id.toString(),
+      driverCoords,
+    );
 
-  if (!driverProfile) {
-    throw new NotFoundError("Driver profile");
-  }
-
-  driverProfile.currentLocation = {
-    type: "Point",
-    coordinates: location,
-  };
-
-  await driverProfile.save();
-
-  res.status(200).json({
-    success: true,
-    data: driverProfile,
-  });
-});
+    res.status(200).json({
+      success: true,
+      data: updatedDriverProfile,
+    });
+  },
+);
 
 // GET    /driver/orders/current
 export const getCurrentOrder = asyncHandler(
@@ -112,18 +106,14 @@ export const getCurrentOrder = asyncHandler(
       throw new NotFoundError("User");
     }
 
-    const driverProfile = await Driver.findOne({ user: user._id }).populate(
-      "user",
-    );
-
-    if (!driverProfile) {
-      throw new NotFoundError("Driver profile");
-    }
+    const driverProfile = await getDriverProfile(user._id.toString());
 
     const currentOrder = await Order.findOne({
       driver: driverProfile._id,
       status: { $in: ["Preparing", "ReadyForPickup", "PickedUp"] },
-    });
+    })
+      .populate<"user">("user")
+      .populate<"merchant">("merchant");
 
     if (!currentOrder) {
       return res.status(200).json({
@@ -148,19 +138,18 @@ export const getOrderHistory = asyncHandler(
       throw new NotFoundError("User");
     }
 
-    const driverProfile = await Driver.findOne({ user: user._id }).populate(
-      "user",
-    );
-
-    if (!driverProfile) {
-      throw new NotFoundError("Driver profile");
-    }
+    const driverProfile = await getDriverProfile(user._id.toString());
 
     const orderHistory = await Order.find({
       driver: driverProfile._id,
-    });
+      status: {
+        $in: ["Delivered", "Cancelled", "Rejected"],
+      },
+    })
+      .populate<"user">("user")
+      .populate<"merchant">("merchant");
 
-    if (!orderHistory) {
+    if (orderHistory.length === 0) {
       return res.status(200).json({
         success: true,
         message: "No order yet",
@@ -177,53 +166,13 @@ export const getOrderHistory = asyncHandler(
 // PATCH  /driver/orders/:orderId/accept
 export const acceptOrder = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
-  const orderId = req.params.orderId;
+  const orderId = req.params.orderId as string;
 
   if (!user) {
     throw new NotFoundError("User");
   }
 
-  const driverProfile = await Driver.findOne({ user: user._id }).populate(
-    "user",
-  );
-
-  if (!driverProfile) {
-    throw new NotFoundError("Driver profile");
-  }
-
-  const order = await Order.findById(orderId).populate("driver");
-
-  if (!order) {
-    throw new NotFoundError("Order");
-  }
-
-  const paymentMethod = order.payment?.method;
-  const paymentStatus = order.payment?.status;
-  const orderTransactionId = order.payment?.transactionId;
-
-  const isPaid =
-    paymentMethod !== "Cash" &&
-    paymentStatus === "Paid" &&
-    orderTransactionId !== null;
-  const isCash =
-    paymentMethod === "Cash" &&
-    paymentStatus === "Pending" &&
-    orderTransactionId === null;
-
-  if (
-    driverProfile.status === "Operational" &&
-    driverProfile.workingStatus === "Available" &&
-    order.driver === null &&
-    order.status === "Pending" &&
-    (isPaid || isCash)
-  ) {
-    order.driver = driverProfile._id;
-    order.driverAssignedAt = new Date();
-    driverProfile.workingStatus = "Assigned";
-    driverProfile.activeOrder = order._id;
-    await driverProfile.save();
-    await order.save();
-  }
+  const order = await acceptOrderService(user._id.toString(), orderId);
 
   res.status(200).json({
     success: true,
@@ -235,58 +184,20 @@ export const acceptOrder = asyncHandler(async (req: Request, res: Response) => {
 export const headingToMerchant = asyncHandler(
   async (req: Request, res: Response) => {
     const user = req.user;
-    const orderId = req.params.orderId;
+    const orderId = req.params.orderId as string;
 
     if (!user) {
       throw new NotFoundError("User");
     }
 
-    const driverProfile = await Driver.findOne({ user: user._id }).populate(
-      "user",
+    const updatedOrder = await headingToMerchantService(
+      user._id.toString(),
+      orderId,
     );
-
-    if (!driverProfile) {
-      throw new NotFoundError("Driver profile");
-    }
-
-    const order = await Order.findOne({
-      driver: driverProfile._id,
-      _id: orderId,
-    }).populate("driver");
-
-    if (!order) {
-      throw new NotFoundError("Order");
-    }
-
-    const paymentMethod = order.payment?.method;
-    const paymentStatus = order.payment?.status;
-    const orderTransactionId = order.payment?.transactionId;
-    const activeOrderId = driverProfile.activeOrder?.toString();
-
-    const isPaid =
-      paymentMethod !== "Cash" &&
-      paymentStatus === "Paid" &&
-      orderTransactionId !== null;
-    const isCash =
-      paymentMethod === "Cash" &&
-      paymentStatus === "Pending" &&
-      orderTransactionId === null;
-
-    if (
-      driverProfile.status === "Operational" &&
-      driverProfile.workingStatus === "Assigned" &&
-      activeOrderId === order._id.toString() &&
-      order.driver === driverProfile._id &&
-      (order.status === "Preparing" || order.status === "ReadyForPickup") &&
-      (isPaid || isCash)
-    ) {
-      driverProfile.workingStatus = "HeadingToMerchant";
-      await driverProfile.save();
-    }
 
     res.status(200).json({
       success: true,
-      data: order,
+      data: updatedOrder,
     });
   },
 );
@@ -294,62 +205,17 @@ export const headingToMerchant = asyncHandler(
 // PATCH  /driver/orders/:orderId/picked-up
 export const pickUpOrder = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
-  const orderId = req.params.orderId;
+  const orderId = req.params.orderId as string;
 
   if (!user) {
     throw new NotFoundError("User");
   }
 
-  const driverProfile = await Driver.findOne({ user: user._id }).populate(
-    "user",
-  );
-
-  if (!driverProfile) {
-    throw new NotFoundError("Driver profile");
-  }
-
-  const order = await Order.findOne({
-    driver: driverProfile._id,
-    _id: orderId,
-  });
-
-  if (!order) {
-    throw new NotFoundError("Order");
-  }
-
-  const paymentMethod = order.payment?.method;
-  const paymentStatus = order.payment?.status;
-  const orderTransactionId = order.payment?.transactionId;
-  const activeOrderId = driverProfile.activeOrder?.toString();
-
-  const isPaid =
-    paymentMethod !== "Cash" &&
-    paymentStatus === "Paid" &&
-    orderTransactionId !== null;
-  const isCash =
-    paymentMethod === "Cash" &&
-    paymentStatus === "Pending" &&
-    orderTransactionId === null;
-
-  if (
-    driverProfile.status === "Operational" &&
-    driverProfile.workingStatus === "HeadingToMerchant" &&
-    activeOrderId === order._id.toString() &&
-    order.driver === driverProfile._id &&
-    order.status === "ReadyForPickup" &&
-    (isPaid || isCash)
-  ) {
-    driverProfile.workingStatus = "Delivering";
-    order.status = "PickedUp";
-    order.pickedUpAt = new Date();
-    driverProfile.workingStatus = "Delivering";
-    await driverProfile.save();
-    await order.save();
-  }
+  const updatedOrder = await pickUpOrderService(user._id.toString(), orderId);
 
   res.status(200).json({
     success: true,
-    data: order,
+    data: updatedOrder,
   });
 });
 
@@ -357,64 +223,20 @@ export const pickUpOrder = asyncHandler(async (req: Request, res: Response) => {
 export const deliveredOrder = asyncHandler(
   async (req: Request, res: Response) => {
     const user = req.user;
-    const orderId = req.params.orderId;
+    const orderId = req.params.orderId as string;
 
     if (!user) {
       throw new NotFoundError("User");
     }
 
-    const driverProfile = await Driver.findOne({ user: user._id }).populate(
-      "user",
+    const updatedOrder = await deliveredOrderService(
+      user._id.toString(),
+      orderId,
     );
-
-    if (!driverProfile) {
-      throw new NotFoundError("Driver profile");
-    }
-
-    const order = await Order.findOne({
-      driver: driverProfile._id,
-      _id: orderId,
-    });
-
-    if (!order) {
-      throw new NotFoundError("Order");
-    }
-
-    const paymentMethod = order.payment?.method;
-    const paymentStatus = order.payment?.status;
-    const orderTransactionId = order.payment?.transactionId;
-    const activeOrderId = driverProfile.activeOrder?.toString();
-    const deliveryFee = order.pricing?.deliveryFee || 0;
-
-    const isPaid =
-      paymentMethod !== "Cash" &&
-      paymentStatus === "Paid" &&
-      orderTransactionId !== null;
-    const isCash =
-      paymentMethod === "Cash" &&
-      paymentStatus === "Pending" &&
-      orderTransactionId === null;
-
-    if (
-      driverProfile.status === "Operational" &&
-      driverProfile.workingStatus === "Delivering" &&
-      activeOrderId === order._id.toString() &&
-      order.driver === driverProfile._id &&
-      order.status === "PickedUp" &&
-      (isPaid || isCash)
-    ) {
-      driverProfile.workingStatus = "Available";
-      driverProfile.completedDeliveries = driverProfile.completedDeliveries++;
-      driverProfile.totalEarnings = driverProfile.totalEarnings + deliveryFee;
-      order.status = "Delivered";
-      order.deliveredAt = new Date();
-      await driverProfile.save();
-      await order.save();
-    }
 
     res.status(200).json({
       success: true,
-      data: order,
+      data: updatedOrder,
     });
   },
 );
