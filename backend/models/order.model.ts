@@ -57,6 +57,7 @@ export interface IOrder extends Document {
   deliveredAt: Date;
   rejectedAt: Date;
   cancelledAt: Date;
+  cancelledBy: "Customer" | "Merchant" | "Admin";
   cancellationReason: string;
 }
 
@@ -254,6 +255,10 @@ const orderSchema = new Schema<IOrder>({
   },
   cancelledAt: {
     type: Date,
+  },
+  cancelledBy: {
+    type: String,
+    enum: ["Customer", "Merchant", "Admin"],
   },
   cancellationReason: {
     type: String,

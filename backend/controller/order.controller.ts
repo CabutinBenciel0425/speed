@@ -2,7 +2,10 @@ import type { createOrderInput } from "../schemas/order.schema.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import type { Request, Response } from "express";
 import { ConflictError, NotFoundError } from "../utils/errors.js";
-import { createNewOrder } from "../services/order.service.js";
+import {
+  cancelOrderService,
+  createNewOrder,
+} from "../services/order.service.js";
 import Order from "../models/order.model.js";
 
 export const createOrder = asyncHandler(async (req: Request, res: Response) => {
@@ -55,45 +58,20 @@ export const getOrder = asyncHandler(async (req: Request, res: Response) => {
 
 export const cancelOrder = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
-  const orderId = req.params.orderId;
+  const orderId = req.params.orderId as string;
   const cancellationReason: string = req.body;
 
   if (!user) {
     throw new NotFoundError("User");
   }
-  const order = await Order.findById(orderId);
-
-  if (!order) {
-    throw new NotFoundError("Order");
-  }
-
-  if (order.status === "Delivered" || order.status === "Cancelled") {
-    throw new ConflictError("Order cannot be cancelled");
-  }
-  if (!order.payment) {
-    throw new NotFoundError("Payment information not found");
-  }
-
-  if (!cancellationReason) {
-    throw new NotFoundError("Cancellation reason must be provided");
-  }
-
-  //TODO:
-  //this will change - the user can cancel the order if the driver not yet arrived at the merchant.
-  //if the user payment method is not "Cash", then the transactionId will remain as is (not null).
-  //then the cancelled order will appear on the drivers order history
-
-  order.payment.status = "Cancelled";
-  order.payment.transactionId = null;
-  order.status = "Cancelled";
-
-  order.cancelledAt = new Date();
-  order.cancellationReason = cancellationReason;
-
-  await order.save();
+  const cancelledOrder = await cancelOrderService(
+    user._id.toString(),
+    orderId,
+    cancellationReason,
+  );
 
   res.status(200).json({
     success: true,
-    data: order,
+    data: cancelledOrder,
   });
 });

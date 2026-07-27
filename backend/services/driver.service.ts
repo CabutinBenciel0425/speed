@@ -74,9 +74,9 @@ export const acceptOrderService = async (userId: string, orderId: string) => {
   const session = await mongoose.startSession();
   const driver = await Driver.findOne({
     user: userId,
-  });
+  }).session(session);
 
-  const order = await Order.findById(orderId);
+  const order = await Order.findById(orderId).session(session);
 
   if (!driver) {
     throw new NotFoundError("Driver");
@@ -99,8 +99,6 @@ export const acceptOrderService = async (userId: string, orderId: string) => {
       await driver.save({ session });
       await order.save({ session });
     });
-  } catch (error) {
-    throw Error("Error in accepting order");
   } finally {
     await session.endSession();
   }

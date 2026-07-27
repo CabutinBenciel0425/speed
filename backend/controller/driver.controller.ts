@@ -1,5 +1,3 @@
-import { type QueryFilter } from "mongoose";
-import Driver from "../models/driver.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import type { Request, Response } from "express";
 import { NotFoundError } from "../utils/errors.js";
@@ -13,7 +11,7 @@ import {
   updateCurrentLocationService,
   updateDriverProfile,
 } from "../services/driver.service.js";
-import Order, { type IOrder } from "../models/order.model.js";
+import Order from "../models/order.model.js";
 
 export const getProfile = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
