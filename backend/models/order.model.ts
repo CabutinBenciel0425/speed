@@ -262,7 +262,6 @@ const orderSchema = new Schema<IOrder>({
   },
   cancellationReason: {
     type: String,
-    required: true,
   },
 });
 

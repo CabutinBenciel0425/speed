@@ -126,6 +126,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     email,
     password,
   });
+
   setAccessToken(res, accessToken);
   setRefreshToken(res, refreshToken);
 

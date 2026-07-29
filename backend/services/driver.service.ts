@@ -1,14 +1,20 @@
 import mongoose, { type QueryFilter } from "mongoose";
 import cloudinary from "../config/cloudinary.js";
 import { DEFAULT_DRIVER_AVATAR } from "../config/constants.js";
-import Driver from "../models/driver.model.js";
+import Driver, { type IDriver } from "../models/driver.model.js";
 import type { IOrder } from "../models/order.model.js";
 import User from "../models/user.model.js";
 import type { UpdateDriverInputWithImage } from "../types/types.js";
-import { NotFoundError } from "../utils/errors.js";
+import { ConflictError, NotFoundError } from "../utils/errors.js";
 import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";
 import { imageUpload } from "../utils/imageUpload.js";
 import Order from "../models/order.model.js";
+import Merchant from "../models/merchant.model.js";
+import DeliveryOffer from "../models/deliveryOffer.model.js";
+import { io } from "../server.js";
+import { computeDistance } from "./delivery.service.js";
+import Address from "../models/address.model.js";
+import { pendingOffers } from "../utils/offerWaiting.js";
 
 export const updateDriverProfile = async (
   { vehicleType, plateNumber, avatar }: UpdateDriverInputWithImage,
@@ -236,4 +242,211 @@ export const isOrderPaymentValid = (order: IOrder) => {
   }
 
   return order.payment.status === "Paid" && !!order.payment.transactionId;
+};
+
+export const driverMatching = async (orderId: string) => {
+  const order = await Order.findById(orderId).populate("merchant");
+  if (!order) {
+    throw new NotFoundError("Order");
+  }
+  const merchant = await Merchant.findById(order.merchant);
+
+  if (!merchant) {
+    throw new NotFoundError("Merchant");
+  }
+
+  const merchantCoords = merchant.address.location.coordinates as [
+    number,
+    number,
+  ];
+
+  const drivers = await findNearestDrivers(merchantCoords);
+
+  if (drivers.length === 0) {
+    throw new NotFoundError("Drivers");
+  }
+
+  for (const driver of drivers) {
+    const offer = await sendOffer(order._id.toString(), driver._id.toString());
+
+    const result = await waitForOfferResult(offer._id.toString());
+
+    if (result === "Accepted") {
+      break;
+    }
+  }
+};
+
+export const findNearestDrivers = async (coordinates: [number, number]) => {
+  return Driver.find({
+    status: "Operational",
+    isAvailable: true,
+    workingStatus: "Available",
+
+    currentLocation: {
+      $near: {
+        $geometry: {
+          type: "Point",
+          coordinates,
+        },
+
+        $maxDistance: 5000,
+      },
+    },
+  }).limit(10);
+};
+
+export const sendOffer = async (orderId: string, driverId: string) => {
+  const order = await Order.findById(orderId);
+  if (!order) {
+    throw new NotFoundError("Order");
+  }
+
+  const customer = await User.findById(order.customer);
+
+  if (!customer) {
+    throw new NotFoundError("Customer");
+  }
+
+  const customerAddress = await Address.findOne({
+    user: customer._id,
+    isDefault: true,
+  });
+  const merchant = await Merchant.findById(order.merchant);
+
+  if (!customerAddress) {
+    throw new NotFoundError("User Address");
+  }
+
+  if (!merchant) {
+    throw new NotFoundError("Merchant");
+  }
+
+  const customerCoords = customerAddress.location.coordinates as [
+    number,
+    number,
+  ];
+  const merchantCoords = merchant.address.location.coordinates as [
+    number,
+    number,
+  ];
+
+  const distance = await computeDistance(customerCoords, merchantCoords);
+
+  const offer = new DeliveryOffer({
+    order: orderId,
+    driver: driverId,
+    status: "Pending",
+    expiresAt: new Date(Date.now() + 15000),
+  });
+
+  await offer.save();
+
+  io.to(`driver:${driverId}`).emit("delivery:offer", {
+    offerId: offer._id,
+    merchant: order.merchant,
+    merchantName: merchant.merchantName,
+    merchantAddress: merchant.address,
+    customer: order.customer,
+    customerAddress: customerAddress,
+    deliveryFee: order.pricing.deliveryFee,
+    estimatedDistance: distance.distanceKm,
+    estimatedDuration: order?.estimatedDeliveryTime,
+  });
+  return offer;
+};
+
+export const driverAcceptOffer = async (offerId: string, driverId: string) => {
+  const session = await mongoose.startSession();
+
+  const offer = await DeliveryOffer.findById(offerId);
+
+  if (!offer) {
+    throw new NotFoundError("Offer");
+  }
+
+  const driver = await Driver.findById(driverId);
+  const order = await Order.findById(offer.order);
+
+  if (!driver) {
+    throw new NotFoundError("Driver");
+  }
+
+  if (!order) {
+    throw new NotFoundError("Order");
+  }
+
+  if (offer.status !== "Accepted") {
+    throw new ConflictError("Offer status still not accepted");
+  }
+
+  if (offer.driver.toString() !== driver._id.toString()) {
+    throw new ConflictError("Offer driver id is not equal to driver.id");
+  }
+
+  if (offer.order.toString() !== order._id.toString()) {
+    throw new ConflictError("Offer's order id is not equal to order.id");
+  }
+
+  if (offer.expiresAt < new Date()) {
+    throw new ConflictError("This offer is expired");
+  }
+
+  if (!driver.isAvailable) {
+    throw new ConflictError("The driver is not available");
+  }
+
+  if (driver.status !== "Operational") {
+    throw new ConflictError("Driver's status is not yet operational");
+  }
+
+  if (driver.activeOrder !== null) {
+    throw new ConflictError("Driver still have an active order");
+  }
+
+  if (order.driver !== null) {
+    throw new ConflictError("Order is assigned to another driver");
+  }
+
+  if (order.status !== "Pending") {
+    throw new ConflictError("Order's status should be 'Pending' first");
+  }
+
+  try {
+    await session.withTransaction(async () => {
+      driver.workingStatus = "Assigned";
+      driver.activeOrder = order._id;
+      order.driver = driver._id;
+      order.driverAssignedAt = new Date();
+      order.acceptedAt = new Date();
+
+      await driver.save({ session });
+      await order.save({ session });
+      await offer.save({ session });
+    });
+  } finally {
+    await session.endSession();
+  }
+
+  io.to(`merchant:${order.merchant.toString()}`).emit("order:assigned");
+  io.to(`customer:${order.customer.toString()}`).emit("order:assigned");
+};
+
+export const driverDeclinedOffer = async (
+  offerId: string,
+  driverId: string,
+) => {};
+
+export const waitForOfferResult = (offerId: string) => {
+  return new Promise<"Accepted" | "Declined" | "Expired">((resolve) => {
+    pendingOffers.set(offerId, resolve);
+
+    setTimeout(() => {
+      if (pendingOffers.has(offerId)) {
+        pendingOffers.delete(offerId);
+
+        resolve("Expired");
+      }
+    }, 15000);
+  });
 };

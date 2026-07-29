@@ -1,5 +1,5 @@
 import { BCRYPT_SALT_ROUNDS } from "./../config/constants.js";
-import { model, Schema, Document } from "mongoose";
+import { model, Schema, Document, type HydratedDocument } from "mongoose";
 
 import bcrypt from "bcryptjs";
 
@@ -15,6 +15,7 @@ export interface IUser extends Document {
   isDeleted: boolean;
   comparePassword(password: string): Promise<boolean>;
 }
+export type UserDocument = HydratedDocument<IUser>;
 
 export const userSchema = new Schema<IUser>(
   {

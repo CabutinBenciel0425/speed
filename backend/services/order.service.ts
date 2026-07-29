@@ -1,10 +1,9 @@
-import mongoose, { Types } from "mongoose";
-import Order from "../models/order.model.js";
+import mongoose, { Types, type HydratedDocument } from "mongoose";
+import Order, { type IOrder } from "../models/order.model.js";
 import type { createOrderInput } from "../schemas/order.schema.js";
 import Address from "../models/address.model.js";
 import { ConflictError, NotFoundError } from "../utils/errors.js";
 import Merchant from "../models/merchant.model.js";
-import { BASE_DELIVERY_FEE } from "../config/constants.js";
 import { recalculateCart } from "./cart.service.js";
 import Cart from "../models/cart.model.js";
 import { generateOrderNumber } from "../utils/generateOrderNumber.js";
@@ -54,6 +53,10 @@ export const createNewOrder = async (userId: string) => {
   await newOrder.save();
 
   await Cart.findByIdAndDelete(cart._id);
+
+  //TODO:
+  //Find nearest drivers
+  findNearestDriverService(newOrder);
   return newOrder;
 };
 
@@ -113,5 +116,33 @@ export const cancelOrderService = async (
     });
   } finally {
     await session.endSession();
+  }
+};
+
+export const findNearestDriverService = async (
+  order: HydratedDocument<IOrder>,
+) => {
+  const merchant = await Merchant.findById(order.merchant);
+  if (!merchant) {
+    throw new NotFoundError("Merchant");
+  }
+  const merchantCoords = merchant.address.location.coordinates;
+  const drivers = await Driver.find({
+    status: "Operational",
+    isAvailable: true,
+    workingStatus: "Available",
+    currentLocation: {
+      $near: {
+        $geometry: {
+          type: "Point",
+          coordinates: merchantCoords,
+        },
+        $maxDistance: 5000,
+      },
+    },
+  });
+
+  if (drivers) {
+    drivers;
   }
 };

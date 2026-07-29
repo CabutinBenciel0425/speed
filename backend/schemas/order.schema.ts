@@ -52,7 +52,7 @@ export const orderSchema = z.object({
   deliveredAt: z.date(),
   rejectedAt: z.date(),
   cancelledAt: z.date(),
-  cancellationReason: z.string(),
+  cancellationReason: z.string().optional(),
 });
 
 export const createOrderSchema = orderSchema.pick({
