@@ -376,9 +376,8 @@ export const driverAcceptOffer = async (offerId: string, driverId: string) => {
     throw new NotFoundError("Order");
   }
 
-  if (offer.status !== "Accepted") {
-    throw new ConflictError("Offer status still not accepted");
-  }
+  if (offer.status !== "Pending")
+    throw new ConflictError("Offer status must be 'Pending' first");
 
   if (offer.driver.toString() !== driver._id.toString()) {
     throw new ConflictError("Offer driver id is not equal to driver.id");
@@ -412,6 +411,12 @@ export const driverAcceptOffer = async (offerId: string, driverId: string) => {
     throw new ConflictError("Order's status should be 'Pending' first");
   }
 
+  if (order.payment.method !== "Cash" && order.payment.transactionId === null) {
+    throw new ConflictError(
+      "Order payment method is not cash but no transaction id found",
+    );
+  }
+
   try {
     await session.withTransaction(async () => {
       driver.workingStatus = "Assigned";
@@ -419,6 +424,9 @@ export const driverAcceptOffer = async (offerId: string, driverId: string) => {
       order.driver = driver._id;
       order.driverAssignedAt = new Date();
       order.acceptedAt = new Date();
+      offer.status = "Accepted";
+      order.status = "Preparing";
+      order.merchantReceivedAt = new Date();
 
       await driver.save({ session });
       await order.save({ session });
@@ -428,14 +436,39 @@ export const driverAcceptOffer = async (offerId: string, driverId: string) => {
     await session.endSession();
   }
 
+  const resolve = pendingOffers.get(offerId);
+
+  if (resolve) {
+    pendingOffers.delete(offerId);
+
+    resolve("Accepted");
+  }
+
   io.to(`merchant:${order.merchant.toString()}`).emit("order:assigned");
   io.to(`customer:${order.customer.toString()}`).emit("order:assigned");
 };
 
-export const driverDeclinedOffer = async (
-  offerId: string,
-  driverId: string,
-) => {};
+export const driverDeclinedOffer = async (offerId: string) => {
+  const offer = await DeliveryOffer.findById(offerId);
+
+  if (!offer) return;
+
+  if (offer.status !== "Pending") return;
+
+  if (offer.expiresAt < new Date()) return;
+
+  offer.status = "Declined";
+
+  await offer.save();
+
+  const resolve = pendingOffers.get(offerId);
+
+  if (resolve) {
+    pendingOffers.delete(offerId);
+
+    resolve("Declined");
+  }
+};
 
 export const waitForOfferResult = (offerId: string) => {
   return new Promise<"Accepted" | "Declined" | "Expired">((resolve) => {

@@ -1,7 +1,7 @@
 import type { Socket } from "socket.io";
 import { io } from "../server.js";
 import { joinDriverRoom, registerDriverEvents } from "./driver.socket.js";
-import { joinMerchantRoom } from "./merchant.socket.js";
+import { joinMerchantRoom, registerMerchantEvents } from "./merchant.socket.js";
 import { joinACustomerRoom } from "./customer.socket.js";
 import { joinAdminRoom } from "./admin.socket.js";
 
@@ -13,6 +13,7 @@ io.on("connection", async (socket: Socket) => {
 
   if (socket.user.role.includes("Merchant")) {
     await joinMerchantRoom(socket);
+    registerMerchantEvents(socket);
   }
 
   if (socket.user.role.includes("Customer")) {
