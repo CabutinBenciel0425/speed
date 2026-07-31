@@ -79,7 +79,7 @@ export const cancelOrderService = async (orderId: string, userId: string) => {
 
   const driverAlreadyAtMerchant =
     driver &&
-    (driver.workingStatus === "HeadingToMerchant" ||
+    (driver.workingStatus === "ArrivedAtMerchant" ||
       driver.workingStatus === "Delivering");
 
   if (

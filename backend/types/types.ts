@@ -1,9 +1,16 @@
+import type { Socket } from "socket.io";
 import type {
   DriverInput,
   DriverUpdateInput,
 } from "../schemas/driver.schema.js";
 import type { merchantInput } from "../schemas/merchant.schema.js";
 import type { SignupInput, UpdateInput } from "../schemas/user.schema.js";
+
+type ActiveRole = "Customer" | "Merchant" | "Driver" | "Admin";
+
+export interface AuthenticatedSocket extends Socket {
+  activeRole?: ActiveRole;
+}
 
 //customer
 export type CreateCustomerInput = SignupInput & {

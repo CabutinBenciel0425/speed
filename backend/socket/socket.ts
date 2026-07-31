@@ -4,23 +4,26 @@ import { joinDriverRoom, registerDriverEvents } from "./driver.socket.js";
 import { joinMerchantRoom, registerMerchantEvents } from "./merchant.socket.js";
 import { joinCustomerRoom } from "./customer.socket.js";
 import { joinAdminRoom } from "./admin.socket.js";
+import type { AuthenticatedSocket } from "../types/types.js";
 
-io.on("connection", async (socket: Socket) => {
-  if (socket.user.role.includes("Driver")) {
-    await joinDriverRoom(socket);
-    registerDriverEvents(socket);
-  }
+io.on("connection", async (socket: AuthenticatedSocket) => {
+  switch (socket.activeRole) {
+    case "Driver":
+      await joinDriverRoom(socket);
+      registerDriverEvents(socket);
+      break;
 
-  if (socket.user.role.includes("Merchant")) {
-    await joinMerchantRoom(socket);
-    registerMerchantEvents(socket);
-  }
+    case "Merchant":
+      await joinMerchantRoom(socket);
+      registerMerchantEvents(socket);
+      break;
 
-  if (socket.user.role.includes("Customer")) {
-    await joinCustomerRoom(socket);
-  }
+    case "Customer":
+      await joinCustomerRoom(socket);
+      break;
 
-  if (socket.user.role.includes("Admin")) {
-    await joinAdminRoom(socket);
+    case "Admin":
+      await joinAdminRoom(socket);
+      break;
   }
 });

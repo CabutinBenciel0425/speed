@@ -1,5 +1,4 @@
 import mongoose, { model, Schema, Document, Types } from "mongoose";
-import { number } from "zod";
 
 export interface IDriver extends Document {
   user: Types.ObjectId;
@@ -13,6 +12,8 @@ export interface IDriver extends Document {
     | "Available"
     | "Assigned"
     | "HeadingToMerchant"
+    | "ArrivedAtMerchant"
+    | "WaitingForPickup"
     | "Delivering";
   activeOrder: Types.ObjectId;
   currentLocation: {
@@ -69,6 +70,8 @@ const driverSchema = new Schema(
         "Available",
         "Assigned",
         "HeadingToMerchant",
+        "ArrivedAtMerchant",
+        "WaitingForPickup",
         "Delivering",
       ],
       default: "Offline",

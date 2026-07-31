@@ -76,7 +76,7 @@ export const toggleDriverAvailability = asyncHandler(
 export const updateCurrentLocation = asyncHandler(
   async (req: Request, res: Response) => {
     const user = req.user;
-    const { latitude, longitude } = req.body;
+    const { latitude, longitude, orderId } = req.body;
     if (!user) {
       throw new NotFoundError("User");
     }
@@ -85,6 +85,7 @@ export const updateCurrentLocation = asyncHandler(
     const updatedDriverProfile = await updateCurrentLocationService(
       user._id.toString(),
       driverCoords,
+      orderId,
     );
 
     res.status(200).json({

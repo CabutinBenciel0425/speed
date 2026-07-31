@@ -63,7 +63,14 @@ export const updateDriverProfile = async (
 export const updateCurrentLocationService = async (
   userId: string,
   driverCoords: [number, number],
+  orderId: string,
 ) => {
+  const order = await Order.findById(orderId);
+
+  if (!order) {
+    throw new NotFoundError("Order");
+  }
+
   const driverProfile = await getDriverProfile(userId);
 
   driverProfile.currentLocation = {
@@ -72,6 +79,10 @@ export const updateCurrentLocationService = async (
   };
 
   await driverProfile.save();
+
+  io.to(`customer:${order.customer.toString()}`).emit(
+    "driver:current-location",
+  );
 
   return driverProfile;
 };
@@ -145,6 +156,49 @@ export const headingToMerchantService = async (
   return order;
 };
 
+export const driverArrivedAtMerchant = async (
+  userId: string,
+  orderId: string,
+) => {
+  const driverProfile = await getDriverProfile(userId);
+
+  const order = await Order.findOne({
+    driver: driverProfile._id,
+    _id: orderId,
+  } as QueryFilter<IOrder>)
+    .populate<"user">("user")
+    .populate<"merchant">("merchant");
+
+  if (!order) {
+    throw new NotFoundError("Order");
+  }
+
+  const activeOrderId = driverProfile.activeOrder?.toString();
+  const isPaymentValid = isOrderPaymentValid(order);
+
+  if (
+    driverProfile.status === "Operational" &&
+    driverProfile.workingStatus === "HeadingToMerchant" &&
+    activeOrderId === order._id.toString() &&
+    order.driver?.toString() === driverProfile._id.toString() &&
+    (order.status === "Preparing" || order.status === "ReadyForPickup") &&
+    isPaymentValid
+  ) {
+    driverProfile.workingStatus = "WaitingForPickup";
+    order.driverArrivedAtMerchantAt = new Date();
+    await driverProfile.save();
+  }
+
+  io.to(`merchant:${order.merchant.toString()}`).emit(
+    "driver:arrived-at-merchant",
+  );
+  io.to(`customer:${order.customer.toString()}`).emit(
+    "driver:arrived-at-merchant",
+  );
+
+  return order;
+};
+
 export const pickUpOrderService = async (userId: string, orderId: string) => {
   const session = await mongoose.startSession();
   const driverProfile = await getDriverProfile(userId);
@@ -198,7 +252,6 @@ export const pickUpOrderService = async (userId: string, orderId: string) => {
       driverProfile.workingStatus = "Delivering";
       order.status = "PickedUp";
       order.pickedUpAt = new Date();
-      driverProfile.workingStatus = "Delivering";
       await driverProfile.save({ session });
       await order.save({ session });
     });
@@ -215,6 +268,7 @@ export const deliveredOrderService = async (
   userId: string,
   orderId: string,
 ) => {
+  const session = await mongoose.startSession();
   const driverProfile = await getDriverProfile(userId);
 
   const order = await Order.findOne({
@@ -232,24 +286,49 @@ export const deliveredOrderService = async (
   const deliveryFee = order.pricing?.deliveryFee || 0;
   const isPaymentValid = isOrderPaymentValid(order);
 
-  if (
-    driverProfile.status === "Operational" &&
-    driverProfile.workingStatus === "Delivering" &&
-    activeOrderId === order._id.toString() &&
-    order.driver?.toString() === driverProfile._id.toString() &&
-    order.status === "PickedUp" &&
-    isPaymentValid
-  ) {
-    driverProfile.workingStatus = "Available";
-    driverProfile.completedDeliveries += 1;
-    driverProfile.totalEarnings = driverProfile.totalEarnings + deliveryFee;
-    driverProfile.activeOrder = null;
-    driverProfile.isAvailable = false;
-    order.status = "Delivered";
-    order.deliveredAt = new Date();
-    await driverProfile.save();
-    await order.save();
+  if (driverProfile.status !== "Operational") {
+    throw new ConflictError("Driver's status is not operational yet");
   }
+
+  if (driverProfile.workingStatus !== "Delivering") {
+    throw new ConflictError("Driver's working status must be 'Delivering'");
+  }
+
+  if (activeOrderId !== order._id.toString()) {
+    throw new ConflictError("Driver's order id is not equal to the order's id");
+  }
+
+  if (order.driver?.toString() !== driverProfile._id.toString()) {
+    throw new ConflictError(
+      "Order's driver id is not equal to the provided driver's id",
+    );
+  }
+
+  if (order.status !== "PickedUp") {
+    throw new ConflictError("Order's status is not euqal to 'PickedUp' yet");
+  }
+
+  if (!isPaymentValid) {
+    throw new ConflictError("Payment method is not valid");
+  }
+
+  try {
+    await session.withTransaction(async () => {
+      driverProfile.workingStatus = "Available";
+      driverProfile.completedDeliveries += 1;
+      driverProfile.totalEarnings = driverProfile.totalEarnings + deliveryFee;
+      driverProfile.activeOrder = null;
+      driverProfile.isAvailable = false;
+      order.status = "Delivered";
+      order.deliveredAt = new Date();
+      await driverProfile.save({ session });
+      await order.save({ session });
+    });
+  } finally {
+    await session.endSession();
+  }
+
+  io.to(`customer:${order.customer.toString()}`).emit("order:delivered");
 
   return order;
 };

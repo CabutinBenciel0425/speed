@@ -50,6 +50,50 @@ export const merchantRejectOrder = async (orderId: string, userId: string) => {
   return order;
 };
 
+export const merchantAcceptOrder = async (orderId: string, userId: string) => {
+  const user = await User.findById(userId);
+  const order = await Order.findById(orderId);
+  if (!user) {
+    throw new NotFoundError("User");
+  }
+  if (!order) {
+    throw new NotFoundError("Order");
+  }
+
+  order.merchantReceivedAt = new Date();
+  order.preparingAt = new Date();
+  order.status = "Preparing";
+
+  await order.save();
+
+  io.to(`customer:${order.customer.toString()}`).emit("order:preparing");
+
+  return order;
+};
+
+export const merchantPreparingOrder = async (
+  orderId: string,
+  userId: string,
+) => {
+  const user = await User.findById(userId);
+  const order = await Order.findById(orderId);
+  if (!user) {
+    throw new NotFoundError("User");
+  }
+  if (!order) {
+    throw new NotFoundError("Order");
+  }
+
+  order.merchantReceivedAt = new Date();
+  order.status = "Preparing";
+
+  await order.save();
+
+  io.to(`customer:${order.customer.toString()}`).emit("order:preparing");
+
+  return order;
+};
+
 export const merchantReadyOrder = async (orderId: string, userId: string) => {
   const isOrderValid = await validateMerchantOrder(orderId, userId);
 
@@ -72,26 +116,6 @@ export const merchantReadyOrder = async (orderId: string, userId: string) => {
   await order.save();
 
   io.to(`driver:${driver._id}`).emit("order:ready");
-
-  return order;
-};
-
-export const merchantAcceptOrder = async (orderId: string, userId: string) => {
-  const user = await User.findById(userId);
-  const order = await Order.findById(orderId);
-  if (!user) {
-    throw new NotFoundError("User");
-  }
-  if (!order) {
-    throw new NotFoundError("Order");
-  }
-
-  order.merchantReceivedAt = new Date();
-  order.status = "Preparing";
-
-  await order.save();
-
-  io.to(`customer:${order.customer.toString()}`).emit("order:preparing");
 
   return order;
 };
