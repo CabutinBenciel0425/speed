@@ -7,7 +7,7 @@ import {
 
 export async function joinMerchantRoom(socket: Socket) {
   const merchant = await Merchant.findOne({
-    user: socket.user._id,
+    owner: socket.user._id,
   });
 
   if (!merchant) return;

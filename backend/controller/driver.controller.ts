@@ -3,7 +3,6 @@ import type { Request, Response } from "express";
 import { NotFoundError } from "../utils/errors.js";
 import type { DriverUpdateInput } from "../schemas/driver.schema.js";
 import {
-  acceptOrderService,
   deliveredOrderService,
   getDriverProfile,
   headingToMerchantService,
@@ -161,22 +160,22 @@ export const getOrderHistory = asyncHandler(
   },
 );
 
-// PATCH  /driver/orders/:orderId/accept
-export const acceptOrder = asyncHandler(async (req: Request, res: Response) => {
-  const user = req.user;
-  const orderId = req.params.orderId as string;
+// // PATCH  /driver/orders/:orderId/accept
+// export const acceptOrder = asyncHandler(async (req: Request, res: Response) => {
+//   const user = req.user;
+//   const orderId = req.params.orderId as string;
 
-  if (!user) {
-    throw new NotFoundError("User");
-  }
+//   if (!user) {
+//     throw new NotFoundError("User");
+//   }
 
-  const order = await acceptOrderService(user._id.toString(), orderId);
+//   const order = await acceptOrderService(user._id.toString(), orderId);
 
-  res.status(200).json({
-    success: true,
-    data: order,
-  });
-});
+//   res.status(200).json({
+//     success: true,
+//     data: order,
+//   });
+// });
 
 // PATCH /driver/order/:orderId/heading-to-merchant
 export const headingToMerchant = asyncHandler(

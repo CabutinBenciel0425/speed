@@ -1,7 +1,11 @@
 import type { createOrderInput } from "../schemas/order.schema.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import type { Request, Response } from "express";
-import { ConflictError, NotFoundError } from "../utils/errors.js";
+import {
+  ConflictError,
+  NotFoundError,
+  UnauthorizedError,
+} from "../utils/errors.js";
 import {
   cancelOrderService,
   createNewOrder,
@@ -50,6 +54,10 @@ export const getOrder = asyncHandler(async (req: Request, res: Response) => {
     throw new NotFoundError("Order");
   }
 
+  if (order.customer.toString() === user._id.toString()) {
+    throw new UnauthorizedError("This order does not belong to this user");
+  }
+
   res.status(200).json({
     success: true,
     data: order,
@@ -64,11 +72,7 @@ export const cancelOrder = asyncHandler(async (req: Request, res: Response) => {
   if (!user) {
     throw new NotFoundError("User");
   }
-  const cancelledOrder = await cancelOrderService(
-    user._id.toString(),
-    orderId,
-    cancellationReason,
-  );
+  const cancelledOrder = await cancelOrderService(user._id.toString(), orderId);
 
   res.status(200).json({
     success: true,

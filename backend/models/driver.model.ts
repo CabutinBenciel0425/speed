@@ -51,6 +51,7 @@ const driverSchema = new Schema(
       trim: true,
       uppercase: true,
       unique: true,
+      sparse: true,
     },
     status: {
       type: String,
@@ -129,11 +130,11 @@ const driverSchema = new Schema(
       default: 0,
     },
     ratingCount: {
-      type: number,
+      type: Number,
       default: 0,
     },
     ratingAverage: {
-      type: number,
+      type: Number,
       default: 0,
     },
   },

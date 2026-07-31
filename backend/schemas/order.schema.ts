@@ -39,6 +39,7 @@ export const orderSchema = z.object({
       "Delivered",
       "Cancelled",
       "Rejected",
+      "NoDriverFound",
     ])
     .default("Pending"),
   customerNote: z.string().optional(),

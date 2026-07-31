@@ -16,6 +16,7 @@ import orderRouter from "./routes/order.route.js";
 import cartRouter from "./routes/cart.route.js";
 import driverRouter from "./routes/driver.route.js";
 import http from "http";
+import { socketAuth } from "./middlewares/socketAuth.middleware.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -26,7 +27,7 @@ export const io = new Server(server, {
     credentials: true,
   },
 });
-
+io.use(socketAuth);
 app.use(morgan("dev"));
 app.use(express.json({ limit: "5mb" }));
 app.use(cookieParser());

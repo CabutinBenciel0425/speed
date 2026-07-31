@@ -17,7 +17,7 @@ export const socketAuth = async (
       ACCESS_TOKEN_SECRET_KEY as string,
     ) as JwtPayload;
 
-    const user = await User.findById(payload.id);
+    const user = await User.findById(payload.userId);
 
     if (!user) return next(new Error("Unauthorized"));
 

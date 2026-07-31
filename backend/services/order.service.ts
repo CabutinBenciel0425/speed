@@ -1,6 +1,5 @@
-import mongoose, { Types, type HydratedDocument } from "mongoose";
-import Order, { type IOrder } from "../models/order.model.js";
-import type { createOrderInput } from "../schemas/order.schema.js";
+import mongoose from "mongoose";
+import Order from "../models/order.model.js";
 import Address from "../models/address.model.js";
 import { ConflictError, NotFoundError } from "../utils/errors.js";
 import Merchant from "../models/merchant.model.js";
@@ -8,6 +7,7 @@ import { recalculateCart } from "./cart.service.js";
 import Cart from "../models/cart.model.js";
 import { generateOrderNumber } from "../utils/generateOrderNumber.js";
 import Driver from "../models/driver.model.js";
+import { io } from "../server.js";
 
 export const createNewOrder = async (userId: string) => {
   await recalculateCart(userId);
@@ -54,17 +54,10 @@ export const createNewOrder = async (userId: string) => {
 
   await Cart.findByIdAndDelete(cart._id);
 
-  //TODO:
-  //Find nearest drivers
-  findNearestDriverService(newOrder);
   return newOrder;
 };
 
-export const cancelOrderService = async (
-  userId: string,
-  orderId: string,
-  cancellationReason: string,
-) => {
+export const cancelOrderService = async (orderId: string, userId: string) => {
   const session = await mongoose.startSession();
   const order = await Order.findOne({ user: userId, _id: orderId }).session(
     session,
@@ -72,6 +65,12 @@ export const cancelOrderService = async (
 
   if (!order) {
     throw new NotFoundError("Order");
+  }
+
+  const merchant = await Merchant.findById(order.merchant);
+
+  if (!merchant) {
+    throw new NotFoundError("Merchant");
   }
 
   const driver = order.driver
@@ -94,15 +93,11 @@ export const cancelOrderService = async (
     throw new NotFoundError("Payment information not found");
   }
 
-  if (!cancellationReason) {
-    throw new NotFoundError("Cancellation reason must be provided");
-  }
   try {
     await session.withTransaction(async () => {
       order.payment.status = "Cancelled";
       order.status = "Cancelled";
       order.cancelledAt = new Date();
-      order.cancellationReason = cancellationReason;
       order.cancelledBy = "Customer";
       await order.save({ session });
       if (driver) {
@@ -117,32 +112,13 @@ export const cancelOrderService = async (
   } finally {
     await session.endSession();
   }
-};
 
-export const findNearestDriverService = async (
-  order: HydratedDocument<IOrder>,
-) => {
-  const merchant = await Merchant.findById(order.merchant);
-  if (!merchant) {
-    throw new NotFoundError("Merchant");
+  if (driver) {
+    io.to(`driver:${driver._id}`).emit("order:cancel");
   }
-  const merchantCoords = merchant.address.location.coordinates;
-  const drivers = await Driver.find({
-    status: "Operational",
-    isAvailable: true,
-    workingStatus: "Available",
-    currentLocation: {
-      $near: {
-        $geometry: {
-          type: "Point",
-          coordinates: merchantCoords,
-        },
-        $maxDistance: 5000,
-      },
-    },
-  });
 
-  if (drivers) {
-    drivers;
-  }
+  io.to(`merchant:${merchant._id}`).emit("order:cancel");
+  io.to(`customer:${order.customer}`).emit("order:cancel");
+
+  return order;
 };

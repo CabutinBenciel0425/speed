@@ -76,39 +76,39 @@ export const updateCurrentLocationService = async (
   return driverProfile;
 };
 
-export const acceptOrderService = async (userId: string, orderId: string) => {
-  const session = await mongoose.startSession();
-  const driver = await Driver.findOne({
-    user: userId,
-  }).session(session);
+// export const acceptOrderService = async (userId: string, orderId: string) => {
+//   const session = await mongoose.startSession();
+//   const driver = await Driver.findOne({
+//     user: userId,
+//   }).session(session);
 
-  const order = await Order.findById(orderId).session(session);
+//   const order = await Order.findById(orderId).session(session);
 
-  if (!driver) {
-    throw new NotFoundError("Driver");
-  }
+//   if (!driver) {
+//     throw new NotFoundError("Driver");
+//   }
 
-  if (!order) {
-    throw new NotFoundError("Order");
-  }
+//   if (!order) {
+//     throw new NotFoundError("Order");
+//   }
 
-  try {
-    await session.withTransaction(async () => {
-      order.driver = driver._id;
-      order.driverAssignedAt = new Date();
-      order.merchantReceivedAt = new Date();
-      order.acceptedAt = new Date();
-      driver.activeOrder = order._id;
-      driver.workingStatus = "Assigned";
-      driver.isAvailable = false;
+//   try {
+//     await session.withTransaction(async () => {
+//       order.driver = driver._id;
+//       order.driverAssignedAt = new Date();
+//       order.merchantReceivedAt = new Date();
+//       order.acceptedAt = new Date();
+//       driver.activeOrder = order._id;
+//       driver.workingStatus = "Assigned";
+//       driver.isAvailable = false;
 
-      await driver.save({ session });
-      await order.save({ session });
-    });
-  } finally {
-    await session.endSession();
-  }
-};
+//       await driver.save({ session });
+//       await order.save({ session });
+//     });
+//   } finally {
+//     await session.endSession();
+//   }
+// };
 
 export const headingToMerchantService = async (
   userId: string,
@@ -146,6 +146,7 @@ export const headingToMerchantService = async (
 };
 
 export const pickUpOrderService = async (userId: string, orderId: string) => {
+  const session = await mongoose.startSession();
   const driverProfile = await getDriverProfile(userId);
 
   const order = await Order.findOne({
@@ -162,21 +163,50 @@ export const pickUpOrderService = async (userId: string, orderId: string) => {
   const activeOrderId = driverProfile.activeOrder?.toString();
   const isPaymentValid = isOrderPaymentValid(order);
 
-  if (
-    driverProfile.status === "Operational" &&
-    driverProfile.workingStatus === "HeadingToMerchant" &&
-    activeOrderId === order._id.toString() &&
-    order.driver?.toString() === driverProfile._id.toString() &&
-    order.status === "ReadyForPickup" &&
-    isPaymentValid
-  ) {
-    driverProfile.workingStatus = "Delivering";
-    order.status = "PickedUp";
-    order.pickedUpAt = new Date();
-    driverProfile.workingStatus = "Delivering";
-    await driverProfile.save();
-    await order.save();
+  if (driverProfile.status !== "Operational") {
+    throw new ConflictError("Driver is not in operational status yet");
   }
+
+  if (driverProfile.workingStatus !== "HeadingToMerchant") {
+    throw new ConflictError(
+      "Driver cannot pick up the order unless driver status is heading to merchant or arrived at the merchant",
+    );
+  }
+
+  if (activeOrderId !== order._id.toString()) {
+    throw new ConflictError(
+      "Drivers active order id is not equal to the order id",
+    );
+  }
+
+  if (order.driver?.toString() !== driverProfile._id.toString()) {
+    throw new ConflictError(
+      "Order's driver id is not equal to the provided driver's id",
+    );
+  }
+
+  if (order.status !== "ReadyForPickup") {
+    throw new ConflictError("Order status must be ready to pick up");
+  }
+
+  if (!isPaymentValid) {
+    throw new ConflictError("Payment is not valid");
+  }
+
+  try {
+    await session.withTransaction(async () => {
+      driverProfile.workingStatus = "Delivering";
+      order.status = "PickedUp";
+      order.pickedUpAt = new Date();
+      driverProfile.workingStatus = "Delivering";
+      await driverProfile.save({ session });
+      await order.save({ session });
+    });
+  } finally {
+    await session.endSession();
+  }
+
+  io.to(`customer:${order.customer.toString()}`).emit("order:pickedUp");
 
   return order;
 };
@@ -269,10 +299,28 @@ export const driverMatching = async (orderId: string) => {
   for (const driver of drivers) {
     const offer = await sendOffer(order._id.toString(), driver._id.toString());
 
+    if (!offer) {
+      throw new NotFoundError("Offer not found");
+    }
+
     const result = await waitForOfferResult(offer._id.toString());
 
     if (result === "Accepted") {
       break;
+    }
+
+    if (result === "Expired") {
+      offer.status = "Expired";
+
+      await offer.save();
+    }
+
+    if (!result) {
+      order.status = "NoDriverFound";
+
+      io.to(`customer:${order.customer.toString()}`).emit(
+        "order:noDriverFound",
+      );
     }
   }
 };
@@ -342,17 +390,23 @@ export const sendOffer = async (orderId: string, driverId: string) => {
 
   await offer.save();
 
-  io.to(`driver:${driverId}`).emit("delivery:offer", {
-    offerId: offer._id,
-    merchant: order.merchant,
-    merchantName: merchant.merchantName,
-    merchantAddress: merchant.address,
-    customer: order.customer,
-    customerAddress: customerAddress,
-    deliveryFee: order.pricing.deliveryFee,
-    estimatedDistance: distance.distanceKm,
-    estimatedDuration: order?.estimatedDeliveryTime,
-  });
+  const driverSockets = await io.to(`driver:${driverId}`).fetchSockets();
+  if (driverSockets.length === 0) {
+    return null;
+  }
+  driverSockets.forEach((s) =>
+    s.emit("delivery:offer", {
+      offerId: offer._id,
+      merchant: order.merchant,
+      merchantName: merchant.merchantName,
+      merchantAddress: merchant.address,
+      customer: order.customer,
+      customerAddress: customerAddress,
+      deliveryFee: order.pricing.deliveryFee,
+      estimatedDistance: distance.distanceKm,
+      estimatedDuration: order?.estimatedDeliveryTime,
+    }),
+  );
   return offer;
 };
 
@@ -421,12 +475,11 @@ export const driverAcceptOffer = async (offerId: string, driverId: string) => {
     await session.withTransaction(async () => {
       driver.workingStatus = "Assigned";
       driver.activeOrder = order._id;
+      driver.isAvailable = false;
       order.driver = driver._id;
       order.driverAssignedAt = new Date();
       order.acceptedAt = new Date();
       offer.status = "Accepted";
-      order.status = "Preparing";
-      order.merchantReceivedAt = new Date();
 
       await driver.save({ session });
       await order.save({ session });
@@ -442,6 +495,29 @@ export const driverAcceptOffer = async (offerId: string, driverId: string) => {
     pendingOffers.delete(offerId);
 
     resolve("Accepted");
+  }
+
+  const expiredOffers = await DeliveryOffer.find({
+    order: order._id,
+    _id: { $ne: offer._id },
+    status: "Pending",
+  });
+
+  await DeliveryOffer.updateMany(
+    {
+      order: order._id,
+      _id: { $ne: offer._id },
+      status: "Pending",
+    },
+    {
+      status: "Expired",
+    },
+  );
+
+  for (const expiredOffer of expiredOffers) {
+    io.to(`driver:${expiredOffer.driver}`).emit("delivery:expired", {
+      offerId: expiredOffer._id,
+    });
   }
 
   io.to(`merchant:${order.merchant.toString()}`).emit("order:assigned");

@@ -1,7 +1,8 @@
 import type { Socket } from "socket.io";
 import User from "../models/user.model.js";
+import { cancelOrderService } from "../services/order.service.js";
 
-export async function joinACustomerRoom(socket: Socket) {
+export async function joinCustomerRoom(socket: Socket) {
   const customer = await User.findOne({
     _id: socket.user._id,
   });

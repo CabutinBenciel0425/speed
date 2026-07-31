@@ -2,24 +2,50 @@ import mongoose from "mongoose";
 import Order from "../models/order.model.js";
 import { ConflictError, NotFoundError } from "../utils/errors.js";
 import Merchant from "../models/merchant.model.js";
+import Driver from "../models/driver.model.js";
+import { io } from "../server.js";
+import User from "../models/user.model.js";
 
 export const merchantRejectOrder = async (orderId: string, userId: string) => {
+  const session = await mongoose.startSession();
   const isOrderValid = await validateMerchantOrder(orderId, userId);
 
   if (!isOrderValid) {
     throw new ConflictError("There is some error. Check the console");
   }
 
-  const order = await Order.findById(orderId);
+  const order = await Order.findById(orderId).session(session);
   if (!order) {
     throw new NotFoundError("Order");
   }
 
-  order.status = "Rejected";
-  order.rejectedAt = new Date();
-  order.cancelledBy = "Merchant";
-  order.cancelledAt = new Date();
-  await order.save();
+  const driver = await Driver.findById(order.driver).session(session);
+  if (!driver) {
+    throw new NotFoundError("Driver");
+  }
+
+  try {
+    await session.withTransaction(async () => {
+      order.status = "Rejected";
+      order.rejectedAt = new Date();
+      order.cancelledBy = "Merchant";
+      order.cancelledAt = new Date();
+      driver.activeOrder = null;
+      driver.isAvailable = true;
+      driver.workingStatus = "Available";
+
+      await order.save({ session });
+      await driver.save({ session });
+    });
+  } finally {
+    await session.endSession();
+  }
+
+  const driverId = order.driver ? order.driver.toString() : null;
+  const customerId = order.customer ? order.customer.toString() : null;
+
+  if (driverId) io.to(`driver:${driverId}`).emit("order:rejected");
+  if (customerId) io.to(`customer:${customerId}`).emit("order:rejected");
 
   return order;
 };
@@ -36,9 +62,36 @@ export const merchantReadyOrder = async (orderId: string, userId: string) => {
     throw new NotFoundError("Order");
   }
 
+  const driver = await Driver.findById(order.driver);
+  if (!driver) {
+    throw new NotFoundError("Driver");
+  }
+
   order.status = "ReadyForPickup";
   order.readyForPickupAt = new Date();
   await order.save();
+
+  io.to(`driver:${driver._id}`).emit("order:ready");
+
+  return order;
+};
+
+export const merchantAcceptOrder = async (orderId: string, userId: string) => {
+  const user = await User.findById(userId);
+  const order = await Order.findById(orderId);
+  if (!user) {
+    throw new NotFoundError("User");
+  }
+  if (!order) {
+    throw new NotFoundError("Order");
+  }
+
+  order.merchantReceivedAt = new Date();
+  order.status = "Preparing";
+
+  await order.save();
+
+  io.to(`customer:${order.customer.toString()}`).emit("order:preparing");
 
   return order;
 };
@@ -49,7 +102,7 @@ const validateMerchantOrder = async (orderId: string, userId: string) => {
     throw new NotFoundError("Order");
   }
 
-  const merchant = await Merchant.findOne({ user: userId });
+  const merchant = await Merchant.findOne({ owner: userId });
   if (!merchant) {
     throw new NotFoundError("Merchant");
   }

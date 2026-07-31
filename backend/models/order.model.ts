@@ -44,7 +44,8 @@ export interface IOrder extends Document {
     | "PickedUp"
     | "Delivered"
     | "Cancelled"
-    | "Rejected";
+    | "Rejected"
+    | "NoDriverFound";
   customerNote: string;
   estimatedPreparationTime: number;
   estimatedDeliveryTime: number;
@@ -263,6 +264,22 @@ const orderSchema = new Schema<IOrder>({
   cancellationReason: {
     type: String,
   },
+});
+
+orderSchema.index({
+  status: 1,
+});
+
+orderSchema.index({
+  customer: 1,
+});
+
+orderSchema.index({
+  merchant: 1,
+});
+
+orderSchema.index({
+  driver: 1,
 });
 
 const Order = model<IOrder>("Order", orderSchema);

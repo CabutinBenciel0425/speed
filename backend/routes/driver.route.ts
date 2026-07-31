@@ -2,7 +2,6 @@ import { validate } from "../middlewares/validate.middleware.js";
 import { Router } from "express";
 import { driverOnly, protectRoute } from "../middlewares/auth.middleware.js";
 import {
-  acceptOrder,
   deliveredOrder,
   getCurrentOrder,
   getOrderHistory,
@@ -40,12 +39,12 @@ driverRouter.patch(
 
 driverRouter.get("/orders/current", protectRoute, driverOnly, getCurrentOrder);
 driverRouter.get("/orders/history", protectRoute, driverOnly, getOrderHistory);
-driverRouter.patch(
-  "/orders/:orderId/accept",
-  protectRoute,
-  driverOnly,
-  acceptOrder,
-);
+// driverRouter.patch(
+//   "/orders/:orderId/accept",
+//   protectRoute,
+//   driverOnly,
+//   acceptOrder,
+// );
 driverRouter.patch(
   "/order/:orderId/heading-to-merchant",
   protectRoute,

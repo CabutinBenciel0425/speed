@@ -1,5 +1,4 @@
 import {
-  changeUserPassword,
   createCustomerUser,
   loginUser,
   logoutUser,
@@ -9,6 +8,7 @@ import {
   createMerchant,
   createDriver,
   resetUserPassword,
+  requestPasswordReset,
 } from "../services/auth.service.js";
 import { setAccessToken, setRefreshToken } from "../utils/setCookie.js";
 import type {
@@ -31,6 +31,7 @@ import type { merchantInput } from "../schemas/merchant.schema.js";
 import type { DriverInput } from "../schemas/driver.schema.js";
 import cloudinary from "../config/cloudinary.js";
 import { DEFAULT_DRIVER_AVATAR } from "../config/constants.js";
+import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";
 
 export const customerSignup = asyncHandler(
   async (req: Request, res: Response) => {
@@ -209,14 +210,9 @@ export const recreateAccessToken = asyncHandler(
 
 export const forgotPassword = asyncHandler(
   async (req: Request, res: Response) => {
-    const { email, password }: ForgotPasswordInput = req.body;
-
-    if (!email || !password) {
-      throw new NotFoundError("Required credentials");
-    }
-
-    await changeUserPassword(email, password);
-
+    const { email } = req.body;
+    if (!email) throw new NotFoundError("Required credentials");
+    await requestPasswordReset(email);
     res.status(200).json({
       success: true,
       message:
@@ -288,14 +284,14 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
   }
 
   if (user.avatar && user.avatar !== DEFAULT_DRIVER_AVATAR) {
-    const publicId = user.avatar.split("/").pop()?.split(".")[0];
-    if (publicId) {
-      const deletedPublicId = await cloudinary.uploader.destroy(
-        `driver/${publicId}`,
-      );
+    const publicId = extractPublicIdFromUrl(user.avatar);
 
-      if (!deletedPublicId) {
-        throw new NotFoundError("Error in deleting image in cloudinary, image");
+    if (publicId) {
+      const result = await cloudinary.uploader.destroy(publicId);
+      if (result.result !== "ok") {
+        console.warn(
+          `Cloudinary cleanup failed for ${publicId}: ${result.result}`,
+        );
       }
     }
   }

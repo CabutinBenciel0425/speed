@@ -2,7 +2,7 @@ import type { Socket } from "socket.io";
 import { io } from "../server.js";
 import { joinDriverRoom, registerDriverEvents } from "./driver.socket.js";
 import { joinMerchantRoom, registerMerchantEvents } from "./merchant.socket.js";
-import { joinACustomerRoom } from "./customer.socket.js";
+import { joinCustomerRoom } from "./customer.socket.js";
 import { joinAdminRoom } from "./admin.socket.js";
 
 io.on("connection", async (socket: Socket) => {
@@ -17,7 +17,7 @@ io.on("connection", async (socket: Socket) => {
   }
 
   if (socket.user.role.includes("Customer")) {
-    await joinACustomerRoom(socket);
+    await joinCustomerRoom(socket);
   }
 
   if (socket.user.role.includes("Admin")) {

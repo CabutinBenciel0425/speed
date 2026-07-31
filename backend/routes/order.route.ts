@@ -4,7 +4,6 @@ import {
   createOrder,
   getOrders,
   getOrder,
-  cancelOrder,
 } from "../controller/order.controller.js";
 
 const orderRouter = Router();
@@ -12,6 +11,6 @@ const orderRouter = Router();
 orderRouter.post("/", protectRoute, createOrder);
 orderRouter.get("/", protectRoute, getOrders);
 orderRouter.post("/:orderId", protectRoute, getOrder);
-orderRouter.patch("/:orderId/cancel", protectRoute, cancelOrder);
+// orderRouter.patch("/:orderId/cancel", protectRoute, cancelOrder);
 
 export default orderRouter;

@@ -34,6 +34,7 @@ import { addUserRole } from "../utils/addRole.js";
 import cloudinary from "../config/cloudinary.js";
 import { storePasswordResetToken } from "../utils/storePasswordRefreshToken.js";
 import type { HydratedDocument } from "mongoose";
+import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";
 
 export const createCustomerUser = async ({
   firstName,
@@ -249,18 +250,18 @@ export const resetUserPassword = async (
   };
 };
 
-export const changeUserPassword = async (email: string, password: string) => {
-  const user = await User.findOne({ email });
+// export const changeUserPassword = async (email: string, password: string) => {
+//   const user = await User.findOne({ email });
 
-  if (!user) {
-    throw new NotFoundError("User");
-  }
+//   if (!user) {
+//     throw new NotFoundError("User");
+//   }
 
-  user.password = password;
-  await user.save();
+//   user.password = password;
+//   await user.save();
 
-  return true;
-};
+//   return true;
+// };
 
 export const sendCodeFn = async (email: string) => {
   const token = generateVerificationToken(VERIFICATION_TOKEN_LENGTH);
@@ -344,15 +345,13 @@ export const updateCustomerUser = async (
 
   if (avatar) {
     if (user.avatar && user.avatar !== DEFAULT_DRIVER_AVATAR) {
-      const publicId = user.avatar.split("/").pop()?.split(".")[0];
-      if (publicId) {
-        const deletedPublicId = await cloudinary.uploader.destroy(
-          `productImages/${publicId}`,
-        );
+      const publicId = extractPublicIdFromUrl(user.avatar);
 
-        if (!deletedPublicId) {
-          throw new NotFoundError(
-            "Error in deleting image in cloudinary, image",
+      if (publicId) {
+        const result = await cloudinary.uploader.destroy(publicId);
+        if (result.result !== "ok") {
+          console.warn(
+            `Cloudinary cleanup failed for ${publicId}: ${result.result}`,
           );
         }
       }
