@@ -599,7 +599,7 @@ export const driverAcceptOffer = async (offerId: string, driverId: string) => {
     });
   }
 
-  io.to(`merchant:${order.merchant.toString()}`).emit("order:assigned");
+  io.to(`merchant:${order.merchant.toString()}`).emit("order:new");
   io.to(`customer:${order.customer.toString()}`).emit("order:assigned");
 };
 

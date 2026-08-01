@@ -20,12 +20,11 @@ export interface IDriver extends Document {
     types: string;
     coordinates: number[];
   };
-  rating: number;
   completedDeliveries: number;
   cancelledDeliveries: number;
   totalEarnings: number;
   ratingCount: number;
-  ratingAverage: number;
+  averageRating: number;
 }
 
 const driverSchema = new Schema(
@@ -111,12 +110,6 @@ const driverSchema = new Schema(
         },
       },
     },
-    rating: {
-      type: Number,
-      min: [0, "Rating cannot be below 0"],
-      max: [5, "Rating cannot exceed 5"],
-      default: 0,
-    },
     completedDeliveries: {
       type: Number,
       min: [0, "Completed deliveries cannot be a negative number"],
@@ -136,7 +129,7 @@ const driverSchema = new Schema(
       type: Number,
       default: 0,
     },
-    ratingAverage: {
+    averageRating: {
       type: Number,
       default: 0,
     },
