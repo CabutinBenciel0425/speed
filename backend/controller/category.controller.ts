@@ -7,6 +7,7 @@ import {
 import { asyncHandler } from "../utils/asyncHandler.js";
 import type { Request, Response } from "express";
 import { NotFoundError } from "../utils/errors.js";
+import { buildQuery } from "../utils/buildQuery.js";
 
 export const createCategory = asyncHandler(
   async (req: Request, res: Response) => {
@@ -27,11 +28,35 @@ export const createCategory = asyncHandler(
 );
 
 export const allCategory = asyncHandler(async (req: Request, res: Response) => {
-  const allCategory = await Category.find({});
+  const queryData = buildQuery(req.query);
+  const allowedSorts = ["name", "-name"];
 
-  res.status(200).json({
+  const sort = allowedSorts.includes(queryData.sort) ? queryData.sort : "-name";
+
+  if (queryData.search) {
+    queryData.filter.name = {
+      $regex: queryData.search,
+      $options: "i",
+    };
+  }
+
+  const docs = await Category.find(queryData.filter)
+    .sort(sort)
+    .select(queryData.select)
+    .skip(queryData.skip)
+    .limit(queryData.limit);
+
+  const total = await Category.countDocuments(queryData.filter);
+
+  res.json({
     success: true,
-    data: allCategory,
+    data: docs,
+    pagination: {
+      total,
+      page: queryData.page,
+      limit: queryData.limit,
+      pages: Math.ceil(total / queryData.limit),
+    },
   });
 });
 

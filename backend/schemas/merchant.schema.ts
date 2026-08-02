@@ -93,4 +93,16 @@ const merchantSignUpInput = merchantSchema.pick({
   minimumOrder: true,
 });
 
+export const merchantUpdateInput = merchantSchema
+  .pick({
+    merchantName: true,
+    description: true,
+    phoneNumber: true,
+    address: true,
+    operatingHours: true,
+    minimumOrder: true,
+  })
+  .partial();
+
 export type merchantInput = z.infer<typeof merchantSignUpInput>;
+export type merchantUpdateInput = z.infer<typeof merchantUpdateInput>;

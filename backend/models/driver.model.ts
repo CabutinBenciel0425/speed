@@ -13,7 +13,6 @@ export interface IDriver extends Document {
     | "Assigned"
     | "HeadingToMerchant"
     | "ArrivedAtMerchant"
-    | "WaitingForPickup"
     | "Delivering";
   activeOrder: Types.ObjectId;
   currentLocation: {
@@ -70,7 +69,6 @@ const driverSchema = new Schema(
         "Assigned",
         "HeadingToMerchant",
         "ArrivedAtMerchant",
-        "WaitingForPickup",
         "Delivering",
       ],
       default: "Offline",

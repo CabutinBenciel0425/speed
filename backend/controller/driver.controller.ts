@@ -11,6 +11,7 @@ import {
   updateDriverProfile,
 } from "../services/driver.service.js";
 import Order from "../models/order.model.js";
+import Driver from "../models/driver.model.js";
 
 export const getProfile = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
@@ -95,7 +96,6 @@ export const updateCurrentLocation = asyncHandler(
   },
 );
 
-// GET    /driver/orders/current
 export const getCurrentOrder = asyncHandler(
   async (req: Request, res: Response) => {
     const user = req.user;
@@ -127,7 +127,6 @@ export const getCurrentOrder = asyncHandler(
   },
 );
 
-// GET    /driver/orders/history
 export const getOrderHistory = asyncHandler(
   async (req: Request, res: Response) => {
     const user = req.user;
@@ -161,24 +160,6 @@ export const getOrderHistory = asyncHandler(
   },
 );
 
-// // PATCH  /driver/orders/:orderId/accept
-// export const acceptOrder = asyncHandler(async (req: Request, res: Response) => {
-//   const user = req.user;
-//   const orderId = req.params.orderId as string;
-
-//   if (!user) {
-//     throw new NotFoundError("User");
-//   }
-
-//   const order = await acceptOrderService(user._id.toString(), orderId);
-
-//   res.status(200).json({
-//     success: true,
-//     data: order,
-//   });
-// });
-
-// PATCH /driver/order/:orderId/heading-to-merchant
 export const headingToMerchant = asyncHandler(
   async (req: Request, res: Response) => {
     const user = req.user;
@@ -200,7 +181,6 @@ export const headingToMerchant = asyncHandler(
   },
 );
 
-// PATCH  /driver/orders/:orderId/picked-up
 export const pickUpOrder = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
   const orderId = req.params.orderId as string;
@@ -217,7 +197,6 @@ export const pickUpOrder = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-// PATCH  /driver/orders/:orderId/delivered
 export const deliveredOrder = asyncHandler(
   async (req: Request, res: Response) => {
     const user = req.user;

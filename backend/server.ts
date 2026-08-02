@@ -17,6 +17,7 @@ import cartRouter from "./routes/cart.route.js";
 import driverRouter from "./routes/driver.route.js";
 import http from "http";
 import { socketAuth } from "./middlewares/socketAuth.middleware.js";
+import merchantRouter from "./routes/merchant.route.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -39,6 +40,7 @@ app.use("/api/v1/product", productRouter);
 app.use("/api/v1/orders", orderRouter);
 app.use("/api/v1/cart", cartRouter);
 app.use("/api/v1/driver", driverRouter);
+app.use("/api/v1/merchant", merchantRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

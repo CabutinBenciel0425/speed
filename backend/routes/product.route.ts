@@ -6,6 +6,7 @@ import {
   toggleAvailability,
   toggleFeatured,
   deleteProduct,
+  getProducts,
 } from "../controller/product.controller.js";
 import {
   productSchema,
@@ -54,5 +55,7 @@ productRouter.delete(
   merchantOnly,
   deleteProduct,
 );
+
+productRouter.get("/products", protectRoute, merchantOnly, getProducts);
 
 export default productRouter;

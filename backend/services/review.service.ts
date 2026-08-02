@@ -50,8 +50,6 @@ export const reviewCustomerToDriverService = async (
 
   await updateAverageRating(review.reviewee.toString(), "Driver");
 
-  await review.save();
-
   return review;
 };
 
@@ -95,8 +93,6 @@ export const reviewCustomerToMerchantService = async (
   });
 
   await updateAverageRating(review.reviewee.toString(), "Merchant");
-
-  await review.save();
 
   return review;
 };

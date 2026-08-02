@@ -15,7 +15,7 @@ import {
 
 const categoryRouter = Router();
 
-categoryRouter.get("/", protectRoute, adminOnly, allCategory);
+categoryRouter.get("/", protectRoute, allCategory);
 
 categoryRouter.post(
   "/create",

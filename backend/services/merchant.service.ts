@@ -1,10 +1,15 @@
-import mongoose from "mongoose";
+import mongoose, { type QueryFilter } from "mongoose";
 import Order from "../models/order.model.js";
 import { ConflictError, NotFoundError } from "../utils/errors.js";
-import Merchant from "../models/merchant.model.js";
+import Merchant, { type IMerchant } from "../models/merchant.model.js";
 import Driver from "../models/driver.model.js";
 import { io } from "../server.js";
-import User from "../models/user.model.js";
+import User, { type IUser } from "../models/user.model.js";
+import { buildQuery } from "../utils/buildQuery.js";
+import type { merchantUpdateInput } from "../schemas/merchant.schema.js";
+import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";
+import cloudinary from "../config/cloudinary.js";
+import { imageUpload } from "../utils/imageUpload.js";
 
 export const merchantRejectOrder = async (orderId: string, userId: string) => {
   const session = await mongoose.startSession();
@@ -115,7 +120,7 @@ export const merchantReadyOrder = async (orderId: string, userId: string) => {
   order.readyForPickupAt = new Date();
   await order.save();
 
-  io.to(`driver:${driver._id}`).emit("order:ready");
+  io.to(`driver:${driver._id.toString()}`).emit("order:ready");
 
   return order;
 };
@@ -182,4 +187,186 @@ const validateMerchantOrder = async (orderId: string, userId: string) => {
   }
 
   return true;
+};
+
+export const getMerchantsService = async (payload: any) => {
+  const queryData = buildQuery(payload);
+  const allowedSorts = ["ratingAverage", "-ratingAverage", "name", "-name"];
+
+  const sort = allowedSorts.includes(queryData.sort)
+    ? queryData.sort
+    : "-ratingAverage";
+
+  if (queryData.search) {
+    queryData.filter.name = {
+      $regex: queryData.search,
+      $options: "i",
+    };
+  }
+
+  const docs = await Merchant.find(queryData.filter)
+    .sort(sort)
+    .select(queryData.select)
+    .skip(queryData.skip)
+    .limit(queryData.limit);
+
+  const limitedDocs = docs.map((doc) => ({
+    name: doc.merchantName,
+    description: doc.description,
+    phoneNumber: doc.phoneNumber,
+    logo: doc.logo,
+    banner: doc.banner,
+    address: doc.address,
+    operatingHours: doc.operatingHours,
+    ratingCount: doc.ratingCount,
+    averageRating: doc.averageRating,
+  }));
+
+  const total = await Merchant.countDocuments(queryData.filter);
+
+  return { limitedDocs, total, queryData };
+};
+
+export const getMerchantProductsService = async (
+  payload: any,
+  merchantId: string,
+) => {
+  const queryData = buildQuery(payload);
+  const allowedSorts = [
+    "ratingAverage",
+    "-ratingAverage",
+    "price",
+    "-price",
+    "createdAt",
+    "-createdAt",
+    "name",
+    "-name",
+  ];
+
+  const sort = allowedSorts.includes(queryData.sort)
+    ? queryData.sort
+    : "-ratingAverage";
+
+  const filter: any = {
+    merchant: merchantId,
+    ...queryData.filter,
+  };
+
+  if (queryData.search) {
+    filter.name = {
+      $regex: queryData.search,
+      $options: "i",
+    };
+  }
+
+  const docs = await Merchant.find(queryData.filter)
+    .sort(sort)
+    .select(queryData.select)
+    .skip(queryData.skip)
+    .limit(queryData.limit);
+
+  const total = await Merchant.countDocuments(queryData.filter);
+
+  return { docs, total, queryData };
+};
+
+export const updateMerchantProfileService = async (
+  user: IUser,
+  merchantId: string,
+  payload: merchantUpdateInput,
+  logo: Express.Multer.File | undefined,
+  banner: Express.Multer.File | undefined,
+) => {
+  const merchant = await Merchant.findOne({
+    owner: user._id,
+    _id: merchantId,
+  }).populate("owner");
+
+  if (!merchant) {
+    throw new NotFoundError("Merchant");
+  }
+
+  const updateData: Partial<IMerchant> = {};
+
+  if (payload?.merchantName !== undefined) {
+    updateData.merchantName = payload.merchantName;
+  }
+
+  if (payload?.description !== undefined) {
+    updateData.description = payload.description;
+  }
+
+  if (payload?.phoneNumber !== undefined) {
+    updateData.phoneNumber = payload.phoneNumber;
+  }
+
+  if (payload?.address !== undefined) {
+    updateData.address = {
+      ...payload.address,
+      location: payload.address.location ?? {
+        type: "Point",
+        coordinates: [0, 0],
+      },
+    };
+  }
+
+  if (payload?.operatingHours !== undefined) {
+    updateData.operatingHours =
+      payload.operatingHours as IMerchant["operatingHours"];
+  }
+
+  if (payload?.minimumOrder !== undefined) {
+    updateData.minimumOrder = payload.minimumOrder;
+  }
+
+  if (logo) {
+    if (merchant.logo) {
+      const publicId = extractPublicIdFromUrl(merchant.logo);
+      if (publicId) {
+        const result = await cloudinary.uploader.destroy(publicId);
+        if (result.result !== "ok") {
+          console.warn(
+            `Cloudinary cleanup failed for ${publicId}: ${result.result}`,
+          );
+        }
+      }
+    }
+    const cloudinaryImageUrl = await imageUpload(logo, "merchant/logo");
+    updateData.logo = cloudinaryImageUrl;
+  }
+
+  if (banner) {
+    if (merchant.banner) {
+      const publicId = extractPublicIdFromUrl(merchant.banner);
+      if (publicId) {
+        const result = await cloudinary.uploader.destroy(publicId);
+        if (result.result !== "ok") {
+          console.warn(
+            `Cloudinary cleanup failed for ${publicId}: ${result.result}`,
+          );
+        }
+      }
+    }
+    const cloudinaryImageUrl = await imageUpload(banner, "merchant/banner");
+    updateData.banner = cloudinaryImageUrl; // ✅ Fixed: was logo before
+  }
+
+  const updatedMerchant = await Merchant.findByIdAndUpdate(
+    merchant._id,
+    {
+      $set: updateData,
+    },
+    {
+      new: true,
+      runValidators: true,
+    },
+  );
+
+  if (!updatedMerchant) {
+    throw new ConflictError(
+      "Cannot update the details. Please try again later",
+    );
+  }
+
+  return updatedMerchant;
 };

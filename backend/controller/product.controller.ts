@@ -1,3 +1,4 @@
+import type { QueryFilter } from "mongoose";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import type { Request, Response } from "express";
 import { NotFoundError } from "../utils/errors.js";
@@ -9,10 +10,11 @@ import type {
   ProductInput,
   UpdateProductInput,
 } from "../schemas/product.schema.js";
-import Product from "../models/product.model.js";
+import Product, { type IProduct } from "../models/product.model.js";
 import { DEFAULT_PRODUCT_IMAGE } from "../config/constants.js";
 import cloudinary from "../config/cloudinary.js";
 import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";
+import { buildQuery } from "../utils/buildQuery.js";
 
 export const addProduct = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
@@ -137,3 +139,58 @@ export const deleteProduct = asyncHandler(
     });
   },
 );
+
+export const getProducts = asyncHandler(async (req: Request, res: Response) => {
+  const queryData = buildQuery(req.query);
+
+  const allowedSorts = [
+    "ratingAverage",
+    "-ratingAverage",
+    "price",
+    "-price",
+    "createdAt",
+    "-createdAt",
+    "name",
+    "-name",
+  ];
+
+  const sort = allowedSorts.includes(queryData.sort)
+    ? queryData.sort
+    : "-ratingAverage";
+
+  if (queryData.search) {
+    queryData.filter.$or = [
+      {
+        name: {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+      {
+        description: {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+    ];
+  }
+
+  const docs = await Product.find(queryData.filter)
+    .sort(sort)
+    .select(queryData.select)
+    .skip(queryData.skip)
+    .limit(queryData.limit);
+
+  const total = await Product.countDocuments(queryData.filter);
+
+  res.json({
+    success: true,
+    data: docs,
+    pagination: {
+      total,
+      page: queryData.page,
+      limit: queryData.limit,
+      pages: Math.ceil(total / queryData.limit),
+    },
+  });
+});

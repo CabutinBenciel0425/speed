@@ -70,6 +70,8 @@ export interface IMerchant extends Document {
   };
   minimumOrder: number;
   status: "Pending" | "Approved" | "Rejected" | "Open" | "Closed" | "Suspended";
+  completedOrders: number;
+  totalRevenue: number;
   ratingCount: number;
   averageRating: number;
 }
@@ -408,9 +410,20 @@ export const merchantSchema = new Schema<IMerchant>(
       type: String,
       enum: ["Pending", "Approved", "Rejected", "Open", "Closed", "Suspended"],
     },
+    completedOrders: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    totalRevenue: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     ratingCount: {
       type: Number,
       default: 0,
+      min: 0,
     },
     averageRating: {
       type: Number,

@@ -11,6 +11,7 @@ import {
   createNewOrder,
 } from "../services/order.service.js";
 import Order from "../models/order.model.js";
+import { buildQuery } from "../utils/buildQuery.js";
 
 export const createOrder = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
@@ -29,17 +30,74 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
 
 export const getOrders = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
+  const queryData = buildQuery(req.query);
+  const allowedSorts = ["createdAt", "-createdAt", "total", "-total"];
 
-  if (!user) {
-    throw new NotFoundError("User");
+  const sort = allowedSorts.includes(queryData.sort) ? queryData.sort : "-name";
+
+  if (queryData.search) {
+    queryData.filter.name = {
+      $regex: queryData.search,
+      $options: "i",
+    };
   }
-  const order = await Order.find({ customer: user._id });
 
-  res.status(201).json({
+  const docs = await Order.find(queryData.filter)
+    .sort(sort)
+    .select(queryData.select)
+    .skip(queryData.skip)
+    .limit(queryData.limit);
+
+  const total = await Order.countDocuments(queryData.filter);
+
+  res.json({
     success: true,
-    data: order || "No order done yet",
+    data: docs,
+    pagination: {
+      total,
+      page: queryData.page,
+      limit: queryData.limit,
+      pages: Math.ceil(total / queryData.limit),
+    },
   });
 });
+
+export const getOrdersByAdmin = asyncHandler(
+  async (req: Request, res: Response) => {
+    const queryData = buildQuery(req.query);
+    const allowedSorts = ["createdAt", "-createdAt", "total", "-total"];
+
+    const sort = allowedSorts.includes(queryData.sort)
+      ? queryData.sort
+      : "-name";
+
+    if (queryData.search) {
+      queryData.filter.name = {
+        $regex: queryData.search,
+        $options: "i",
+      };
+    }
+
+    const docs = await Order.find(queryData.filter)
+      .sort(sort)
+      .select(queryData.select)
+      .skip(queryData.skip)
+      .limit(queryData.limit);
+
+    const total = await Order.countDocuments(queryData.filter);
+
+    res.json({
+      success: true,
+      data: docs,
+      pagination: {
+        total,
+        page: queryData.page,
+        limit: queryData.limit,
+        pages: Math.ceil(total / queryData.limit),
+      },
+    });
+  },
+);
 
 export const getOrder = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;

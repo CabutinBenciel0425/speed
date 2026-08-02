@@ -1,4 +1,5 @@
 import mongoose, { model, Schema, Document, Types } from "mongoose";
+import { number } from "zod";
 
 export interface IProduct extends Document {
   merchant: Types.ObjectId;
@@ -13,6 +14,7 @@ export interface IProduct extends Document {
   tags: string[];
   isAvailable: boolean;
   isFeatured: boolean;
+  totalSold: number;
 }
 
 const productSchema = new Schema<IProduct>(
@@ -70,6 +72,10 @@ const productSchema = new Schema<IProduct>(
       type: Boolean,
       required: true,
       default: false,
+    },
+    totalSold: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true },

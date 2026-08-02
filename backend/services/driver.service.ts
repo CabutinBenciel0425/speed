@@ -15,6 +15,7 @@ import { io } from "../server.js";
 import { computeDistance } from "./delivery.service.js";
 import Address from "../models/address.model.js";
 import { pendingOffers } from "../utils/offerWaiting.js";
+import Product from "../models/product.model.js";
 
 export const updateDriverProfile = async (
   { vehicleType, plateNumber, avatar }: UpdateDriverInputWithImage,
@@ -71,6 +72,21 @@ export const updateCurrentLocationService = async (
     throw new NotFoundError("Order");
   }
 
+  const merchant = await Merchant.findById(order.merchant);
+
+  if (!merchant) {
+    throw new NotFoundError("Merchant");
+  }
+
+  const merchantCoords = merchant.address?.location?.coordinates as [
+    number,
+    number,
+  ];
+
+  if (!merchantCoords) {
+    throw new NotFoundError("Merchant coordinates");
+  }
+
   const driverProfile = await getDriverProfile(userId);
 
   driverProfile.currentLocation = {
@@ -79,6 +95,15 @@ export const updateCurrentLocationService = async (
   };
 
   await driverProfile.save();
+
+  const { distanceKm, durationMinutes } = await computeDistance(
+    merchantCoords,
+    driverCoords,
+  );
+
+  if (distanceKm < 0.05 || durationMinutes < 0.1) {
+    await driverArrivedAtMerchant(userId, orderId);
+  }
 
   io.to(`customer:${order.customer.toString()}`).emit(
     "driver:current-location",
@@ -138,6 +163,12 @@ export const headingToMerchantService = async (
     throw new NotFoundError("Order");
   }
 
+  const merchant = await Merchant.findById(order.merchant);
+
+  if (!merchant) {
+    throw new NotFoundError("Merchant");
+  }
+
   const activeOrderId = driverProfile.activeOrder?.toString();
   const isPaymentValid = isOrderPaymentValid(order);
 
@@ -152,6 +183,9 @@ export const headingToMerchantService = async (
     driverProfile.workingStatus = "HeadingToMerchant";
     await driverProfile.save();
   }
+
+  io.to(`customer:${userId}`).emit("driver:heading-to-merchant");
+  io.to(`merchant:${merchant._id}`).emit("driver:heading-to-merchant");
 
   return order;
 };
@@ -184,7 +218,7 @@ export const driverArrivedAtMerchant = async (
     (order.status === "Preparing" || order.status === "ReadyForPickup") &&
     isPaymentValid
   ) {
-    driverProfile.workingStatus = "WaitingForPickup";
+    driverProfile.workingStatus = "ArrivedAtMerchant";
     order.driverArrivedAtMerchantAt = new Date();
     await driverProfile.save();
   }
@@ -212,6 +246,11 @@ export const pickUpOrderService = async (userId: string, orderId: string) => {
 
   if (!order) {
     throw new NotFoundError("Order");
+  }
+
+  const merchant = await Merchant.findById(order.merchant);
+  if (!merchant) {
+    throw new NotFoundError("Merchant");
   }
 
   const activeOrderId = driverProfile.activeOrder?.toString();
@@ -260,6 +299,7 @@ export const pickUpOrderService = async (userId: string, orderId: string) => {
   }
 
   io.to(`customer:${order.customer.toString()}`).emit("order:pickedUp");
+  io.to(`merchant:${merchant._id.toString}`).emit("order:pickedUp");
 
   return order;
 };
@@ -280,6 +320,12 @@ export const deliveredOrderService = async (
 
   if (!order) {
     throw new NotFoundError("Order");
+  }
+
+  const merchant = await Merchant.findById(order.merchant);
+
+  if (!merchant) {
+    throw new NotFoundError("Merchant");
   }
 
   const activeOrderId = driverProfile.activeOrder?.toString();
@@ -314,13 +360,23 @@ export const deliveredOrderService = async (
 
   try {
     await session.withTransaction(async () => {
+      for (const item of order.items) {
+        const product = await Product.findById(item.product).session(session);
+        if (product) {
+          product.totalSold += item.quantity;
+          await product.save({ session });
+        }
+      }
       driverProfile.workingStatus = "Available";
       driverProfile.completedDeliveries += 1;
       driverProfile.totalEarnings = driverProfile.totalEarnings + deliveryFee;
       driverProfile.activeOrder = null;
-      driverProfile.isAvailable = false;
+      driverProfile.isAvailable = true;
       order.status = "Delivered";
       order.deliveredAt = new Date();
+      merchant.completedOrders += 1;
+      merchant.totalRevenue = merchant.totalRevenue + order.pricing.subtotal;
+
       await driverProfile.save({ session });
       await order.save({ session });
     });
