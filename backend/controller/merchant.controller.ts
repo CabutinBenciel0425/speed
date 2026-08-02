@@ -3,13 +3,16 @@ import Merchant, { type IMerchant } from "../models/merchant.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import type { Request, Response } from "express";
 import { buildQuery } from "../utils/buildQuery.js";
-import { NotFoundError } from "../utils/errors.js";
+import { NotFoundError, UnauthorizedError } from "../utils/errors.js";
 import {
+  getMerchantFavoritesService,
   getMerchantProductsService,
   getMerchantsService,
+  toggleMerchantFavoriteService,
   updateMerchantProfileService,
 } from "../services/merchant.service.js";
 import type { merchantUpdateInput } from "../schemas/merchant.schema.js";
+import MerchantFavorite from "../models/merchantFavorite.model.js";
 
 export const getMerchants = asyncHandler(
   async (req: Request, res: Response) => {
@@ -129,6 +132,48 @@ export const updateMerchantProfile = asyncHandler(
     res.status(200).json({
       success: true,
       data: updatedMerchant,
+    });
+  },
+);
+
+export const toggleMerchantFavorite = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+    const merchantId = req.params.merchantId as string;
+
+    if (!user) {
+      throw new UnauthorizedError("User not authenticated");
+    }
+
+    if (!merchantId) {
+      throw new NotFoundError("Merchant id");
+    }
+
+    const merchantFavorite = await toggleMerchantFavoriteService(
+      user,
+      merchantId,
+    );
+
+    res.status(201).json({
+      success: true,
+      data: merchantFavorite,
+    });
+  },
+);
+
+export const getMerchantFavorites = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+
+    if (!user) {
+      throw new UnauthorizedError("User not authorized");
+    }
+
+    const favorites = await getMerchantFavoritesService(user);
+
+    res.status(200).json({
+      success: true,
+      data: favorites,
     });
   },
 );

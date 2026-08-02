@@ -6,6 +6,8 @@ import {
   getMerchantProfile,
   getMerchants,
   updateMerchantProfile,
+  toggleMerchantFavorite,
+  getMerchantFavorites,
 } from "../controller/merchant.controller.js";
 import { upload } from "../middlewares/upload.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
@@ -24,6 +26,14 @@ merchantRouter.get(
   merchantOnly,
   getMerchantProducts,
 );
+
+merchantRouter.post(
+  "/favorites/:merchantId/status",
+  protectRoute,
+  toggleMerchantFavorite,
+);
+
+merchantRouter.get("/favorites", protectRoute, getMerchantFavorites);
 
 //merchant routes
 merchantRouter.get(

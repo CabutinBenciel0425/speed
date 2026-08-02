@@ -10,6 +10,9 @@ import type { merchantUpdateInput } from "../schemas/merchant.schema.js";
 import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";
 import cloudinary from "../config/cloudinary.js";
 import { imageUpload } from "../utils/imageUpload.js";
+import MerchantFavorite from "../models/merchantFavorite.model.js";
+import { ApiError } from "../utils/apiError.js";
+import { userInfo } from "node:os";
 
 export const merchantRejectOrder = async (orderId: string, userId: string) => {
   const session = await mongoose.startSession();
@@ -369,4 +372,64 @@ export const updateMerchantProfileService = async (
   }
 
   return updatedMerchant;
+};
+
+export const toggleMerchantFavoriteService = async (
+  user: IUser,
+  merchantId: string,
+) => {
+  const merchant = await Merchant.findById(merchantId);
+
+  if (!merchant) {
+    throw new NotFoundError("Merchant");
+  }
+
+  const favoriteExist = await MerchantFavorite.findOne({
+    user: user._id,
+    merchant: merchant._id,
+  });
+
+  if (favoriteExist) {
+    const result = await deleteMerchantFavoriteService(
+      user._id.toString(),
+      merchant._id.toString(),
+    );
+
+    return result;
+  }
+
+  const merchantFavorite = new MerchantFavorite({
+    user: user._id,
+    merchant: merchant._id,
+  });
+
+  await merchantFavorite.save();
+
+  return merchantFavorite;
+};
+
+export const deleteMerchantFavoriteService = async (
+  userId: string,
+  merchantId: string,
+) => {
+  const result = await MerchantFavorite.findOneAndDelete({
+    user: userId,
+    merchant: merchantId,
+  });
+
+  if (!result) {
+    throw new ApiError(500, "Unable to delete favorite merchant");
+  }
+
+  return "Merchant successfully removed as favorite";
+};
+
+export const getMerchantFavoritesService = async (user: IUser) => {
+  const favorites = await MerchantFavorite.find({ user: user._id });
+
+  if (favorites.length === 0) {
+    return [];
+  }
+
+  return favorites;
 };

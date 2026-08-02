@@ -7,6 +7,8 @@ import {
   toggleFeatured,
   deleteProduct,
   getProducts,
+  toggleProductFavorite,
+  getProductFavorites,
 } from "../controller/product.controller.js";
 import {
   productSchema,
@@ -17,6 +19,7 @@ import { upload } from "../middlewares/upload.middleware.js";
 
 const productRouter = Router();
 
+//merchant routes
 productRouter.post(
   "/:merchantId",
   protectRoute,
@@ -57,5 +60,14 @@ productRouter.delete(
 );
 
 productRouter.get("/products", protectRoute, merchantOnly, getProducts);
+
+//customer routes
+productRouter.post(
+  "/favorites/:productId/status",
+  protectRoute,
+  toggleProductFavorite,
+);
+
+productRouter.get("/favorites", protectRoute, getProductFavorites);
 
 export default productRouter;

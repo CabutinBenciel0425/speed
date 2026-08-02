@@ -1,9 +1,11 @@
 import type { QueryFilter } from "mongoose";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import type { Request, Response } from "express";
-import { NotFoundError } from "../utils/errors.js";
+import { NotFoundError, UnauthorizedError } from "../utils/errors.js";
 import {
   createNewProduct,
+  getProductFavoritesService,
+  toggleProductFavoriteService,
   updateProductDetails,
 } from "../services/product.service.js";
 import type {
@@ -194,3 +196,42 @@ export const getProducts = asyncHandler(async (req: Request, res: Response) => {
     },
   });
 });
+
+export const toggleProductFavorite = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+    const productId = req.params.productId as string;
+
+    if (!user) {
+      throw new UnauthorizedError("User not authenticated");
+    }
+
+    if (!productId) {
+      throw new NotFoundError("Product id");
+    }
+
+    const productFavorite = await toggleProductFavoriteService(user, productId);
+
+    res.status(201).json({
+      success: true,
+      data: productFavorite,
+    });
+  },
+);
+
+export const getProductFavorites = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+
+    if (!user) {
+      throw new UnauthorizedError("User not authorized");
+    }
+
+    const favorites = await getProductFavoritesService(user);
+
+    res.status(200).json({
+      success: true,
+      data: favorites,
+    });
+  },
+);

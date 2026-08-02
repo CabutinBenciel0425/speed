@@ -2,10 +2,13 @@ import cloudinary from "../config/cloudinary.js";
 import { DEFAULT_PRODUCT_IMAGE } from "../config/constants.js";
 import Merchant from "../models/merchant.model.js";
 import Product from "../models/product.model.js";
+import ProductFavorite from "../models/productFavorite.model.js";
+import type { IUser } from "../models/user.model.js";
 import type {
   ProductInput,
   UpdateProductInput,
 } from "../schemas/product.schema.js";
+import { ApiError } from "../utils/apiError.js";
 import { ConflictError, NotFoundError } from "../utils/errors.js";
 import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";
 import { imageUpload } from "../utils/imageUpload.js";
@@ -118,4 +121,64 @@ export const updateProductDetails = async (
   await product.save();
 
   return product;
+};
+
+export const toggleProductFavoriteService = async (
+  user: IUser,
+  productId: string,
+) => {
+  const product = await Product.findById(productId);
+
+  if (!product) {
+    throw new NotFoundError("Product");
+  }
+
+  const favoriteExist = await ProductFavorite.findOne({
+    user: user._id,
+    product: product._id,
+  });
+
+  if (favoriteExist) {
+    const result = await deleteProductFavoriteService(
+      user._id.toString(),
+      product._id.toString(),
+    );
+
+    return result;
+  }
+
+  const productFavorite = new ProductFavorite({
+    user: user._id,
+    product: product._id,
+  });
+
+  await productFavorite.save();
+
+  return productFavorite;
+};
+
+export const deleteProductFavoriteService = async (
+  userId: string,
+  productId: string,
+) => {
+  const result = await ProductFavorite.findOneAndDelete({
+    user: userId,
+    merchant: productId,
+  });
+
+  if (!result) {
+    throw new ApiError(500, "Unable to delete favorite product");
+  }
+
+  return "Product successfully removed as favorite";
+};
+
+export const getProductFavoritesService = async (user: IUser) => {
+  const favorites = await ProductFavorite.find({ user: user._id });
+
+  if (favorites.length === 0) {
+    return [];
+  }
+
+  return favorites;
 };

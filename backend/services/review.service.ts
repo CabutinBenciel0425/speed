@@ -164,7 +164,8 @@ const createReview = async ({
   });
 
   await newReview.save();
-  return newReview.populate(["order", "reviewer", "reviewee"]);
+  await newReview.populate(["order", "reviewer", "reviewee"]);
+  return newReview;
 };
 
 export const getDriverReviewsService = async (user: IUser) => {
