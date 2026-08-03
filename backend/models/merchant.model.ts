@@ -156,13 +156,18 @@ export const merchantSchema = new Schema<IMerchant>(
     },
     operatingHours: {
       Monday: {
-        isOpen: Boolean,
+        isOpen: {
+          type: Boolean,
+          required: function (this: any) {
+            return this.status === "Open";
+          },
+        },
         openHour: {
           type: Number,
           min: 0,
           max: 23,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Monday.isOpen === true;
           },
         },
         openMinute: {
@@ -170,7 +175,7 @@ export const merchantSchema = new Schema<IMerchant>(
           min: 0,
           max: 59,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Monday.isOpen === true;
           },
         },
         closeHour: {
@@ -178,7 +183,7 @@ export const merchantSchema = new Schema<IMerchant>(
           min: 0,
           max: 23,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Monday.isOpen === true;
           },
         },
         closeMinute: {
@@ -186,18 +191,23 @@ export const merchantSchema = new Schema<IMerchant>(
           min: 0,
           max: 59,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Monday.isOpen === true;
           },
         },
       },
       Tuesday: {
-        isOpen: Boolean,
+        isOpen: {
+          type: Boolean,
+          required: function (this: any) {
+            return this.status === "Open";
+          },
+        },
         openHour: {
           type: Number,
           min: 0,
           max: 23,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Tuesday.isOpen === true;
           },
         },
         openMinute: {
@@ -205,7 +215,7 @@ export const merchantSchema = new Schema<IMerchant>(
           min: 0,
           max: 59,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Tuesday.isOpen === true;
           },
         },
         closeHour: {
@@ -213,7 +223,7 @@ export const merchantSchema = new Schema<IMerchant>(
           min: 0,
           max: 23,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Tuesday.isOpen === true;
           },
         },
         closeMinute: {
@@ -221,18 +231,23 @@ export const merchantSchema = new Schema<IMerchant>(
           min: 0,
           max: 59,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Tuesday.isOpen === true;
           },
         },
       },
       Wednesday: {
-        isOpen: Boolean,
+        isOpen: {
+          type: Boolean,
+          required: function (this: any) {
+            return this.status === "Open";
+          },
+        },
         openHour: {
           type: Number,
           min: 0,
           max: 23,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Wednesday.isOpen === true;
           },
         },
         openMinute: {
@@ -240,7 +255,7 @@ export const merchantSchema = new Schema<IMerchant>(
           min: 0,
           max: 59,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Wednesday.isOpen === true;
           },
         },
         closeHour: {
@@ -248,7 +263,7 @@ export const merchantSchema = new Schema<IMerchant>(
           min: 0,
           max: 23,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Wednesday.isOpen === true;
           },
         },
         closeMinute: {
@@ -256,18 +271,23 @@ export const merchantSchema = new Schema<IMerchant>(
           min: 0,
           max: 59,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Wednesday.isOpen === true;
           },
         },
       },
       Thursday: {
-        isOpen: Boolean,
+        isOpen: {
+          type: Boolean,
+          required: function (this: any) {
+            return this.status === "Open";
+          },
+        },
         openHour: {
           type: Number,
           min: 0,
           max: 23,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Thursday.isOpen === true;
           },
         },
         openMinute: {
@@ -275,7 +295,7 @@ export const merchantSchema = new Schema<IMerchant>(
           min: 0,
           max: 59,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Thursday.isOpen === true;
           },
         },
         closeHour: {
@@ -283,7 +303,7 @@ export const merchantSchema = new Schema<IMerchant>(
           min: 0,
           max: 23,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Thursday.isOpen === true;
           },
         },
         closeMinute: {
@@ -291,18 +311,23 @@ export const merchantSchema = new Schema<IMerchant>(
           min: 0,
           max: 59,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Thursday.isOpen === true;
           },
         },
       },
       Friday: {
-        isOpen: Boolean,
+        isOpen: {
+          type: Boolean,
+          required: function (this: any) {
+            return this.status === "Open";
+          },
+        },
         openHour: {
           type: Number,
           min: 0,
           max: 23,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Friday.isOpen === true;
           },
         },
         openMinute: {
@@ -310,7 +335,7 @@ export const merchantSchema = new Schema<IMerchant>(
           min: 0,
           max: 59,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Friday.isOpen === true;
           },
         },
         closeHour: {
@@ -318,7 +343,7 @@ export const merchantSchema = new Schema<IMerchant>(
           min: 0,
           max: 23,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Friday.isOpen === true;
           },
         },
         closeMinute: {
@@ -326,18 +351,23 @@ export const merchantSchema = new Schema<IMerchant>(
           min: 0,
           max: 59,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Friday.isOpen === true;
           },
         },
       },
       Saturday: {
-        isOpen: Boolean,
+        isOpen: {
+          type: Boolean,
+          required: function (this: any) {
+            return this.status === "Open";
+          },
+        },
         openHour: {
           type: Number,
           min: 0,
           max: 23,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Saturday.isOpen === true;
           },
         },
         openMinute: {
@@ -345,7 +375,7 @@ export const merchantSchema = new Schema<IMerchant>(
           min: 0,
           max: 59,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Saturday.isOpen === true;
           },
         },
         closeHour: {
@@ -353,7 +383,7 @@ export const merchantSchema = new Schema<IMerchant>(
           min: 0,
           max: 23,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Saturday.isOpen === true;
           },
         },
         closeMinute: {
@@ -361,18 +391,23 @@ export const merchantSchema = new Schema<IMerchant>(
           min: 0,
           max: 59,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Saturday.isOpen === true;
           },
         },
       },
       Sunday: {
-        isOpen: Boolean,
+        isOpen: {
+          type: Boolean,
+          required: function (this: any) {
+            return this.status === "Open";
+          },
+        },
         openHour: {
           type: Number,
           min: 0,
           max: 23,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Sunday.isOpen === true;
           },
         },
         openMinute: {
@@ -380,7 +415,7 @@ export const merchantSchema = new Schema<IMerchant>(
           min: 0,
           max: 59,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Sunday.isOpen === true;
           },
         },
         closeHour: {
@@ -388,7 +423,7 @@ export const merchantSchema = new Schema<IMerchant>(
           min: 0,
           max: 23,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Sunday.isOpen === true;
           },
         },
         closeMinute: {
@@ -396,7 +431,7 @@ export const merchantSchema = new Schema<IMerchant>(
           min: 0,
           max: 59,
           required: function (this: any) {
-            return this.isOpen === true;
+            return this.operatingHours.Sunday.isOpen === true;
           },
         },
       },
@@ -409,6 +444,7 @@ export const merchantSchema = new Schema<IMerchant>(
     status: {
       type: String,
       enum: ["Pending", "Approved", "Rejected", "Open", "Closed", "Suspended"],
+      default: "Pending",
     },
     completedOrders: {
       type: Number,

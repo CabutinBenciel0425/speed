@@ -49,9 +49,14 @@ export const resetPasswordSchema = z.object({
     .regex(/[0-9]/, "Password must contain at least one number"),
 });
 
+export const selectRoleSchema = z.object({
+  activeRole: z.enum(["Customer", "Merchant", "Driver", "Admin"]),
+});
+
 export type SignupInput = z.infer<typeof signupSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type UpdateInput = z.infer<typeof updateSchema>;
 export type UserInput = z.infer<typeof userSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+export type ValidUserRoleInput = z.infer<typeof selectRoleSchema>;

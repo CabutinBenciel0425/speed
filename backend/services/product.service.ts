@@ -25,6 +25,14 @@ export const createNewProduct = async (
     throw new NotFoundError("Merchant");
   }
 
+  if (
+    existingMerchant.status === "Rejected" ||
+    existingMerchant.status === "Suspended"
+  ) {
+    throw new ConflictError(
+      "Cannot add product to this merchant due to current merchant's status",
+    );
+  }
   const existingProduct = await Product.findOne({
     merchant: merchantId,
     name: payload.name,
@@ -44,9 +52,7 @@ export const createNewProduct = async (
     merchant: existingMerchant._id,
     category: payload.category,
     name: payload.name,
-    image:
-      cloudinaryImageUrl ||
-      "https://res.cloudinary.com/dwqlvkvup/image/upload/v1784818492/5330112_bs5jyk.jpg",
+    image: cloudinaryImageUrl,
     slug: payload.name.replace(/\s+/g, "-").toLowerCase(),
     description: payload.description,
     price: payload.price,

@@ -194,20 +194,41 @@ const validateMerchantOrder = async (orderId: string, userId: string) => {
 
 export const getMerchantsService = async (payload: any) => {
   const queryData = buildQuery(payload);
-  const allowedSorts = ["ratingAverage", "-ratingAverage", "name", "-name"];
+
+  const allowedSorts = [
+    "merchantName",
+    "-merchantName",
+    "status",
+    "-status",
+    "ratingCount",
+    "-ratingCount",
+    "averageRating",
+    "-averageRating",
+  ];
 
   const sort = allowedSorts.includes(queryData.sort)
     ? queryData.sort
-    : "-ratingAverage";
+    : "-merchantName";
 
   if (queryData.search) {
-    queryData.filter.name = {
-      $regex: queryData.search,
-      $options: "i",
-    };
+    queryData.filter.$or = [
+      {
+        merchantName: {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+      {
+        description: {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+    ];
   }
 
   const docs = await Merchant.find(queryData.filter)
+    .select("-password")
     .sort(sort)
     .select(queryData.select)
     .skip(queryData.skip)

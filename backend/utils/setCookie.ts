@@ -20,3 +20,13 @@ export const setRefreshToken = (res: Response, token: string) => {
     path: "/",
   });
 };
+
+export const setTempToken = (res: Response, token: string) => {
+  res.cookie("tempToken", token, {
+    httpOnly: true,
+    secure: NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 5 * 60 * 1000,
+    path: "/",
+  });
+};

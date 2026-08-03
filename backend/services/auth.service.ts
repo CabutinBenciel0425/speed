@@ -4,11 +4,15 @@ import {
   UnauthorizedError,
 } from "../utils/errors.js";
 import { storeRefreshToken } from "./../utils/storeRefreshToken.js";
-import { generateToken } from "./../utils/generateToken.js";
-import type { LoginInput } from "./../schemas/user.schema.js";
+import { createTempToken, generateToken } from "./../utils/generateToken.js";
+import type {
+  LoginInput,
+  ValidUserRoleInput,
+} from "./../schemas/user.schema.js";
 import {
   RANDOM_PROFILE_URL,
   REFRESH_TOKEN_SECRET_KEY,
+  TEMP_TOKEN_SECRET_KEY,
 } from "../config/envVars.js";
 import { redisClient } from "../lib/redis.js";
 import { type Request } from "express";
@@ -27,12 +31,12 @@ import type {
   CreateMerchantInput,
   UpdateCustomerInput,
 } from "../types/types.js";
-import Merchant from "../models/merchant.model.js";
+import Merchant, { type IMerchant } from "../models/merchant.model.js";
 import { imageUpload } from "../utils/imageUpload.js";
-import Driver from "../models/driver.model.js";
+import Driver, { type IDriver } from "../models/driver.model.js";
 import { addUserRole } from "../utils/addRole.js";
 import cloudinary from "../config/cloudinary.js";
-import { storePasswordResetToken } from "../utils/storePasswordRefreshToken.js";
+import { storePasswordResetToken } from "../utils/storePasswordResetToken.js";
 import type { HydratedDocument } from "mongoose";
 import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";
 
@@ -167,9 +171,23 @@ export const loginUser = async ({ email, password }: LoginInput) => {
     throw new UnauthorizedError("Invalid email or password");
   }
 
-  const { accessToken, refreshToken } = generateToken(user._id.toString());
+  if (user.role.length > 1) {
+    const tempToken = createTempToken(user._id.toString());
+    return {
+      tempToken,
+      requiresRoleSelection: true,
+      roles: user.role,
+    };
+  }
 
-  await storeRefreshToken(user._id.toString(), refreshToken);
+  const activeRole = "Customer";
+
+  const { accessToken, refreshToken } = generateToken(
+    user._id.toString(),
+    activeRole,
+  );
+
+  await storeRefreshToken(user._id.toString(), activeRole, refreshToken);
 
   return {
     user: {
@@ -181,6 +199,74 @@ export const loginUser = async ({ email, password }: LoginInput) => {
       role: user.role,
       isVerified: user.isVerified,
     },
+    accessToken,
+    refreshToken,
+  };
+};
+
+type UserDetailsType = IDriver | IMerchant | IUser;
+
+export const selectRoleService = async (activeRole: string, req: Request) => {
+  const tempToken = req.cookies.tempToken;
+
+  if (!tempToken) {
+    throw new UnauthorizedError("Unauthorized user");
+  }
+
+  if (!TEMP_TOKEN_SECRET_KEY) {
+    throw new Error(
+      "TEMP_TOKEN_SECRET_KEY is required in environment variables",
+    );
+  }
+  const decoded = jwt.verify(tempToken, TEMP_TOKEN_SECRET_KEY) as JwtPayload;
+
+  const user = await User.findById(decoded.userId);
+
+  if (!user) {
+    throw new NotFoundError("User");
+  }
+
+  if (!user.role.includes(activeRole)) {
+    throw new UnauthorizedError(
+      "Provided role not found in the user's listed role",
+    );
+  }
+
+  let userDetails: UserDetailsType | null = null;
+
+  if (activeRole === "Customer") {
+    userDetails = user;
+  }
+
+  if (activeRole === "Merchant") {
+    const merchant = (await Merchant.findOne({ owner: user._id })) as IMerchant;
+    if (!merchant) {
+      throw new NotFoundError("Merchant");
+    }
+    userDetails = merchant;
+  }
+
+  if (activeRole === "Driver") {
+    const driver = (await Driver.findOne({ user: user._id })) as IDriver;
+    if (!driver) {
+      throw new NotFoundError("Driver");
+    }
+    userDetails = driver;
+  }
+
+  if (!userDetails) {
+    throw new NotFoundError(activeRole);
+  }
+
+  const { accessToken, refreshToken } = generateToken(
+    user._id.toString(),
+    activeRole,
+  );
+
+  await storeRefreshToken(user._id.toString(), activeRole, refreshToken);
+
+  return {
+    userDetails,
     accessToken,
     refreshToken,
   };
@@ -249,19 +335,6 @@ export const resetUserPassword = async (
     },
   };
 };
-
-// export const changeUserPassword = async (email: string, password: string) => {
-//   const user = await User.findOne({ email });
-
-//   if (!user) {
-//     throw new NotFoundError("User");
-//   }
-
-//   user.password = password;
-//   await user.save();
-
-//   return true;
-// };
 
 export const sendCodeFn = async (email: string) => {
   const token = generateVerificationToken(VERIFICATION_TOKEN_LENGTH);

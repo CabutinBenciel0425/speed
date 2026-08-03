@@ -10,7 +10,6 @@ import {
 import { validate } from "../middlewares/validate.middleware.js";
 import {
   addressInputSchema,
-  toggleIsDefaultInput,
   updateSchemaInput,
 } from "../schemas/address.schema.js";
 

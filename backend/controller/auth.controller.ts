@@ -9,13 +9,19 @@ import {
   createDriver,
   resetUserPassword,
   requestPasswordReset,
+  selectRoleService,
 } from "../services/auth.service.js";
-import { setAccessToken, setRefreshToken } from "../utils/setCookie.js";
-import type {
-  ForgotPasswordInput,
-  LoginInput,
-  ResetPasswordInput,
-  SignupInput,
+import {
+  setAccessToken,
+  setRefreshToken,
+  setTempToken,
+} from "../utils/setCookie.js";
+import {
+  selectRoleSchema,
+  type LoginInput,
+  type ResetPasswordInput,
+  type SignupInput,
+  type ValidUserRoleInput,
 } from "./../schemas/user.schema.js";
 import { asyncHandler } from "./../utils/asyncHandler.js";
 import type { Response, Request } from "express";
@@ -29,9 +35,6 @@ import jwt, { type JwtPayload } from "jsonwebtoken";
 import User from "../models/user.model.js";
 import type { merchantInput } from "../schemas/merchant.schema.js";
 import type { DriverInput } from "../schemas/driver.schema.js";
-import cloudinary from "../config/cloudinary.js";
-import { DEFAULT_DRIVER_AVATAR } from "../config/constants.js";
-import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";
 
 export const customerSignup = asyncHandler(
   async (req: Request, res: Response) => {
@@ -123,18 +126,47 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   const body: LoginInput = req.body;
 
   const { email, password } = body;
-  const { user, accessToken, refreshToken } = await loginUser({
+  const returnedData = await loginUser({
     email,
     password,
   });
+
+  if (returnedData.accessToken && returnedData.refreshToken) {
+    setAccessToken(res, returnedData.accessToken);
+    setRefreshToken(res, returnedData.refreshToken);
+  }
+
+  if (returnedData.user) {
+    return res.status(200).json({
+      success: true,
+      message: "User successfully logged in",
+      data: returnedData.user,
+    });
+  }
+
+  setTempToken(res, returnedData.tempToken);
+
+  res.status(200).json({
+    success: true,
+    requiresRoleSelection: returnedData.requiresRoleSelection,
+    roles: returnedData.roles,
+  });
+});
+
+export const selectRole = asyncHandler(async (req: Request, res: Response) => {
+  const { activeRole } = selectRoleSchema.parse(req.body);
+
+  const { userDetails, accessToken, refreshToken } = await selectRoleService(
+    activeRole,
+    req,
+  );
 
   setAccessToken(res, accessToken);
   setRefreshToken(res, refreshToken);
 
   res.status(200).json({
     success: true,
-    message: "User successfully logged in",
-    data: user,
+    data: userDetails,
   });
 });
 
@@ -152,17 +184,6 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
 
 export const myProfile = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
-
-  res.status(200).json({
-    success: true,
-    data: user,
-  });
-});
-
-export const userProfile = asyncHandler(async (req: Request, res: Response) => {
-  const userId = req.params.id;
-
-  const user = await User.findById(userId);
 
   res.status(200).json({
     success: true,
@@ -191,14 +212,17 @@ export const recreateAccessToken = asyncHandler(
     ) as JwtPayload;
 
     const storedToken = await redisClient.get(
-      `refresh_token:${decoded.userId}`,
+      `refresh_token:${decoded.userId}-${decoded.activeRole}`,
     );
 
     if (!storedToken || storedToken !== refreshToken) {
       throw new ApiError(409, "Invalid refresh token");
     }
 
-    const newAccessToken = createAccessToken(decoded.userId);
+    const newAccessToken = createAccessToken(
+      decoded.userId,
+      decoded.activeRole,
+    );
     setAccessToken(res, newAccessToken);
 
     res.status(201).json({
@@ -274,43 +298,6 @@ export const codeVerification = asyncHandler(
     });
   },
 );
-
-export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
-  const id = req.params.id;
-  const user = await User.findByIdAndDelete(id);
-
-  if (!user) {
-    throw new NotFoundError("User");
-  }
-
-  if (user.avatar && user.avatar !== DEFAULT_DRIVER_AVATAR) {
-    const publicId = extractPublicIdFromUrl(user.avatar);
-
-    if (publicId) {
-      const result = await cloudinary.uploader.destroy(publicId);
-      if (result.result !== "ok") {
-        console.warn(
-          `Cloudinary cleanup failed for ${publicId}: ${result.result}`,
-        );
-      }
-    }
-  }
-
-  res.status(200).json({
-    success: true,
-    data: {
-      user: {
-        id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        phoneNumber: user.phoneNumber,
-        role: user.role,
-        isVerified: user.isVerified,
-      },
-    },
-  });
-});
 
 export const updateUserDetails = asyncHandler(
   async (req: Request, res: Response) => {

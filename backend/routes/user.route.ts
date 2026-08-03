@@ -4,16 +4,15 @@ import {
   logout,
   customerSignup,
   myProfile,
-  userProfile,
   recreateAccessToken,
   forgotPassword,
   resetPassword,
   sendVerificationCode,
   codeVerification,
-  deleteUser,
   updateUserDetails,
   merchantSignup,
   driverSignup,
+  selectRole,
 } from "../controller/auth.controller.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import {
@@ -23,7 +22,7 @@ import {
   signupSchema,
   updateSchema,
 } from "../schemas/user.schema.js";
-import { adminOnly, protectRoute } from "../middlewares/auth.middleware.js";
+import { protectRoute } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/upload.middleware.js";
 import { merchantSchema } from "../schemas/merchant.schema.js";
 import { driverSchema } from "../schemas/driver.schema.js";
@@ -57,6 +56,7 @@ userRoute.post(
 );
 
 userRoute.post("/login", validate(loginSchema), login);
+userRoute.post("/select-role", selectRole);
 
 //user routes
 userRoute.post("/logout", protectRoute, logout);
@@ -83,7 +83,3 @@ userRoute.patch(
   validate(updateSchema),
   updateUserDetails,
 );
-
-//admin only routes
-userRoute.get("/profile/:id", protectRoute, adminOnly, userProfile);
-userRoute.delete("/:id", protectRoute, adminOnly, deleteUser);
