@@ -154,7 +154,11 @@ export const toggleProductFavoriteService = async (
 
   await productFavorite.save();
 
-  return productFavorite;
+  const populated = await ProductFavorite.findById(
+    productFavorite._id,
+  ).populate("user product");
+
+  return populated;
 };
 
 export const deleteProductFavoriteService = async (
@@ -163,7 +167,7 @@ export const deleteProductFavoriteService = async (
 ) => {
   const result = await ProductFavorite.findOneAndDelete({
     user: userId,
-    merchant: productId,
+    product: productId,
   });
 
   if (!result) {

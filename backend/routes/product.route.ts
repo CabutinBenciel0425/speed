@@ -62,7 +62,7 @@ productRouter.delete(
 productRouter.get("/products", protectRoute, merchantOnly, getProducts);
 
 //customer routes
-productRouter.post(
+productRouter.patch(
   "/favorites/:productId/status",
   protectRoute,
   toggleProductFavorite,

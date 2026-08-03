@@ -27,7 +27,7 @@ merchantRouter.get(
   getMerchantProducts,
 );
 
-merchantRouter.post(
+merchantRouter.patch(
   "/favorites/:merchantId/status",
   protectRoute,
   toggleMerchantFavorite,
