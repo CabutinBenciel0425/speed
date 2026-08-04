@@ -10,6 +10,13 @@ import {
   allDrivers,
   driverProfile,
   toggleDriverStatus,
+  allOrders,
+  orderDetails,
+  cancelOrder,
+  allProducts,
+  allReviews,
+  reviewDetails,
+  hideReview,
 } from "../controller/admin.controller.js";
 
 const adminRouter = Router();
@@ -43,6 +50,29 @@ adminRouter.patch(
   protectRoute,
   adminOnly,
   toggleDriverStatus,
+);
+
+//order routes
+adminRouter.get("/order", protectRoute, adminOnly, allOrders);
+adminRouter.get("/order/:orderId", protectRoute, adminOnly, orderDetails);
+adminRouter.patch(
+  "/order/:orderId/cancel",
+  protectRoute,
+  adminOnly,
+  cancelOrder,
+);
+
+//product routes
+adminRouter.get("/product", protectRoute, adminOnly, allProducts);
+
+//reviews routes
+adminRouter.get("/review", protectRoute, adminOnly, allReviews);
+adminRouter.get("/review/:reviewId", protectRoute, adminOnly, reviewDetails);
+adminRouter.patch(
+  "/review/:reviewId/delete",
+  protectRoute,
+  adminOnly,
+  hideReview,
 );
 
 export default adminRouter;

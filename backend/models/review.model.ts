@@ -7,6 +7,7 @@ export interface IReview extends Document {
   targetType: "Merchant" | "Driver";
   rating: number;
   comment: string;
+  isHidden: boolean;
 }
 
 const reviewSchema = new Schema<IReview>(
@@ -34,6 +35,10 @@ const reviewSchema = new Schema<IReview>(
     },
     comment: {
       type: String,
+    },
+    isHidden: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true },

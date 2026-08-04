@@ -8,6 +8,11 @@ import cloudinary from "../config/cloudinary.js";
 import { buildQuery } from "../utils/buildQuery.js";
 import Merchant from "../models/merchant.model.js";
 import Driver from "../models/driver.model.js";
+import Order from "../models/order.model.js";
+import { cancelOrderService } from "../services/admin.service.js";
+import Product from "../models/product.model.js";
+import Review from "../models/review.model.js";
+import { ApiError } from "../utils/apiError.js";
 
 export const userProfile = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.params.id;
@@ -232,7 +237,7 @@ export const allMerchants = asyncHandler(
 
 export const driverProfile = asyncHandler(
   async (req: Request, res: Response) => {
-    const driverId = req.params.id;
+    const driverId = req.params.driverId;
 
     const merchant = await Merchant.findById(driverId).populate("user");
 
@@ -333,5 +338,297 @@ export const allDrivers = asyncHandler(async (req: Request, res: Response) => {
       limit: queryData.limit,
       pages: Math.ceil(total / queryData.limit),
     },
+  });
+});
+
+export const allOrders = asyncHandler(async (req: Request, res: Response) => {
+  const queryData = buildQuery(req.query);
+
+  const allowedSorts = [
+    "status",
+    "-status",
+    "orderNumber",
+    "-orderNumber",
+    "createdAt",
+    "-createdAt",
+    "pricing.total",
+    "-pricing.total",
+    "deliveryAddress.city",
+    "-deliveryAddress.city",
+  ];
+
+  const sort = allowedSorts.includes(queryData.sort)
+    ? queryData.sort
+    : "-createdAt";
+
+  if (queryData.search) {
+    queryData.filter.$or = [
+      {
+        orderNumber: {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+      {
+        "items.productName": {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+      {
+        "deliveryAddress.street": {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+      {
+        "deliveryAddress.barangay": {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+      {
+        "deliveryAddress.city": {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+      {
+        "deliveryAddress.province": {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+      {
+        "payment.method": {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+      {
+        "payment.status": {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+      {
+        status: {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+    ];
+  }
+
+  const docs = await Order.find(queryData.filter)
+    .sort(sort)
+    .select(queryData.select)
+    .skip(queryData.skip)
+    .limit(queryData.limit);
+
+  const total = await Order.countDocuments(queryData.filter);
+
+  res.json({
+    success: true,
+    data: docs,
+    pagination: {
+      total,
+      page: queryData.page,
+      limit: queryData.limit,
+      pages: Math.ceil(total / queryData.limit),
+    },
+  });
+});
+
+export const orderDetails = asyncHandler(
+  async (req: Request, res: Response) => {
+    const orderId = req.params.orderId;
+
+    const order = await Order.findById(orderId).populate(
+      "user merchant driver",
+    );
+
+    res.status(200).json({
+      success: true,
+      data: order,
+    });
+  },
+);
+
+export const cancelOrder = asyncHandler(async (req: Request, res: Response) => {
+  const user = req.user;
+  const orderId = req.params.orderId as string;
+
+  if (!user) {
+    throw new UnauthorizedError("Unauthorized user");
+  }
+
+  const order = await cancelOrderService(user, orderId);
+
+  res.status(200).json({
+    success: true,
+    data: order,
+  });
+});
+
+export const allProducts = asyncHandler(async (req: Request, res: Response) => {
+  const queryData = buildQuery(req.query);
+
+  const allowedSorts = [
+    "name",
+    "-name",
+    "price",
+    "-price",
+    "createdAt",
+    "-createdAt",
+    "totalSold",
+    "-totalSold",
+  ];
+
+  const sort = allowedSorts.includes(queryData.sort)
+    ? queryData.sort
+    : "-createdAt";
+
+  if (queryData.search) {
+    queryData.filter.$or = [
+      {
+        name: {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+      {
+        description: {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+      {
+        ingredients: {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+      {
+        tags: {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+    ];
+  }
+
+  const docs = await Product.find(queryData.filter)
+    .sort(sort)
+    .select(queryData.select)
+    .skip(queryData.skip)
+    .limit(queryData.limit);
+
+  const total = await Product.countDocuments(queryData.filter);
+
+  res.json({
+    success: true,
+    data: docs,
+    pagination: {
+      total,
+      page: queryData.page,
+      limit: queryData.limit,
+      pages: Math.ceil(total / queryData.limit),
+    },
+  });
+});
+
+export const allReviews = asyncHandler(async (req: Request, res: Response) => {
+  const queryData = buildQuery(req.query);
+
+  const allowedSorts = [
+    "rating",
+    "-rating",
+    "createdAt",
+    "-createdAt",
+    "isHidden",
+    "-isHidden",
+  ];
+
+  const sort = allowedSorts.includes(queryData.sort)
+    ? queryData.sort
+    : "-createdAt";
+
+  if (queryData.search) {
+    queryData.filter.$or = [
+      {
+        targetType: {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+      {
+        rating: {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+      {
+        comment: {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+    ];
+  }
+
+  const docs = await Review.find(queryData.filter)
+    .sort(sort)
+    .select(queryData.select)
+    .skip(queryData.skip)
+    .limit(queryData.limit);
+
+  const total = await Review.countDocuments(queryData.filter);
+
+  res.json({
+    success: true,
+    data: docs,
+    pagination: {
+      total,
+      page: queryData.page,
+      limit: queryData.limit,
+      pages: Math.ceil(total / queryData.limit),
+    },
+  });
+});
+
+export const reviewDetails = asyncHandler(
+  async (req: Request, res: Response) => {
+    const reviewId = req.params.reviewId;
+
+    const review = await Order.findById(reviewId).populate(
+      "order reviewer reviewee",
+    );
+
+    res.status(200).json({
+      success: true,
+      data: review,
+    });
+  },
+);
+
+export const hideReview = asyncHandler(async (req: Request, res: Response) => {
+  const user = req.user;
+  const reviewId = req.params.reviewId;
+
+  if (user?.role.includes("Admin")) {
+    throw new UnauthorizedError("Unauthorized user");
+  }
+
+  const review = await Order.findByIdAndUpdate(reviewId, { isHidden: true });
+
+  if (!review) {
+    throw new NotFoundError("Order");
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "Review successfully hidden",
+    data: review,
   });
 });

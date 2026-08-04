@@ -89,9 +89,6 @@ export const cancelOrderService = async (orderId: string, userId: string) => {
   ) {
     throw new ConflictError("Order cannot be cancelled");
   }
-  if (!order.payment) {
-    throw new NotFoundError("Payment information not found");
-  }
 
   try {
     await session.withTransaction(async () => {
