@@ -19,7 +19,7 @@ export const buildQuery = (passedQuery: any) => {
     page,
     limit,
     skip: (page - 1) * limit,
-    sort: passedQuery.sort || "-ratingAverage",
+    sort: passedQuery.sort || "-averageRating",
     select: passedQuery.fields?.replace(/,/g, " ") || "",
     search: passedQuery.search || "",
   };

@@ -257,8 +257,6 @@ export const getMerchantProductsService = async (
 ) => {
   const queryData = buildQuery(payload);
   const allowedSorts = [
-    "ratingAverage",
-    "-ratingAverage",
     "price",
     "-price",
     "createdAt",
@@ -269,7 +267,7 @@ export const getMerchantProductsService = async (
 
   const sort = allowedSorts.includes(queryData.sort)
     ? queryData.sort
-    : "-ratingAverage";
+    : "-createdAt";
 
   const filter: any = {
     merchant: merchantId,

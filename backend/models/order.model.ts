@@ -34,6 +34,8 @@ export interface IOrder extends Document {
   };
   pricing: {
     subtotal: number;
+    serviceFee: number;
+    discount: number;
     deliveryFee: number;
     total: number;
   };
@@ -196,6 +198,16 @@ const orderSchema = new Schema<IOrder>({
       type: Number,
       required: true,
     },
+    serviceFee: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    discount: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
     deliveryFee: {
       type: Number,
       required: true,
@@ -215,8 +227,8 @@ const orderSchema = new Schema<IOrder>({
       "ReadyForPickup",
       "PickedUp",
       "Delivered",
-      "Cancelled", //cancelled by customer - (order can be cancelled by customer if the driver is not yet on the merchant). driver cannot cancel the order unless driver contacts, customer support - so, there is cancellation of order by admin
-      "Rejected", //rejected by merchant
+      "Cancelled",
+      "Rejected",
     ],
     default: "Pending",
   },

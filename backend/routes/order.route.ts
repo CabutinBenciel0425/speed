@@ -1,14 +1,14 @@
 import { Router } from "express";
 import { protectRoute } from "../middlewares/auth.middleware.js";
 import {
-  createOrder,
   getOrders,
   getOrder,
+  createOrderForCOD,
 } from "../controller/order.controller.js";
 
 const orderRouter = Router();
 
-orderRouter.post("/", protectRoute, createOrder);
+orderRouter.post("/cod", protectRoute, createOrderForCOD);
 orderRouter.get("/", protectRoute, getOrders);
 orderRouter.post("/:orderId", protectRoute, getOrder);
 // orderRouter.patch("/:orderId/cancel", protectRoute, cancelOrder);

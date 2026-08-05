@@ -414,6 +414,11 @@ export const driverMatching = async (orderId: string) => {
   if (!order) {
     throw new NotFoundError("Order");
   }
+  const isOrderPending = ["Pending", "NoDriverFound"].includes(order.status);
+
+  if (!isOrderPending || !order.driver) {
+    throw new ConflictError("Driver already assigned");
+  }
   const merchant = await Merchant.findById(order.merchant);
 
   if (!merchant) {

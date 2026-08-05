@@ -17,6 +17,8 @@ import {
   allReviews,
   reviewDetails,
   hideReview,
+  getDashboardSummary,
+  getRevenueAnalytics,
 } from "../controller/admin.controller.js";
 
 const adminRouter = Router();
@@ -73,6 +75,20 @@ adminRouter.patch(
   protectRoute,
   adminOnly,
   hideReview,
+);
+
+//analytics routes
+adminRouter.get(
+  "/admin/dashboard",
+  protectRoute,
+  adminOnly,
+  getDashboardSummary,
+);
+adminRouter.get(
+  "/admin/analytics/revenue",
+  protectRoute,
+  adminOnly,
+  getRevenueAnalytics,
 );
 
 export default adminRouter;

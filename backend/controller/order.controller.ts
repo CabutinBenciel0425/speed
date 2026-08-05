@@ -8,25 +8,40 @@ import {
 } from "../utils/errors.js";
 import {
   cancelOrderService,
-  createNewOrder,
+  createOrderFromPreparedData,
+  prepareOrderData,
+  type PreparedOrderDataType,
 } from "../services/order.service.js";
 import Order from "../models/order.model.js";
 import { buildQuery } from "../utils/buildQuery.js";
+import { driverMatching } from "../services/driver.service.js";
 
-export const createOrder = asyncHandler(async (req: Request, res: Response) => {
-  const user = req.user;
+export const createOrderForCOD = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
 
-  if (!user) {
-    throw new NotFoundError("User");
-  }
+    if (!user) {
+      throw new NotFoundError("User");
+    }
 
-  const newOrder = await createNewOrder(user._id.toString());
+    const preparedData = await prepareOrderData(user._id.toString());
+    if (!preparedData) {
+      throw new ConflictError("Cannot prepare the required data for the order");
+    }
+    const orderData = preparedData.orderData as PreparedOrderDataType;
+    const newOrder = await createOrderFromPreparedData(
+      orderData,
+      preparedData.cart._id.toString(),
+    );
 
-  res.status(201).json({
-    success: true,
-    data: newOrder,
-  });
-});
+    await driverMatching(newOrder._id.toString());
+
+    res.status(201).json({
+      success: true,
+      data: newOrder,
+    });
+  },
+);
 
 export const getOrders = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;

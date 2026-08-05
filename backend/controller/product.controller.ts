@@ -146,8 +146,6 @@ export const getProducts = asyncHandler(async (req: Request, res: Response) => {
   const queryData = buildQuery(req.query);
 
   const allowedSorts = [
-    "ratingAverage",
-    "-ratingAverage",
     "price",
     "-price",
     "createdAt",
@@ -158,7 +156,7 @@ export const getProducts = asyncHandler(async (req: Request, res: Response) => {
 
   const sort = allowedSorts.includes(queryData.sort)
     ? queryData.sort
-    : "-ratingAverage";
+    : "-createdAt";
 
   if (queryData.search) {
     queryData.filter.$or = [

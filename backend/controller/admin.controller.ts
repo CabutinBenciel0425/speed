@@ -9,10 +9,15 @@ import { buildQuery } from "../utils/buildQuery.js";
 import Merchant from "../models/merchant.model.js";
 import Driver from "../models/driver.model.js";
 import Order from "../models/order.model.js";
-import { cancelOrderService } from "../services/admin.service.js";
+import {
+  cancelOrderService,
+  getOrderAnalyticsService,
+  getRevenueAnalyticsService,
+} from "../services/admin.service.js";
 import Product from "../models/product.model.js";
 import Review from "../models/review.model.js";
 import { ApiError } from "../utils/apiError.js";
+import Category from "../models/category.model.js";
 
 export const userProfile = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.params.id;
@@ -632,3 +637,84 @@ export const hideReview = asyncHandler(async (req: Request, res: Response) => {
     data: review,
   });
 });
+
+export const getDashboardSummary = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+
+    if (!user || !user.role.includes("Admin")) {
+      throw new UnauthorizedError("Unauthorized user");
+    }
+
+    const totalCustomer = await User.countDocuments({});
+    const totalMerchants = await Merchant.countDocuments({});
+    const totalDrivers = await Driver.countDocuments({});
+
+    const totalOrders = await Order.countDocuments({});
+    const pendingOrders = await Order.countDocuments({ status: "Pending" });
+    const completedOrders = await Order.countDocuments({ status: "Delivered" });
+    const cancelledOrders = await Order.countDocuments({ status: "Cancelled" });
+
+    const totalProducts = await Product.countDocuments({});
+    const totalCategories = await Category.countDocuments({});
+
+    //{ _id: null, totalRevenue: 4250.50, totalDeliveryFees: 150.00 }
+    const totalRevenue = Order.aggregate([
+      {
+        $match: {
+          status: "Delivered",
+          "payment.status": "Paid",
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: "$pricing.subtotal" },
+          totalDeliveryFee: { $sum: "$pricing.deliveryFee" },
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalCustomer,
+        totalMerchants,
+        totalDrivers,
+        totalOrders,
+        pendingOrders,
+        completedOrders,
+        cancelledOrders,
+        totalProducts,
+        totalCategories,
+        totalRevenue,
+      },
+    });
+  },
+);
+
+export type PeriodType = "hour" | "day" | "week" | "month";
+
+export const getRevenueAnalytics = asyncHandler(
+  async (req: Request, res: Response) => {
+    const period = req.params.period as PeriodType;
+
+    const revenue = await getRevenueAnalyticsService(period);
+
+    res.status(200).json({ success: true, data: revenue });
+  },
+);
+
+export const getOrderAnalytics = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+
+    if (!user) {
+      throw new UnauthorizedError("Unauthorized user");
+    }
+
+    const orderAnalytics = await getOrderAnalyticsService(user);
+
+    res.status(200).json({ success: true, data: orderAnalytics });
+  },
+);
