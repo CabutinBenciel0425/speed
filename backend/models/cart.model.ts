@@ -22,7 +22,7 @@ export interface ICart extends Document {
     };
   };
   payment: {
-    method: "Cash" | "Card" | "GCash" | "Maya";
+    method: "Cash" | "QRPh";
   };
   pricing: {
     subtotal: number;
@@ -120,7 +120,7 @@ const cartSchema = new Schema<ICart>({
     method: {
       type: String,
       required: true,
-      enum: ["Cash", "Card", "GCash", "Maya"],
+      enum: ["Cash", "QRPh"],
     },
   },
   pricing: {

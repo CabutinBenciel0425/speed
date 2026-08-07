@@ -127,7 +127,7 @@ export const getOrder = asyncHandler(async (req: Request, res: Response) => {
     throw new NotFoundError("Order");
   }
 
-  if (order.customer.toString() === user._id.toString()) {
+  if (order.customer.toString() !== user._id.toString()) {
     throw new UnauthorizedError("This order does not belong to this user");
   }
 

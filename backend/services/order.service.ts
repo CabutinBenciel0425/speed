@@ -8,11 +8,25 @@ import Cart from "../models/cart.model.js";
 import { generateOrderNumber } from "../utils/generateOrderNumber.js";
 import Driver from "../models/driver.model.js";
 import { io } from "../server.js";
+import { itemSchema } from "../schemas/cart.schema.js";
+import Product, { type IProduct } from "../models/product.model.js";
+import Payment from "../models/payment.model.js";
+
+type CartItemType = {
+  product: Types.ObjectId;
+  productName: string;
+  image?: string | undefined;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+  notes: string;
+};
 
 export type PreparedOrderDataType = {
   customer: Types.ObjectId;
   merchant: Types.ObjectId;
-  orderNumber: string;
+  orderNumber?: string;
+  items: CartItemType[];
   deliveryAddress: {
     address: Types.ObjectId;
     street: string;
@@ -25,8 +39,10 @@ export type PreparedOrderDataType = {
     };
   };
   payment: {
-    method: "Cash" | "Card" | "GCash" | "Maya";
+    paymentId: Types.ObjectId | null;
+    method: "Cash" | "QRPh";
     status: "Pending" | "Paid" | "Cancelled";
+    transactionId: string | null;
   };
   pricing: {
     subtotal: number;
@@ -52,7 +68,9 @@ export type PreparedOrderDataType = {
 export const prepareOrderData = async (userId: string) => {
   await recalculateCart(userId);
 
-  const cart = await Cart.findOne({ customer: userId });
+  const cart = await Cart.findOne({ customer: userId }).populate(
+    "items.product",
+  );
   if (!cart) {
     throw new NotFoundError("Cart");
   }
@@ -67,13 +85,32 @@ export const prepareOrderData = async (userId: string) => {
     throw new ConflictError("There is no default address selected");
   }
 
+  let orderItems: CartItemType[] = [];
+
+  for (const item of cart.items) {
+    const product = await Product.findById(item.product);
+    if (!product) {
+      throw new NotFoundError("Product");
+    }
+    orderItems.push({
+      product: product._id,
+      productName: product.name,
+      image: product.image,
+      quantity: item.quantity,
+      unitPrice: product.price,
+      subtotal: item.quantity * product.price,
+      notes: item.notes,
+    });
+  }
+
   return {
     orderData: {
       customer: cart.customer,
       merchant: cart.merchant,
-      orderNumber: generateOrderNumber(),
+      items: orderItems,
       deliveryAddress: cart.deliveryAddress,
       payment: {
+        paymentId: null,
         method: cart?.payment?.method,
         status: "Pending",
         transactionId: null,
@@ -100,14 +137,22 @@ export const prepareOrderData = async (userId: string) => {
 export const createOrderFromPreparedData = async (
   orderData: PreparedOrderDataType,
   cartId: string,
+  userId: string | null = null,
 ) => {
   const session = await mongoose.startSession();
   const newOrder = new Order(orderData);
+  const paymentDoc = await Payment.findOne({ customer: userId });
+
+  if (!paymentDoc) {
+    throw new NotFoundError("Payment document");
+  }
 
   try {
     await session.withTransaction(async () => {
-      await newOrder.save();
-      await Cart.findByIdAndDelete(cartId);
+      newOrder.orderNumber = generateOrderNumber();
+      newOrder.payment.paymentId = paymentDoc._id;
+      await newOrder.save({ session });
+      await Cart.findByIdAndDelete(cartId).session(session);
     });
   } finally {
     await session.endSession();

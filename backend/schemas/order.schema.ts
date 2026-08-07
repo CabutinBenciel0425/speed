@@ -21,7 +21,7 @@ export const orderSchema = z.object({
     location: z.array(z.coerce.number()),
   }),
   payment: z.object({
-    method: z.enum(["Cash", "Card", "GCash", "Maya"]),
+    method: z.enum(["Cash", "QRPh"]),
     status: z.enum(["Pending", "Paid", "Cancelled"]).default("Pending"),
     transactionId: z.nullable(z.string()).default(null),
   }),

@@ -11,10 +11,12 @@ const deliveryOfferSchema = new Schema<IDeliveryOffer>(
   {
     order: {
       type: mongoose.Types.ObjectId,
+      ref: "Order",
       required: true,
     },
     driver: {
       type: mongoose.Types.ObjectId,
+      ref: "Driver",
       required: true,
     },
     status: {

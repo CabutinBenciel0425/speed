@@ -22,6 +22,7 @@ const productSchema = new Schema<IProduct>(
     merchant: {
       type: mongoose.Types.ObjectId,
       ref: "Merchant",
+      required: true,
     },
     category: {
       type: mongoose.Types.ObjectId,

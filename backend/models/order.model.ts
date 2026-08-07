@@ -28,7 +28,8 @@ export interface IOrder extends Document {
     };
   };
   payment: {
-    method: "Cash" | "Card" | "GCash" | "Maya";
+    paymentId?: Types.ObjectId;
+    method: "Cash" | "QRPh";
     status: "Pending" | "Paid" | "Cancelled";
     transactionId?: string | null;
   };
@@ -173,10 +174,14 @@ const orderSchema = new Schema<IOrder>({
     },
   },
   payment: {
+    paymentId: {
+      type: mongoose.Types.ObjectId,
+      default: null,
+    },
     method: {
       type: String,
       required: true,
-      enum: ["Cash", "Card", "GCash", "Maya"],
+      enum: ["Cash", "QRPh"],
     },
     status: {
       type: String,

@@ -14,15 +14,18 @@ const reviewSchema = new Schema<IReview>(
   {
     order: {
       type: mongoose.Types.ObjectId,
+      ref: "Order",
       required: true,
     },
     reviewer: {
       type: mongoose.Types.ObjectId,
+      ref: "User",
       required: true,
     },
     reviewee: {
-      types: mongoose.Types.ObjectId,
+      type: mongoose.Types.ObjectId,
       required: true,
+      refPath: "targetType",
     },
     targetType: {
       type: String,
