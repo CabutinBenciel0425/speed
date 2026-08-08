@@ -138,6 +138,69 @@ export const handleSuccessfulPaymentService = async (
   return newOrder!;
 };
 
+export const handleFailedPaymentService = async (paymentIntentId: string) => {
+  const payment = await Payment.findOne({ paymentIntentId });
+
+  if (!payment) {
+    throw new NotFoundError("Payment");
+  }
+
+  if (payment.status === "Failed") {
+    return payment;
+  }
+
+  if (payment.status === "Paid") {
+    return payment;
+  }
+
+  if (payment.status !== "Pending") {
+    throw new ConflictError(
+      `Payment cannot be marked as failed because its current status is ${payment.status}`,
+    );
+  }
+
+  payment.status = "Failed";
+
+  await payment.save();
+
+  return payment;
+};
+
+export const handleExpiredQRPhPaymentService = async (
+  paymentIntentId: string,
+) => {
+  const payment = await Payment.findOne({ paymentIntentId });
+
+  if (!payment) {
+    throw new NotFoundError("Payment");
+  }
+
+  if (payment.status === "Failed") {
+    return payment;
+  }
+
+  if (payment.status === "Paid") {
+    return payment;
+  }
+
+  if (payment.status === "Expired") {
+    return payment;
+  }
+
+  if (payment.status !== "Pending") {
+    throw new ConflictError(
+      `Payment cannot be marked as expired because its current status is ${payment.status}`,
+    );
+  }
+
+  payment.status = "Expired";
+  payment.expiredAt = new Date();
+
+  await payment.save();
+
+  return payment;
+};
+
 const createPaymentIntent = async (
   amount: number,
   description = "Order payment",

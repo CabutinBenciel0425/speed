@@ -4,6 +4,8 @@ import type { Request, Response } from "express";
 import { UnauthorizedError } from "../utils/errors.js";
 import {
   createCheckoutService,
+  handleExpiredQRPhPaymentService,
+  handleFailedPaymentService,
   handleSuccessfulPaymentService,
 } from "../services/payment.service.js";
 import { PAYMONGO_WEBHOOK_SECRET } from "../config/envVars.js";
@@ -115,12 +117,28 @@ export const paymongoWebhook = asyncHandler(
 
       case "payment.failed": {
         console.log("❌ Payment failed");
-        break;
+        const paymentIntentId = event.data.attributes.data.payment_intent_id;
+
+        const payment = await handleFailedPaymentService(paymentIntentId);
+
+        return res.status(200).json({
+          success: true,
+          message: "Payment failed",
+          data: payment,
+        });
       }
 
       case "qrph.expired": {
         console.log("⏰ QRPh expired");
-        break;
+        const paymentIntentId = event.data.attributes.data.payment_intent_id;
+
+        const payment = await handleExpiredQRPhPaymentService(paymentIntentId);
+
+        return res.status(200).json({
+          success: true,
+          message: "QR expired",
+          data: payment,
+        });
       }
 
       case "payment.refunded": {
