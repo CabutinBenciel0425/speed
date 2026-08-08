@@ -98,7 +98,12 @@ export const paymongoWebhook = asyncHandler(
 
         const transactionId = event.data.attributes.data.id;
 
-        console.log(`✅ Payment succeeded: ${paymentIntentId}`);
+        if (!paymentIntentId) {
+          return res.status(400).json({
+            success: false,
+            message: "Missing payment intent ID",
+          });
+        }
 
         const order = await handleSuccessfulPaymentService(
           paymentIntentId,

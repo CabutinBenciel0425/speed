@@ -441,16 +441,19 @@ export const driverMatching = async (orderId: string) => {
     return;
   }
 
+  let driverAccepted = false;
+
   for (const driver of drivers) {
     const offer = await sendOffer(order._id.toString(), driver._id.toString());
 
     if (!offer) {
-      throw new NotFoundError("Offer not found");
+      continue;
     }
 
     const result = await waitForOfferResult(offer._id.toString());
 
     if (result === "Accepted") {
+      driverAccepted = true;
       break;
     }
 
@@ -460,10 +463,12 @@ export const driverMatching = async (orderId: string) => {
       await offer.save();
     }
   }
-  order.status = "NoDriverFound";
-  await order.save();
+  if (!driverAccepted) {
+    order.status = "NoDriverFound";
+    await order.save();
 
-  io.to(`customer:${order.customer.toString()}`).emit("order:noDriverFound");
+    io.to(`customer:${order.customer.toString()}`).emit("order:noDriverFound");
+  }
 };
 
 export const findNearestDrivers = async (coordinates: [number, number]) => {

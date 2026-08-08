@@ -3,7 +3,7 @@ import mongoose, { model, Schema, Document, Types } from "mongoose";
 export interface IOrder extends Document {
   customer: Types.ObjectId;
   merchant: Types.ObjectId;
-  driver?: Types.ObjectId;
+  driver: Types.ObjectId | null;
   orderNumber: string;
   items: [
     {
@@ -52,16 +52,16 @@ export interface IOrder extends Document {
   customerNote: string;
   estimatedPreparationTime: number;
   estimatedDeliveryTime: number;
-  driverAssignedAt: Date;
-  acceptedAt: Date;
-  merchantReceivedAt: Date;
-  preparingAt: Date;
-  driverArrivedAtMerchantAt: Date;
-  readyForPickupAt: Date;
-  pickedUpAt: Date;
-  deliveredAt: Date;
-  rejectedAt: Date;
-  cancelledAt: Date;
+  driverAssignedAt?: Date;
+  acceptedAt?: Date;
+  merchantReceivedAt?: Date;
+  preparingAt?: Date;
+  driverArrivedAtMerchantAt?: Date;
+  readyForPickupAt?: Date;
+  pickedUpAt?: Date;
+  deliveredAt?: Date;
+  rejectedAt?: Date;
+  cancelledAt?: Date;
   cancelledBy: "Customer" | "Merchant" | "Admin";
   cancellationReason: string;
 }

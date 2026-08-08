@@ -215,6 +215,8 @@ const paymentSchema = new Schema<IPayment>(
     },
     paymentIntentId: {
       type: String,
+      unique: true,
+      sparse: true,
       validate: {
         validator: function (this: any, value: string | null): boolean {
           if (this.method === "QRPh") {

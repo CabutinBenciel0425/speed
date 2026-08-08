@@ -131,9 +131,11 @@ export const handleSuccessfulPaymentService = async (
     await session.endSession();
   }
 
-  await driverMatching(newOrder!._id.toString());
-
-  console.log(newOrder!);
+  try {
+    await driverMatching(newOrder!._id.toString());
+  } catch (error) {
+    console.error("Driver matching failed:", error);
+  }
 
   return newOrder!;
 };
