@@ -1,20 +1,12 @@
-import type { createOrderInput } from "../schemas/order.schema.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import type { Request, Response } from "express";
-import {
-  ConflictError,
-  NotFoundError,
-  UnauthorizedError,
-} from "../utils/errors.js";
+import { NotFoundError, UnauthorizedError } from "../utils/errors.js";
 import {
   cancelOrderService,
-  createOrderFromPreparedData,
-  prepareOrderData,
-  type PreparedOrderDataType,
+  createOrderForCODService,
 } from "../services/order.service.js";
 import Order from "../models/order.model.js";
 import { buildQuery } from "../utils/buildQuery.js";
-import { driverMatching } from "../services/driver.service.js";
 
 export const createOrderForCOD = asyncHandler(
   async (req: Request, res: Response) => {
@@ -24,21 +16,11 @@ export const createOrderForCOD = asyncHandler(
       throw new NotFoundError("User");
     }
 
-    const preparedData = await prepareOrderData(user._id.toString());
-    if (!preparedData) {
-      throw new ConflictError("Cannot prepare the required data for the order");
-    }
-    const orderData = preparedData.orderData as PreparedOrderDataType;
-    const newOrder = await createOrderFromPreparedData(
-      orderData,
-      preparedData.cart._id.toString(),
-    );
-
-    await driverMatching(newOrder._id.toString());
+    const newPayment = await createOrderForCODService(user._id.toString());
 
     res.status(201).json({
       success: true,
-      data: newOrder,
+      data: newPayment,
     });
   },
 );
@@ -47,6 +29,12 @@ export const getOrders = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
   const queryData = buildQuery(req.query);
   const allowedSorts = ["createdAt", "-createdAt", "total", "-total"];
+
+  if (!user) {
+    throw new UnauthorizedError("Unauthorized user");
+  }
+
+  queryData.filter.customer = user._id;
 
   const sort = allowedSorts.includes(queryData.sort) ? queryData.sort : "-name";
 

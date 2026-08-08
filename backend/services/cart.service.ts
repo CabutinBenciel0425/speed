@@ -18,7 +18,7 @@ export const addItemToCart = async (
   const address = await Address.findOne({ user: user._id, isDefault: true });
 
   if (!address) {
-    throw new NotFoundError("Address not found");
+    throw new NotFoundError("Address");
   }
 
   const product = await Product.findById(addingItem.product);
@@ -45,18 +45,16 @@ export const addItemToCart = async (
     | undefined;
 
   if (!merchantCoords) {
-    throw new NotFoundError("Merchant address not found");
+    throw new NotFoundError("Merchant address");
   }
 
   if (!addressCoords) {
-    throw new NotFoundError("Address coordinates not found");
+    throw new NotFoundError("Address coordinates");
   }
 
   const distanceResult = await computeDistance(merchantCoords, addressCoords);
 
   const deliveryFee = computeDeliveryFee(distanceResult.distanceKm);
-
-  console.log(distanceResult);
 
   const cart = await Cart.findOne({ customer: user._id });
 
@@ -82,7 +80,7 @@ export const addItemToCart = async (
         },
       },
       payment: {
-        method: addingItem.payment,
+        method: "Cash",
       },
       pricing: {
         subtotal: product.price * addingItem.quantity,

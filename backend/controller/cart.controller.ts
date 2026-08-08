@@ -131,12 +131,15 @@ export const clearCart = asyncHandler(async (req: Request, res: Response) => {
   const cart = await Cart.findOne({ customer: user._id });
 
   if (!cart) {
-    throw new NotFoundError("Cart");
+    return res.status(200).json({
+      success: true,
+      message: "Cart has no item to delete",
+    });
   }
 
   await Cart.findByIdAndDelete(cart._id);
 
-  res.status(201).json({
+  res.status(200).json({
     success: true,
     message: "Cart deleted successfully",
   });

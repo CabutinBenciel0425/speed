@@ -416,7 +416,7 @@ export const driverMatching = async (orderId: string) => {
   }
   const isOrderPending = ["Pending", "NoDriverFound"].includes(order.status);
 
-  if (!isOrderPending || !order.driver) {
+  if (!isOrderPending || order.driver) {
     throw new ConflictError("Driver already assigned");
   }
   const merchant = await Merchant.findById(order.merchant);
@@ -433,7 +433,12 @@ export const driverMatching = async (orderId: string) => {
   const drivers = await findNearestDrivers(merchantCoords);
 
   if (drivers.length === 0) {
-    throw new NotFoundError("Drivers");
+    order.status = "NoDriverFound";
+    await order.save();
+
+    io.to(`customer:${order.customer.toString()}`).emit("order:noDriverFound");
+
+    return;
   }
 
   for (const driver of drivers) {
@@ -454,15 +459,11 @@ export const driverMatching = async (orderId: string) => {
 
       await offer.save();
     }
-
-    if (!result) {
-      order.status = "NoDriverFound";
-
-      io.to(`customer:${order.customer.toString()}`).emit(
-        "order:noDriverFound",
-      );
-    }
   }
+  order.status = "NoDriverFound";
+  await order.save();
+
+  io.to(`customer:${order.customer.toString()}`).emit("order:noDriverFound");
 };
 
 export const findNearestDrivers = async (coordinates: [number, number]) => {

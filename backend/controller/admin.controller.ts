@@ -120,8 +120,6 @@ export const allUsers = asyncHandler(async (req: Request, res: Response) => {
 
   const total = await User.countDocuments(queryData.filter);
 
-  console.log(docs);
-
   res.json({
     success: true,
     data: docs,

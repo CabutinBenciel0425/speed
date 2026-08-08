@@ -19,8 +19,8 @@ import http from "http";
 import { socketAuth } from "./middlewares/socketAuth.middleware.js";
 import merchantRouter from "./routes/merchant.route.js";
 import adminRouter from "./routes/admin.route.js";
-import webhookRoutes from "./lib/paymongoWebhook.js";
 import paymentRouter from "./routes/payment.route.js";
+import { paymongoWebhook } from "./controller/payment.controller.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -33,7 +33,11 @@ export const io = new Server(server, {
 });
 io.use(socketAuth);
 app.use(morgan("dev"));
-app.use("/api/webhooks", webhookRoutes);
+app.post(
+  "/api/v1/payment/webhook",
+  express.raw({ type: "application/json" }),
+  paymongoWebhook,
+);
 app.use(express.json({ limit: "5mb" }));
 app.use(cookieParser());
 

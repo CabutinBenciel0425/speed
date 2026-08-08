@@ -234,6 +234,7 @@ const orderSchema = new Schema<IOrder>({
       "Delivered",
       "Cancelled",
       "Rejected",
+      "NoDriverFound",
     ],
     default: "Pending",
   },

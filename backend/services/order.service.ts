@@ -11,6 +11,7 @@ import { io } from "../server.js";
 import { itemSchema } from "../schemas/cart.schema.js";
 import Product, { type IProduct } from "../models/product.model.js";
 import Payment from "../models/payment.model.js";
+import { driverMatching } from "./driver.service.js";
 
 type CartItemType = {
   product: Types.ObjectId;
@@ -59,10 +60,54 @@ export type PreparedOrderDataType = {
     | "Delivered"
     | "Cancelled"
     | "Rejected";
-  customerNote: string;
+  customerNote?: string;
   estimatedPreparationTime: number;
   estimatedDeliveryTime: number;
   driver: Types.ObjectId | null;
+};
+
+export const createOrderForCODService = async (userId: string) => {
+  const preparedData = await prepareOrderData(userId);
+  if (!preparedData) {
+    throw new ConflictError("Cannot prepare the required data for the order");
+  }
+  const orderData = preparedData.orderData as PreparedOrderDataType;
+  const payment = new Payment({
+    customer: preparedData.orderData.customer,
+    merchant: preparedData.orderData.merchant,
+    cart: preparedData.cart._id,
+    orderData: {
+      items: preparedData.orderData.items,
+      deliveryAddress: preparedData.orderData.deliveryAddress,
+      pricing: preparedData.orderData.pricing,
+      customerNote: preparedData.orderData.customerNote,
+      estimatedPreparationTime: preparedData.orderData.estimatedPreparationTime,
+      estimatedDeliveryTime: preparedData.orderData.estimatedDeliveryTime,
+    },
+    provider: "Manual",
+    method: "Cash",
+    amount: preparedData.orderData.pricing.total,
+    status: "Pending",
+    paymentIntentId: null,
+    transactionId: null,
+    paidAt: null,
+    expiresAt: null,
+    expiredAt: null,
+    refundedAt: null,
+  });
+
+  await payment.save();
+
+  orderData.payment.paymentId = payment._id;
+
+  const newOrder = await createOrderFromPreparedData(
+    orderData,
+    preparedData.cart._id.toString(),
+  );
+
+  await driverMatching(newOrder._id.toString());
+
+  return payment;
 };
 
 export const prepareOrderData = async (userId: string) => {
@@ -137,20 +182,19 @@ export const prepareOrderData = async (userId: string) => {
 export const createOrderFromPreparedData = async (
   orderData: PreparedOrderDataType,
   cartId: string,
-  userId: string | null = null,
 ) => {
   const session = await mongoose.startSession();
   const newOrder = new Order(orderData);
-  const paymentDoc = await Payment.findOne({ customer: userId });
+  const paymentId = orderData.payment.paymentId;
 
-  if (!paymentDoc) {
-    throw new NotFoundError("Payment document");
+  if (!paymentId) {
+    throw new NotFoundError("Payment id");
   }
 
   try {
     await session.withTransaction(async () => {
       newOrder.orderNumber = generateOrderNumber();
-      newOrder.payment.paymentId = paymentDoc._id;
+      newOrder.payment.paymentId = paymentId;
       await newOrder.save({ session });
       await Cart.findByIdAndDelete(cartId).session(session);
     });
@@ -163,7 +207,7 @@ export const createOrderFromPreparedData = async (
 
 export const cancelOrderService = async (orderId: string, userId: string) => {
   const session = await mongoose.startSession();
-  const order = await Order.findOne({ user: userId, _id: orderId }).session(
+  const order = await Order.findOne({ customer: userId, _id: orderId }).session(
     session,
   );
 

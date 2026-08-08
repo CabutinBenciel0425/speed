@@ -1,6 +1,9 @@
-import { Router } from "express";
+import express, { Router } from "express";
 import { protectRoute } from "../middlewares/auth.middleware.js";
-import { createCheckout } from "../controller/payment.controller.js";
+import {
+  createCheckout,
+  paymongoWebhook,
+} from "../controller/payment.controller.js";
 
 const paymentRouter = Router();
 

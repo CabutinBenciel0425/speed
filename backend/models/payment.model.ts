@@ -4,6 +4,7 @@ export interface IPayment extends Document {
   customer: Types.ObjectId;
   merchant: Types.ObjectId;
   order: Types.ObjectId | null;
+  cart: Types.ObjectId;
   orderData: {
     items: [
       {
@@ -66,6 +67,11 @@ const paymentSchema = new Schema<IPayment>(
       type: mongoose.Types.ObjectId,
       ref: "Order",
       default: null,
+    },
+    cart: {
+      type: mongoose.Types.ObjectId,
+      ref: "Cart",
+      required: true,
     },
     orderData: {
       items: [
