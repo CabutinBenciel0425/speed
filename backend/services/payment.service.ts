@@ -131,13 +131,13 @@ export const handleSuccessfulPaymentService = async (
     await session.endSession();
   }
 
-  try {
-    await driverMatching(newOrder!._id.toString());
-  } catch (error) {
-    console.error("Driver matching failed:", error);
+  const order = await driverMatching(newOrder!._id.toString());
+
+  if (!order) {
+    throw new NotFoundError("Order");
   }
 
-  return newOrder!;
+  return order;
 };
 
 export const handleFailedPaymentService = async (paymentIntentId: string) => {

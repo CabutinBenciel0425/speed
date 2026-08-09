@@ -8,6 +8,10 @@ import {
   updateMerchantProfile,
   toggleMerchantFavorite,
   getMerchantFavorites,
+  getOrders,
+  acceptOrder,
+  rejectOrder,
+  readyOrder,
 } from "../controller/merchant.controller.js";
 import { upload } from "../middlewares/upload.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
@@ -52,6 +56,31 @@ merchantRouter.patch(
   ]),
   validate(merchantUpdateInput),
   updateMerchantProfile,
+);
+
+merchantRouter.get(
+  "/:merchantId/orders",
+  protectRoute,
+  merchantOnly,
+  getOrders,
+);
+merchantRouter.get(
+  "/:merchantId/orders/:orderId/accept",
+  protectRoute,
+  merchantOnly,
+  acceptOrder,
+);
+merchantRouter.get(
+  "/:merchantId/orders/:orderId/reject",
+  protectRoute,
+  merchantOnly,
+  rejectOrder,
+);
+merchantRouter.get(
+  "/:merchantId/orders/:orderId/ready",
+  protectRoute,
+  merchantOnly,
+  readyOrder,
 );
 
 //TODO: GET merchant stats

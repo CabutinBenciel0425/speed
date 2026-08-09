@@ -1,4 +1,4 @@
-import mongoose, { type QueryFilter } from "mongoose";
+import mongoose from "mongoose";
 import Order from "../models/order.model.js";
 import { ConflictError, NotFoundError } from "../utils/errors.js";
 import Merchant, { type IMerchant } from "../models/merchant.model.js";
@@ -12,11 +12,13 @@ import cloudinary from "../config/cloudinary.js";
 import { imageUpload } from "../utils/imageUpload.js";
 import MerchantFavorite from "../models/merchantFavorite.model.js";
 import { ApiError } from "../utils/apiError.js";
-import { userInfo } from "node:os";
 
-export const merchantRejectOrder = async (orderId: string, userId: string) => {
+export const merchantRejectOrder = async (
+  orderId: string,
+  merchantId: string,
+) => {
   const session = await mongoose.startSession();
-  const isOrderValid = await validateMerchantOrder(orderId, userId);
+  const isOrderValid = await validateMerchantOrder(orderId, merchantId);
 
   if (!isOrderValid) {
     throw new ConflictError("There is some error. Check the console");
@@ -58,14 +60,20 @@ export const merchantRejectOrder = async (orderId: string, userId: string) => {
   return order;
 };
 
-export const merchantAcceptOrder = async (orderId: string, userId: string) => {
-  const user = await User.findById(userId);
+export const merchantAcceptOrder = async (
+  orderId: string,
+  merchantId: string,
+) => {
   const order = await Order.findById(orderId);
-  if (!user) {
-    throw new NotFoundError("User");
-  }
+
   if (!order) {
     throw new NotFoundError("Order");
+  }
+
+  if (order.merchant.toString() !== merchantId) {
+    throw new ConflictError(
+      "Order id provided is not equal to the order merchant Id",
+    );
   }
 
   order.merchantReceivedAt = new Date();
@@ -74,22 +82,26 @@ export const merchantAcceptOrder = async (orderId: string, userId: string) => {
 
   await order.save();
 
-  io.to(`customer:${order.customer.toString()}`).emit("order:preparing");
+  io.to(`customer:${order.customer.toString()}`).emit("order:merchantAccepted");
+  io.to(`driver:${order.driver?.toString()}`).emit("order:merchantAccepted");
 
   return order;
 };
 
 export const merchantPreparingOrder = async (
   orderId: string,
-  userId: string,
+  merchantId: string,
 ) => {
-  const user = await User.findById(userId);
   const order = await Order.findById(orderId);
-  if (!user) {
-    throw new NotFoundError("User");
-  }
+
   if (!order) {
     throw new NotFoundError("Order");
+  }
+
+  if (order.merchant.toString() !== merchantId) {
+    throw new ConflictError(
+      "Order id provided is not equal to the order merchant Id",
+    );
   }
 
   order.merchantReceivedAt = new Date();
@@ -97,13 +109,19 @@ export const merchantPreparingOrder = async (
 
   await order.save();
 
-  io.to(`customer:${order.customer.toString()}`).emit("order:preparing");
+  io.to(`customer:${order.customer.toString()}`).emit(
+    "order:merchantPreparing",
+  );
+  io.to(`customer:${order.driver?.toString()}`).emit("order:merchantPreparing");
 
   return order;
 };
 
-export const merchantReadyOrder = async (orderId: string, userId: string) => {
-  const isOrderValid = await validateMerchantOrder(orderId, userId);
+export const merchantReadyOrder = async (
+  orderId: string,
+  merchantId: string,
+) => {
+  const isOrderValid = await validateMerchantOrder(orderId, merchantId);
 
   if (!isOrderValid) {
     throw new ConflictError("There is some error. Check the console");
@@ -124,17 +142,18 @@ export const merchantReadyOrder = async (orderId: string, userId: string) => {
   await order.save();
 
   io.to(`driver:${driver._id.toString()}`).emit("order:ready");
+  io.to(`customer:${order.customer.toString()}`).emit("order:ready");
 
   return order;
 };
 
-const validateMerchantOrder = async (orderId: string, userId: string) => {
+const validateMerchantOrder = async (orderId: string, merchantId: string) => {
   const order = await Order.findById(orderId);
   if (!order) {
     throw new NotFoundError("Order");
   }
 
-  const merchant = await Merchant.findOne({ owner: userId });
+  const merchant = await Merchant.findById(merchantId);
   if (!merchant) {
     throw new NotFoundError("Merchant");
   }
@@ -293,14 +312,14 @@ export const getMerchantProductsService = async (
 };
 
 export const updateMerchantProfileService = async (
-  user: IUser,
+  userId: string,
   merchantId: string,
   payload: merchantUpdateInput,
   logo: Express.Multer.File | undefined,
   banner: Express.Multer.File | undefined,
 ) => {
   const merchant = await Merchant.findOne({
-    owner: user._id,
+    owner: userId,
     _id: merchantId,
   }).populate("owner");
 

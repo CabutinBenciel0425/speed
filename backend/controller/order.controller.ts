@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import type { Request, Response } from "express";
 import { NotFoundError, UnauthorizedError } from "../utils/errors.js";
 import {
-  cancelOrderService,
+  cancelOrderServiceCustomer,
   createOrderForCODService,
 } from "../services/order.service.js";
 import Order from "../models/order.model.js";
@@ -125,18 +125,23 @@ export const getOrder = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-export const cancelOrder = asyncHandler(async (req: Request, res: Response) => {
-  const user = req.user;
-  const orderId = req.params.orderId as string;
-  const cancellationReason: string = req.body;
+export const cancelOrderCustomer = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+    const orderId = req.params.orderId as string;
+    const cancellationReason: string = req.body;
 
-  if (!user) {
-    throw new NotFoundError("User");
-  }
-  const cancelledOrder = await cancelOrderService(user._id.toString(), orderId);
+    if (!user) {
+      throw new NotFoundError("User");
+    }
+    const cancelledOrder = await cancelOrderServiceCustomer(
+      user._id.toString(),
+      orderId,
+    );
 
-  res.status(200).json({
-    success: true,
-    data: cancelledOrder,
-  });
-});
+    res.status(200).json({
+      success: true,
+      data: cancelledOrder,
+    });
+  },
+);

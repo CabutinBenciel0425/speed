@@ -205,7 +205,10 @@ export const createOrderFromPreparedData = async (
   return await newOrder.populate(["customer", "merchant"]);
 };
 
-export const cancelOrderService = async (orderId: string, userId: string) => {
+export const cancelOrderServiceCustomer = async (
+  orderId: string,
+  userId: string,
+) => {
   const session = await mongoose.startSession();
   const order = await Order.findOne({ customer: userId, _id: orderId }).session(
     session,

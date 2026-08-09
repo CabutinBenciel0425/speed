@@ -469,6 +469,8 @@ export const driverMatching = async (orderId: string) => {
 
     io.to(`customer:${order.customer.toString()}`).emit("order:noDriverFound");
   }
+
+  return order;
 };
 
 export const findNearestDrivers = async (coordinates: [number, number]) => {

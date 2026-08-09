@@ -8,7 +8,7 @@ import {
 const paymentRouter = Router();
 
 // POST /payments/checkout
-paymentRouter.post("/checkout", protectRoute, createCheckout);
+paymentRouter.post("/checkout/qrph", protectRoute, createCheckout);
 
 // POST /payments/webhook
 

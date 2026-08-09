@@ -8,11 +8,92 @@ import {
   getMerchantFavoritesService,
   getMerchantProductsService,
   getMerchantsService,
+  merchantAcceptOrder,
+  merchantReadyOrder,
+  merchantRejectOrder,
   toggleMerchantFavoriteService,
   updateMerchantProfileService,
 } from "../services/merchant.service.js";
 import type { merchantUpdateInput } from "../schemas/merchant.schema.js";
 import MerchantFavorite from "../models/merchantFavorite.model.js";
+import Order from "../models/order.model.js";
+
+export const getOrders = asyncHandler(async (req: Request, res: Response) => {
+  const merchantId = req.params.merchantId;
+
+  if (!merchantId) {
+    throw new NotFoundError("Merchant id");
+  }
+
+  const orders = await Order.find({ merchant: merchantId });
+
+  res.status(200).json({
+    success: true,
+    data: orders,
+  });
+});
+
+export const acceptOrder = asyncHandler(async (req: Request, res: Response) => {
+  const merchantId = req.params.merchantId as string;
+  const orderId = req.params.orderId as string;
+
+  if (!merchantId) {
+    throw new NotFoundError("Merchant id");
+  }
+
+  if (!orderId) {
+    throw new NotFoundError("Order id");
+  }
+
+  const order = await merchantAcceptOrder(orderId, merchantId);
+
+  const orders = await Order.find({ merchant: merchantId });
+
+  res.status(200).json({
+    success: true,
+    data: orders,
+  });
+});
+
+export const rejectOrder = asyncHandler(async (req: Request, res: Response) => {
+  const merchantId = req.params.merchantId as string;
+  const orderId = req.params.orderId as string;
+
+  if (!merchantId) {
+    throw new NotFoundError("Merchant id");
+  }
+
+  if (!orderId) {
+    throw new NotFoundError("Order id");
+  }
+
+  const order = await merchantRejectOrder(orderId, merchantId);
+
+  res.status(200).json({
+    success: true,
+    data: order,
+  });
+});
+
+export const readyOrder = asyncHandler(async (req: Request, res: Response) => {
+  const merchantId = req.params.merchantId as string;
+  const orderId = req.params.orderId as string;
+
+  if (!merchantId) {
+    throw new NotFoundError("Merchant id");
+  }
+
+  if (!orderId) {
+    throw new NotFoundError("Order id");
+  }
+
+  const order = await merchantReadyOrder(orderId, merchantId);
+
+  res.status(200).json({
+    success: true,
+    data: order,
+  });
+});
 
 export const getMerchants = asyncHandler(
   async (req: Request, res: Response) => {
@@ -94,6 +175,10 @@ export const getMerchantProfile = asyncHandler(
     const user = req.user;
     const merchantId = req.params.merchantId;
 
+    if (!user) {
+      throw new UnauthorizedError("Unauthorized user");
+    }
+
     const merchant = await Merchant.findOne({
       owner: user._id,
       _id: merchantId,
@@ -121,8 +206,12 @@ export const updateMerchantProfile = asyncHandler(
     };
     const logo = files.logo?.[0];
     const banner = files.banner?.[0];
+
+    if (!user) {
+      throw new UnauthorizedError("Unauthorized user");
+    }
     const updatedMerchant = await updateMerchantProfileService(
-      user,
+      user.id.toString(),
       merchantId,
       payload,
       logo,
