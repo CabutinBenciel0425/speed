@@ -243,7 +243,7 @@ export const toggleMerchantFavorite = asyncHandler(
       merchantId,
     );
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       data: merchantFavorite,
     });

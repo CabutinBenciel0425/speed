@@ -61,7 +61,7 @@ export const updateAddress = asyncHandler(
 
     await updatedAddress.populate("user");
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       data: updatedAddress,
     });
@@ -79,7 +79,7 @@ export const toggleIsDefault = asyncHandler(
 
     const addresses = await toggleDefaultAddress(user, addressType);
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       data: addresses,
     });
@@ -97,7 +97,7 @@ export const deleteAddress = asyncHandler(
 
     const address = await deleteUserAddress(user, addressType);
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       data: address,
     });

@@ -69,7 +69,7 @@ export const updateProduct = asyncHandler(
 
     await updatedProduct.populate("merchant");
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       data: updatedProduct,
     });
@@ -210,7 +210,7 @@ export const toggleProductFavorite = asyncHandler(
 
     const productFavorite = await toggleProductFavoriteService(user, productId);
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       data: productFavorite,
     });

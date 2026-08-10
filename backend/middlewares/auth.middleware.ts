@@ -55,12 +55,13 @@ export const protectRoute = asyncHandler(
 export const customersOnly = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user;
+    const userRole = req.userRole;
 
     if (!user) {
       throw new UnauthorizedError("Not authenticated. Please log in");
     }
 
-    if (user.role.indexOf("Customer") === -1) {
+    if (userRole !== "Customer") {
       throw new UnauthorizedError(
         "You are not authorized on this endpoint. Customers only",
       );
@@ -72,12 +73,13 @@ export const customersOnly = asyncHandler(
 export const merchantOnly = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user;
+    const userRole = req.userRole;
 
     if (!user) {
       throw new UnauthorizedError("Not authenticated. Please log in");
     }
 
-    if (user.role.indexOf("Merchant") === -1) {
+    if (userRole !== "Merchant") {
       throw new UnauthorizedError(
         "You are not authorized on this endpoint. Merchant only",
       );
@@ -89,12 +91,13 @@ export const merchantOnly = asyncHandler(
 export const driverOnly = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user;
+    const userRole = req.userRole;
 
     if (!user) {
       throw new UnauthorizedError("Not authenticated. Please log in");
     }
 
-    if (user.role.indexOf("Driver") === -1) {
+    if (userRole !== "Driver") {
       throw new UnauthorizedError(
         "You are not authorized on this endpoint. Drivers only",
       );
@@ -106,12 +109,13 @@ export const driverOnly = asyncHandler(
 export const adminOnly = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user;
+    const userRole = req.userRole;
 
     if (!user) {
       throw new UnauthorizedError("Not authenticated. Please log in");
     }
 
-    if (user.role.indexOf("Admin") === -1) {
+    if (userRole !== "Admin") {
       throw new UnauthorizedError(
         "You are not authorized on this endpoint. Admin only",
       );

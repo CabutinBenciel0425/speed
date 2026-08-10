@@ -242,7 +242,7 @@ export const driverProfile = asyncHandler(
   async (req: Request, res: Response) => {
     const driverId = req.params.driverId;
 
-    const merchant = await Merchant.findById(driverId).populate("user");
+    const merchant = await Driver.findById(driverId).populate("user");
 
     res.status(200).json({
       success: true,
@@ -604,7 +604,7 @@ export const reviewDetails = asyncHandler(
   async (req: Request, res: Response) => {
     const reviewId = req.params.reviewId;
 
-    const review = await Order.findById(reviewId).populate(
+    const review = await Review.findById(reviewId).populate(
       "order reviewer reviewee",
     );
 
@@ -623,7 +623,7 @@ export const hideReview = asyncHandler(async (req: Request, res: Response) => {
     throw new UnauthorizedError("Unauthorized user");
   }
 
-  const review = await Order.findByIdAndUpdate(reviewId, { isHidden: true });
+  const review = await Review.findByIdAndUpdate(reviewId, { isHidden: true });
 
   if (!review) {
     throw new NotFoundError("Order");

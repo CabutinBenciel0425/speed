@@ -75,7 +75,7 @@ export const updateCategory = asyncHandler(
       image,
       categoryId.toString(),
     );
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       data: updatedCategory,
     });

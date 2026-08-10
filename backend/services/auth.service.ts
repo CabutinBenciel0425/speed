@@ -237,7 +237,7 @@ export const selectRoleService = async (
 
   let userDetails: UserDetailsType | null = null;
 
-  if (activeRole === "Customer") {
+  if (activeRole === "Customer" || activeRole === "Admin") {
     userDetails = user;
   }
 
@@ -277,6 +277,7 @@ export const selectRoleService = async (
 
 export const logoutUser = async (req: Request) => {
   const refreshToken = req.cookies.refreshToken;
+  const userRole = req.userRole;
 
   if (refreshToken) {
     if (!REFRESH_TOKEN_SECRET_KEY) {
@@ -288,7 +289,7 @@ export const logoutUser = async (req: Request) => {
       refreshToken,
       REFRESH_TOKEN_SECRET_KEY,
     ) as JwtPayload;
-    await redisClient.del(`refresh_token:${decoded.userId}`);
+    await redisClient.del(`refresh_token:${decoded.userId}-${userRole}`);
   }
 
   return true;
