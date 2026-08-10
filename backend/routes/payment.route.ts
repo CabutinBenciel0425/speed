@@ -1,19 +1,13 @@
 import express, { Router } from "express";
 import { protectRoute } from "../middlewares/auth.middleware.js";
-import {
-  createCheckout,
-  paymongoWebhook,
-} from "../controller/payment.controller.js";
+import { createCheckout } from "../controller/payment.controller.js";
 
 const paymentRouter = Router();
 
-// POST /payments/checkout
 paymentRouter.post("/checkout/qrph", protectRoute, createCheckout);
 
-// POST /payments/webhook
+paymentRouter.post("/history", protectRoute, createCheckout);
 
-// GET /payments/history
-
-// GET /payments/:paymentId
+paymentRouter.post("/:paymentId", protectRoute, createCheckout);
 
 export default paymentRouter;

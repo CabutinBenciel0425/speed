@@ -3,7 +3,7 @@ import type { ValidUserRoleInput } from "../schemas/user.schema.js";
 
 export const storeRefreshToken = async (
   userId: string,
-  activeRole: string,
+  activeRole: ValidUserRoleInput,
   refreshToken: string,
 ) => {
   await redisClient.set(

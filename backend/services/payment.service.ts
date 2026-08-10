@@ -12,6 +12,8 @@ import Cart from "../models/cart.model.js";
 import { generateOrderNumber } from "../utils/generateOrderNumber.js";
 import { driverMatching } from "./driver.service.js";
 import { ApiError } from "../utils/apiError.js";
+import type { CreateNotificationInput } from "../models/notification.model.js";
+import { createNotification } from "./notification.service.js";
 
 export const createCheckoutService = async (userId: string) => {
   const preparedData = await prepareOrderData(userId);
@@ -109,7 +111,7 @@ export const handleSuccessfulPaymentService = async (
   };
 
   const session = await mongoose.startSession();
-  let newOrder: IOrder;
+  let newOrder: IOrder | undefined;
 
   try {
     await session.withTransaction(async () => {
@@ -130,6 +132,21 @@ export const handleSuccessfulPaymentService = async (
   } finally {
     await session.endSession();
   }
+  if (!newOrder) {
+    throw new Error("Order was not created");
+  }
+
+  const notificationDataCustomer: CreateNotificationInput = {
+    targetId: newOrder.customer!,
+    targetType: "Customer",
+    type: "PAYMENT_SUCCESS",
+    title: "Payment successful",
+    message: "Your payment has been successfully processed",
+    order: newOrder._id!,
+    isRead: false,
+  };
+
+  await createNotification(notificationDataCustomer);
 
   const order = await driverMatching(newOrder!._id.toString());
 

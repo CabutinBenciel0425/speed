@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import crypto from "crypto";
 import type { Request, Response } from "express";
-import { UnauthorizedError } from "../utils/errors.js";
+import { NotFoundError, UnauthorizedError } from "../utils/errors.js";
 import {
   createCheckoutService,
   handleExpiredQRPhPaymentService,
@@ -9,6 +9,7 @@ import {
   handleSuccessfulPaymentService,
 } from "../services/payment.service.js";
 import { PAYMONGO_WEBHOOK_SECRET } from "../config/envVars.js";
+import Payment from "../models/payment.model.js";
 
 export const createCheckout = asyncHandler(
   async (req: Request, res: Response) => {
@@ -157,3 +158,43 @@ export const paymongoWebhook = asyncHandler(
     }
   },
 );
+
+export const paymentsHistory = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+
+    if (!user) {
+      throw new UnauthorizedError("Unauthorized user");
+    }
+
+    const payments = await Payment.find({ customer: user._id.toString() });
+
+    res.json({
+      success: true,
+      data: payments,
+    });
+  },
+);
+
+export const getPayment = asyncHandler(async (req: Request, res: Response) => {
+  const user = req.user;
+  const paymentId = req.params.paymentId as string;
+
+  if (!user) {
+    throw new UnauthorizedError("Unauthorized user");
+  }
+
+  const payment = await Payment.findOne({
+    customer: user._id.toString(),
+    _id: paymentId,
+  });
+
+  if (!payment) {
+    throw new NotFoundError("Payment");
+  }
+
+  res.json({
+    success: true,
+    data: payment,
+  });
+});

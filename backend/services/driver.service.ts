@@ -1,7 +1,7 @@
-import mongoose, { type QueryFilter } from "mongoose";
+import mongoose, { type QueryFilter, Types } from "mongoose";
 import cloudinary from "../config/cloudinary.js";
 import { DEFAULT_DRIVER_AVATAR } from "../config/constants.js";
-import Driver, { type IDriver } from "../models/driver.model.js";
+import Driver from "../models/driver.model.js";
 import type { IOrder } from "../models/order.model.js";
 import User from "../models/user.model.js";
 import type { UpdateDriverInputWithImage } from "../types/types.js";
@@ -16,6 +16,8 @@ import { computeDistance } from "./delivery.service.js";
 import Address from "../models/address.model.js";
 import { pendingOffers } from "../utils/offerWaiting.js";
 import Product from "../models/product.model.js";
+import { createNotification } from "./notification.service.js";
+import type { CreateNotificationInput } from "../models/notification.model.js";
 
 export const updateDriverProfile = async (
   { vehicleType, plateNumber, avatar }: UpdateDriverInputWithImage,
@@ -112,40 +114,6 @@ export const updateCurrentLocationService = async (
   return driverProfile;
 };
 
-// export const acceptOrderService = async (userId: string, orderId: string) => {
-//   const session = await mongoose.startSession();
-//   const driver = await Driver.findOne({
-//     user: userId,
-//   }).session(session);
-
-//   const order = await Order.findById(orderId).session(session);
-
-//   if (!driver) {
-//     throw new NotFoundError("Driver");
-//   }
-
-//   if (!order) {
-//     throw new NotFoundError("Order");
-//   }
-
-//   try {
-//     await session.withTransaction(async () => {
-//       order.driver = driver._id;
-//       order.driverAssignedAt = new Date();
-//       order.merchantReceivedAt = new Date();
-//       order.acceptedAt = new Date();
-//       driver.activeOrder = order._id;
-//       driver.workingStatus = "Assigned";
-//       driver.isAvailable = false;
-
-//       await driver.save({ session });
-//       await order.save({ session });
-//     });
-//   } finally {
-//     await session.endSession();
-//   }
-// };
-
 export const headingToMerchantService = async (
   userId: string,
   orderId: string,
@@ -183,6 +151,29 @@ export const headingToMerchantService = async (
     driverProfile.workingStatus = "HeadingToMerchant";
     await driverProfile.save();
   }
+
+  const notificationDataCustomer: CreateNotificationInput = {
+    targetId: new Types.ObjectId(userId),
+    targetType: "Customer",
+    type: "DRIVER_ARRIVED",
+    title: "Driver arrived",
+    message: "Driver has arrived at merchant's location",
+    order: order._id,
+    isRead: false,
+  };
+
+  const notificationDataMerchant: CreateNotificationInput = {
+    targetId: order.merchant,
+    targetType: "Merchant",
+    type: "DRIVER_ARRIVED",
+    title: "Driver arrived",
+    message: "Driver has arrived at merchant's location",
+    order: order._id,
+    isRead: false,
+  };
+
+  await createNotification(notificationDataCustomer);
+  await createNotification(notificationDataMerchant);
 
   io.to(`customer:${userId}`).emit("driver:heading-to-merchant");
   io.to(`merchant:${merchant._id}`).emit("driver:heading-to-merchant");

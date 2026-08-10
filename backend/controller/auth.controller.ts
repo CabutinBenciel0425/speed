@@ -154,7 +154,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const selectRole = asyncHandler(async (req: Request, res: Response) => {
-  const { activeRole } = selectRoleSchema.parse(req.body);
+  const activeRole: ValidUserRoleInput = req.body.activeRole;
 
   const { userDetails, accessToken, refreshToken } = await selectRoleService(
     activeRole,
@@ -163,6 +163,7 @@ export const selectRole = asyncHandler(async (req: Request, res: Response) => {
 
   setAccessToken(res, accessToken);
   setRefreshToken(res, refreshToken);
+  res.clearCookie("tempToken");
 
   res.status(200).json({
     success: true,

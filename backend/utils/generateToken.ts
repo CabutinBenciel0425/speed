@@ -6,14 +6,20 @@ import {
 } from "../config/envVars.js";
 import type { ValidUserRoleInput } from "../schemas/user.schema.js";
 
-export const generateToken = (userId: string, activeRole: string) => {
+export const generateToken = (
+  userId: string,
+  activeRole: ValidUserRoleInput,
+) => {
   return {
     accessToken: createAccessToken(userId, activeRole),
     refreshToken: createRefreshToken(userId, activeRole),
   };
 };
 
-export const createAccessToken = (userId: string, activeRole: string) => {
+export const createAccessToken = (
+  userId: string,
+  activeRole: ValidUserRoleInput,
+) => {
   if (!ACCESS_TOKEN_SECRET_KEY)
     throw new Error(
       "ACCESS_TOKEN_SECRET_KEY is required in environment variables",
@@ -23,7 +29,10 @@ export const createAccessToken = (userId: string, activeRole: string) => {
   });
 };
 
-export const createRefreshToken = (userId: string, activeRole: string) => {
+export const createRefreshToken = (
+  userId: string,
+  activeRole: ValidUserRoleInput,
+) => {
   if (!REFRESH_TOKEN_SECRET_KEY)
     throw new Error(
       "REFRESH_TOKEN_SECRET_KEY is required in environment variables",

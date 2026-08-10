@@ -4,9 +4,11 @@ import { UnauthorizedError } from "../utils/errors.js";
 import { ACCESS_TOKEN_SECRET_KEY } from "../config/envVars.js";
 import User, { type UserDocument } from "../models/user.model.js";
 import jwt from "jsonwebtoken";
+import type { ValidUserRoleInput } from "../schemas/user.schema.js";
 
 interface JwtPayload {
   userId: string;
+  activeRole: ValidUserRoleInput;
   iat: number;
   exp: number;
 }
@@ -44,6 +46,7 @@ export const protectRoute = asyncHandler(
     }
 
     req.user = user as UserDocument;
+    req.userRole = decoded.activeRole;
 
     next();
   },

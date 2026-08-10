@@ -1,8 +1,8 @@
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import User from "../models/user.model.js";
 import { ACCESS_TOKEN_SECRET_KEY } from "../config/envVars.js";
-import { Socket } from "socket.io";
 import type { AuthenticatedSocket } from "../types/types.js";
+import type { ValidUserRoleInput } from "../schemas/user.schema.js";
 
 export const socketAuth = async (
   socket: AuthenticatedSocket,
@@ -11,7 +11,7 @@ export const socketAuth = async (
   try {
     const token = socket.handshake.auth.token;
 
-    const activeRole = socket.handshake.auth.activeRole;
+    const activeRole: ValidUserRoleInput = socket.handshake.auth.activeRole;
 
     if (!token) return next(new Error("Unauthorized"));
 

@@ -180,7 +180,7 @@ export const loginUser = async ({ email, password }: LoginInput) => {
     };
   }
 
-  const activeRole = "Customer";
+  const activeRole: ValidUserRoleInput = "Customer";
 
   const { accessToken, refreshToken } = generateToken(
     user._id.toString(),
@@ -206,7 +206,10 @@ export const loginUser = async ({ email, password }: LoginInput) => {
 
 type UserDetailsType = IDriver | IMerchant | IUser;
 
-export const selectRoleService = async (activeRole: string, req: Request) => {
+export const selectRoleService = async (
+  activeRole: ValidUserRoleInput,
+  req: Request,
+) => {
   const tempToken = req.cookies.tempToken;
 
   if (!tempToken) {
