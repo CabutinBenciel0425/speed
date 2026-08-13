@@ -22,9 +22,17 @@ import adminRouter from "./routes/admin.route.js";
 import paymentRouter from "./routes/payment.route.js";
 import { paymongoWebhook } from "./controller/payment.controller.js";
 import notificationRouter from "./routes/notification.route.js";
+import cors from "cors";
 
 const app = express();
 const server = http.createServer(app);
+
+app.use(
+  cors({
+    origin: CLIENT_URL || "http://localhost:5173", // same as Socket.IO origin
+    credentials: true, // if you use cookies
+  }),
+);
 
 export const io = new Server(server, {
   cors: {
