@@ -12,9 +12,6 @@ import {
 import { Field } from "@/components/ui/field"
 
 import riderScooterImage from "../../../assets/rider-scooter.png"
-import chickenImage from "../../../assets/chicken.png"
-import burgerImage from "../../../assets/burger.png"
-import milkteaImage from "../../../assets/milktea.png"
 import RegisterForm from "../components/RegisterForm"
 import type { SignupInput } from "../types/auth"
 import { signupSchema } from "../schemas/authSchema"
@@ -43,14 +40,14 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="relative flex min-w-full flex-row items-center justify-around">
+    <div className="relative flex min-w-full flex-row items-center justify-center gap-20">
       <motion.div
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8 }}
         className="w-full max-w-md"
       >
-        <Card className="w-full px-6 pt-5">
+        <Card className="w-full border-4 border-accent px-6 pt-5 shadow-lg shadow-accent">
           <CardHeader>
             <CardTitle className="text-2xl">Register an account</CardTitle>
             <CardDescription>Let's get you started with Speed</CardDescription>
@@ -96,7 +93,7 @@ export function RegisterPage() {
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, type: "spring" }}
       />
-      <motion.img
+      {/* <motion.img
         src={chickenImage}
         alt="chicken"
         className="absolute right-20 bottom-25 hidden 2xl:block 2xl:max-w-3xs"
@@ -122,11 +119,11 @@ export function RegisterPage() {
           damping: 15,
           delay: 0.3,
         }}
-      />
-      <motion.img
+      /> */}
+      {/* <motion.img
         src={milkteaImage}
         alt="milktea"
-        className="absolute top-20 right-180 hidden 2xl:block 2xl:max-w-3xs"
+        className="absolute top-20 right-200 hidden 2xl:block 2xl:max-w-3xs"
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{
@@ -136,7 +133,7 @@ export function RegisterPage() {
           damping: 15,
           delay: 0.6,
         }}
-      />
+      /> */}
     </div>
   )
 }

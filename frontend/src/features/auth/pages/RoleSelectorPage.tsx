@@ -36,7 +36,7 @@ function RoleSelectorPage() {
     mutate(data.role, {
       onSuccess: (userData) => {
         localStorage.setItem("user", JSON.stringify(userData.data))
-        navigate("/dashboard")
+        navigate("/customer/dashboard")
       },
     })
   }
@@ -49,7 +49,7 @@ function RoleSelectorPage() {
       animate={{ opacity: 1 }}
       transition={{ duration: 1.5 }}
     >
-      <Card className="w-full max-w-xl px-6 pt-5">
+      <Card className="w-full max-w-xl border-4 border-accent px-6 pt-5 shadow-lg shadow-accent">
         <CardHeader>
           <CardTitle className="text-2xl">Roles</CardTitle>
         </CardHeader>

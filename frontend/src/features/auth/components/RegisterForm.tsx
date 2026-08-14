@@ -26,9 +26,11 @@ function RegisterForm({ handleSubmitFn, form }: RegisterFormProps) {
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="form-register-firstName">
-                First name:
-              </FieldLabel>
+              <div>
+                <FieldLabel htmlFor="form-register-firstName">
+                  First name:
+                </FieldLabel>
+              </div>
               <Input
                 {...field}
                 aria-invalid={fieldState.invalid}

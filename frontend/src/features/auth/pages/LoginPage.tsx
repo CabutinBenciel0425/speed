@@ -12,9 +12,6 @@ import {
 import { Field } from "@/components/ui/field"
 
 import riderStandingImage from "../../../assets/rider-standing.png"
-import coffee from "../../../assets/coffee.png"
-import pizza from "../../../assets/pizza.png"
-import ricemeal from "../../../assets/ricemeal.png"
 import type { LoginInput } from "../types/auth"
 import { loginSchema } from "../schemas/authSchema"
 import { motion } from "framer-motion"
@@ -53,7 +50,7 @@ export function LoginPage() {
   }, [data, navigate])
 
   return (
-    <div className="relative flex min-w-full flex-row items-center justify-around">
+    <div className="relative flex min-w-full flex-row items-center justify-center gap-20">
       <div>
         <motion.img
           src={riderStandingImage}
@@ -63,7 +60,7 @@ export function LoginPage() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, type: "spring" }}
         />
-        <motion.img
+        {/* <motion.img
           src={coffee}
           alt="coffee"
           className="absolute right-20 bottom-5 hidden 2xl:block 2xl:max-w-3xs"
@@ -103,7 +100,7 @@ export function LoginPage() {
             damping: 15,
             delay: 0.6,
           }}
-        />
+        /> */}
       </div>
       <motion.div
         initial={{ opacity: 0, x: 20 }}
@@ -111,7 +108,7 @@ export function LoginPage() {
         transition={{ duration: 0.8 }}
         className="w-full max-w-md"
       >
-        <Card className="w-full px-6 pt-5">
+        <Card className="w-full border-4 border-accent px-6 pt-5 shadow-lg shadow-accent">
           <CardHeader>
             <CardTitle className="text-2xl">Login your account</CardTitle>
             <CardDescription>It's great having you back!</CardDescription>

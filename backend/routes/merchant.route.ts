@@ -24,12 +24,7 @@ merchantRouter.get("/:merchantId/details", getMerchantDetails);
 merchantRouter.get("/", getMerchants);
 
 //customer routes
-merchantRouter.get(
-  "/:merchantId/products",
-  protectRoute,
-  merchantOnly,
-  getMerchantProducts,
-);
+merchantRouter.get("/:merchantId/products", protectRoute, getMerchantProducts);
 
 merchantRouter.patch(
   "/favorites/:merchantId/status",
