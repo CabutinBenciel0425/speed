@@ -1,13 +1,9 @@
-import {
-  Field,
-  FieldError,
-  FieldLabel,
-  FieldGroup,
-} from "@/components/ui/field"
+import { Field, FieldLabel, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Controller, type UseFormReturn } from "react-hook-form"
 import type { HandleSubmitLoginType, LoginInput } from "../types/auth"
 import { motion } from "framer-motion"
+import FieldStateError from "@/components/common/FieldStateError"
 
 interface LoginFormProps {
   handleSubmitFn: HandleSubmitLoginType
@@ -37,7 +33,7 @@ function LoginForm({ handleSubmitFn, form }: LoginFormProps) {
                 placeholder="johndoe@example.com"
                 autoComplete="off"
               />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              <FieldStateError fieldState={fieldState} />
             </Field>
           )}
         />
@@ -55,7 +51,7 @@ function LoginForm({ handleSubmitFn, form }: LoginFormProps) {
                 autoComplete="off"
                 type="password"
               />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              <FieldStateError fieldState={fieldState} />
             </Field>
           )}
         />

@@ -1,8 +1,10 @@
 import { Controller, type Control } from "react-hook-form"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
-import { Field, FieldError, FieldGroup } from "@/components/ui/field"
+import { Field, FieldGroup } from "@/components/ui/field"
 import type { RoleFormValues } from "../pages/RoleSelectorPage"
+import FieldStateError from "@/components/common/FieldStateError"
+import { motion } from "framer-motion"
 
 type RoleSelectorProps = {
   control: Control<RoleFormValues>
@@ -27,12 +29,18 @@ function RoleSelector({ control, roles }: RoleSelectorProps) {
                 <div key={role} className="flex flex-row gap-2">
                   <RadioGroupItem value={role} id={role} className={"mt-1"} />
                   <Label htmlFor={role} className="text-lg">
-                    {role}
+                    <motion.span
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      {role}
+                    </motion.span>
                   </Label>
                 </div>
               ))}
             </RadioGroup>
-            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            <FieldStateError fieldState={fieldState} />
           </Field>
         )}
       />

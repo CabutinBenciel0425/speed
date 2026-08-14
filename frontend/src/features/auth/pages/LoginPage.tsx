@@ -66,7 +66,7 @@ export function LoginPage() {
         <motion.img
           src={coffee}
           alt="coffee"
-          className="absolute right-20 bottom-15 hidden 2xl:block 2xl:max-w-3xs"
+          className="absolute right-20 bottom-5 hidden 2xl:block 2xl:max-w-3xs"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{
@@ -78,8 +78,8 @@ export function LoginPage() {
         />
         <motion.img
           src={pizza}
-          alt="burger"
-          className="absolute top-5 right-0 hidden 2xl:block 2xl:max-w-2xs"
+          alt="pizza"
+          className="absolute -top-5 right-0 hidden 2xl:block 2xl:max-w-2xs"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{
@@ -92,7 +92,7 @@ export function LoginPage() {
         />
         <motion.img
           src={ricemeal}
-          alt="milktea"
+          alt="ricemeal"
           className="absolute top-20 right-180 hidden 2xl:block 2xl:max-w-3xs"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}

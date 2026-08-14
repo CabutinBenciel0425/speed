@@ -1,13 +1,9 @@
-import {
-  Field,
-  FieldError,
-  FieldLabel,
-  FieldGroup,
-} from "@/components/ui/field"
+import { Field, FieldLabel, FieldGroup } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Controller, type UseFormReturn } from "react-hook-form"
 import type { HandleSubmitRegisterType, SignupInput } from "../types/auth"
 import { motion } from "framer-motion"
+import FieldStateError from "@/components/common/FieldStateError"
 
 interface RegisterFormProps {
   handleSubmitFn: HandleSubmitRegisterType
@@ -39,7 +35,7 @@ function RegisterForm({ handleSubmitFn, form }: RegisterFormProps) {
                 placeholder="John"
                 autoComplete="off"
               />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              <FieldStateError fieldState={fieldState} />
             </Field>
           )}
         />
@@ -57,7 +53,7 @@ function RegisterForm({ handleSubmitFn, form }: RegisterFormProps) {
                 placeholder="Doe"
                 autoComplete="off"
               />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              <FieldStateError fieldState={fieldState} />
             </Field>
           )}
         />
@@ -74,7 +70,7 @@ function RegisterForm({ handleSubmitFn, form }: RegisterFormProps) {
                 placeholder="johndoe@example.com"
                 autoComplete="off"
               />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              <FieldStateError fieldState={fieldState} />
             </Field>
           )}
         />
@@ -94,7 +90,7 @@ function RegisterForm({ handleSubmitFn, form }: RegisterFormProps) {
                 autoComplete="off"
                 type="password"
               />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              <FieldStateError fieldState={fieldState} />
             </Field>
           )}
         />
@@ -113,7 +109,7 @@ function RegisterForm({ handleSubmitFn, form }: RegisterFormProps) {
                 placeholder=""
                 autoComplete="off"
               />
-              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+              <FieldStateError fieldState={fieldState} />
             </Field>
           )}
         />

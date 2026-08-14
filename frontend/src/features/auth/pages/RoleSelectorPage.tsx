@@ -12,6 +12,7 @@ import { useForm } from "react-hook-form"
 import type { ValidUserRoleInput } from "../types/auth"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useSelectRole } from "../hooks/useSelectRole"
+import { motion } from "framer-motion"
 
 export type RoleFormValues = {
   role: ValidUserRoleInput
@@ -41,7 +42,13 @@ function RoleSelectorPage() {
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="w-full max-w-xl">
+    <motion.form
+      onSubmit={form.handleSubmit(onSubmit)}
+      className="w-full max-w-xl"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.5 }}
+    >
       <Card className="w-full max-w-xl px-6 pt-5">
         <CardHeader>
           <CardTitle className="text-2xl">Roles</CardTitle>
@@ -60,7 +67,7 @@ function RoleSelectorPage() {
           </Field>
         </CardFooter>
       </Card>
-    </form>
+    </motion.form>
   )
 }
 
