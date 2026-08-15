@@ -4,7 +4,7 @@ import Footer from "../common/Footer"
 
 function CustomerLayout() {
   return (
-    <div className="flex min-h-screen min-w-full flex-col border border-red-600">
+    <div className="flex min-h-screen min-w-full flex-col">
       <Navbar />
       <div className="px-10">
         <Outlet />
