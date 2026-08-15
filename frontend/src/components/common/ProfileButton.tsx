@@ -1,11 +1,4 @@
-"use client"
-
-import {
-  BadgeCheckIcon,
-  BellIcon,
-  CreditCardIcon,
-  LogOutIcon,
-} from "lucide-react"
+import { BellIcon, Heart, LogOutIcon, PaperBag } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -17,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { NavLink } from "react-router-dom"
 
 export function ProfileButton() {
   return (
@@ -34,12 +28,16 @@ export function ProfileButton() {
       <DropdownMenuContent align="end">
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <BadgeCheckIcon />
-            Account
+            <NavLink to="/orders" className={"flex flex-row gap-2"}>
+              <PaperBag className="size-5" />
+              <span className="text-md">Orders</span>
+            </NavLink>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <CreditCardIcon />
-            Billing
+            <NavLink to="/favorites" className={"flex flex-row gap-2"}>
+              <Heart className="size-5" />
+              <span className="text-md">Favorites</span>
+            </NavLink>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <BellIcon />

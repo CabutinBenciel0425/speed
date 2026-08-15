@@ -5,7 +5,7 @@ import Restaurant from "@/features/components/Restaurant"
 
 function CustomerDashboard() {
   return (
-    <div className="flex flex-col gap-10">
+    <div className="mb-10 flex flex-col gap-5">
       <Hero />
       <Category />
       <Restaurant />
