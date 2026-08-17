@@ -1,6 +1,6 @@
 import { LayoutGrid } from "lucide-react"
-import ViewAllButton from "../../components/common/ViewAllButton"
 import CategoryCard from "@/components/common/CategoryCard"
+import ViewAllButton from "@/components/common/ViewAllButton"
 
 function Category() {
   return (

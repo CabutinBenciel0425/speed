@@ -1,7 +1,7 @@
-import Category from "@/features/components/Category"
-import FeaturedProducts from "@/features/components/FeaturedProducts"
-import Hero from "@/features/components/Hero"
-import Restaurant from "@/features/components/Restaurant"
+import Category from "../components/Category"
+import FeaturedProducts from "../components/FeaturedProducts"
+import Hero from "../components/Hero"
+import Restaurant from "../components/Restaurant"
 
 function CustomerDashboard() {
   return (

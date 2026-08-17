@@ -26,7 +26,7 @@ export function Addressbar() {
               </div>
               <div>
                 <p className="text-xs text-gray-400">Deliver to</p>
-                <p className="text-md font-semibold">Manila, Philippines</p>
+                <p className="text-md font-semibold">{position}</p>
               </div>
               <div>
                 <ChevronDown />
@@ -47,11 +47,11 @@ export function Addressbar() {
                 onValueChange={setPosition}
               >
                 <DropdownMenuRadioItem value="top">
-                  Building 4 Unit 104 FTI MRB Habitat Western Bicutan Taguig
+                  Building 1 Unit 104 FTI MRB Habitat Western Bicutan Taguig
                   City
                 </DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="bottom">
-                  Building 4 Unit 104 FTI MRB Habitat Western Bicutan Taguig
+                  Building 2 Unit 104 FTI MRB Habitat Western Bicutan Taguig
                   City
                 </DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="right">

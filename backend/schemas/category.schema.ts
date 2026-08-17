@@ -4,12 +4,11 @@ export const categorySchema = z.object({
   name: z.string().min(1, "Name of the category is required"),
   slug: z.string().min(1, "Slug is required"),
   description: z.string().optional(),
-  displayOrder: z.number().default(0),
+  displayOrder: z.coerce.number().default(0),
 });
 
 export const createCategorySchema = categorySchema.pick({
   name: true,
-  slug: true,
   description: true,
   displayOrder: true,
 });
@@ -21,5 +20,5 @@ export const categoryUpdateSchema = categorySchema.partial({
   displayOrder: true,
 });
 
-export type CategoryInput = z.infer<typeof categorySchema>;
+export type CategoryInput = z.infer<typeof createCategorySchema>;
 export type CategoryUpdateInput = z.infer<typeof categoryUpdateSchema>;

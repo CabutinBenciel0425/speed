@@ -1,5 +1,8 @@
 import Category from "../models/category.model.js";
-import type { CategoryUpdateInput } from "../schemas/category.schema.js";
+import type {
+  CategoryInput,
+  CategoryUpdateInput,
+} from "../schemas/category.schema.js";
 import {
   createNewCategory,
   updateDetailsCategory,
@@ -11,11 +14,11 @@ import { buildQuery } from "../utils/buildQuery.js";
 
 export const createCategory = asyncHandler(
   async (req: Request, res: Response) => {
-    const { name, description, displayOrder } = req.body;
+    const { name, description, displayOrder }: CategoryInput = req.body;
     const image = req.file;
     const newCategory = await createNewCategory(
       name,
-      description,
+      description ?? "",
       displayOrder,
       image,
     );

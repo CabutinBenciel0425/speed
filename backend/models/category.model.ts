@@ -35,6 +35,7 @@ const categorySchema = new Schema<ICategory>({
   displayOrder: {
     type: Number,
     default: 0,
+    unique: true,
   },
 });
 

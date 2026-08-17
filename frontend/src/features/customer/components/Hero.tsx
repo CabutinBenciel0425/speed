@@ -1,7 +1,7 @@
 import { ArrowRight } from "lucide-react"
-import { Button } from "../../components/ui/button"
 import heroImage from "@/assets/hero.png"
 import { motion } from "framer-motion"
+import { Button } from "@/components/ui/button"
 
 function Hero() {
   return (

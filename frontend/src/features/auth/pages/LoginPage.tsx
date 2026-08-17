@@ -44,7 +44,7 @@ export function LoginPage() {
       if (data.requiresRoleSelection) {
         navigate("/select-role", { state: { roles: data.roles } })
       } else {
-        navigate("/dashboard")
+        navigate("/customer/dashboard")
       }
     }
   }, [data, navigate])
