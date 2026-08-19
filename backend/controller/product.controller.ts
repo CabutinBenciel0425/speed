@@ -233,3 +233,16 @@ export const getProductFavorites = asyncHandler(
     });
   },
 );
+
+export const getFeaturedProducts = asyncHandler(
+  async (req: Request, res: Response) => {
+    const featuredProducts = await Product.find({
+      isFeatured: true,
+      isAvailable: true,
+    });
+    res.json({
+      success: true,
+      data: featuredProducts,
+    });
+  },
+);

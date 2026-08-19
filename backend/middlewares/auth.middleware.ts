@@ -47,8 +47,6 @@ export const protectRoute = asyncHandler(
 
     req.user = user as UserDocument;
     req.userRole = decoded.activeRole;
-    console.log(user);
-    console.log(decoded.activeRole);
     next();
   },
 );
@@ -111,7 +109,6 @@ export const adminOnly = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user;
     const userRole = req.userRole;
-    console.log(req.user, req.userRole);
 
     if (!user) {
       throw new UnauthorizedError("Not authenticated. Please log in");

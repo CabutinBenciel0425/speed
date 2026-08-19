@@ -16,7 +16,12 @@ export const useRegister = () => {
 }
 
 const registerUser = async (payload: SignupInput) => {
-  const res = await axios.post("auth/sign-up/customer", payload)
-
-  return res.data
+  try {
+    const res = await axios.post("auth/sign-up/customer", payload)
+    return res.data
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error
+    }
+  }
 }

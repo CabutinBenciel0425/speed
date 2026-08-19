@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   allCategory,
   createCategory,
+  getProductByCategory,
   toggleIsActive,
   updateCategory,
 } from "../controller/category.controller.js";
@@ -15,7 +16,11 @@ import {
 
 const categoryRouter = Router();
 
-categoryRouter.get("/", protectRoute, allCategory);
+//customer routes
+categoryRouter.get("/:categoryId", getProductByCategory);
+
+//admin routes
+categoryRouter.get("/", allCategory);
 
 categoryRouter.post(
   "/create",

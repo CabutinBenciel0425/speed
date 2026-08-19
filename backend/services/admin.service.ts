@@ -67,13 +67,13 @@ export const getRevenueAnalyticsService = async (period: PeriodType) => {
     case "hour":
       groupBy = { $hour: "$deliveredAt" };
       break;
-    case "hour":
+    case "day":
       groupBy = { $day: "$deliveredAt" };
       break;
-    case "hour":
+    case "week":
       groupBy = { $week: "$deliveredAt" };
       break;
-    case "hour":
+    case "month":
       groupBy = { $year: "$deliveredAt" };
       break;
     default:

@@ -254,6 +254,7 @@ export const getMerchantsService = async (payload: any) => {
     .limit(queryData.limit);
 
   const limitedDocs = docs.map((doc) => ({
+    id: doc._id,
     name: doc.merchantName,
     description: doc.description,
     phoneNumber: doc.phoneNumber,

@@ -1,3 +1,4 @@
+import mongoose, { type QueryFilter } from "mongoose";
 import Category from "../models/category.model.js";
 import type {
   CategoryInput,
@@ -9,8 +10,27 @@ import {
 } from "../services/category.service.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import type { Request, Response } from "express";
-import { NotFoundError } from "../utils/errors.js";
+import { NotFoundError, UnauthorizedError } from "../utils/errors.js";
 import { buildQuery } from "../utils/buildQuery.js";
+import Product, { type IProduct } from "../models/product.model.js";
+
+export const getProductByCategory = asyncHandler(
+  async (req: Request, res: Response) => {
+    const categoryId = req.params.categoryId;
+    console.log(categoryId);
+
+    const products = await Product.find({})
+      .where("category")
+      .equals(categoryId);
+
+    console.log(products);
+
+    res.status(200).json({
+      success: true,
+      data: products,
+    });
+  },
+);
 
 export const createCategory = asyncHandler(
   async (req: Request, res: Response) => {

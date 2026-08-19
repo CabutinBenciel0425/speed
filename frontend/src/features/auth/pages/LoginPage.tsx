@@ -44,7 +44,7 @@ export function LoginPage() {
       if (data.requiresRoleSelection) {
         navigate("/select-role", { state: { roles: data.roles } })
       } else {
-        navigate("/customer/dashboard")
+        navigate("/")
       }
     }
   }, [data, navigate])
@@ -60,47 +60,6 @@ export function LoginPage() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, type: "spring" }}
         />
-        {/* <motion.img
-          src={coffee}
-          alt="coffee"
-          className="absolute right-20 bottom-5 hidden 2xl:block 2xl:max-w-3xs"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{
-            duration: 0.6,
-            type: "spring",
-            stiffness: 120,
-            damping: 15,
-          }}
-        />
-        <motion.img
-          src={pizza}
-          alt="pizza"
-          className="absolute -top-5 right-0 hidden 2xl:block 2xl:max-w-2xs"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{
-            duration: 0.6,
-            type: "spring",
-            stiffness: 120,
-            damping: 15,
-            delay: 0.3,
-          }}
-        />
-        <motion.img
-          src={ricemeal}
-          alt="ricemeal"
-          className="absolute top-20 right-180 hidden 2xl:block 2xl:max-w-3xs"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{
-            duration: 0.6,
-            type: "spring",
-            stiffness: 120,
-            damping: 15,
-            delay: 0.6,
-          }}
-        /> */}
       </div>
       <motion.div
         initial={{ opacity: 0, x: 20 }}

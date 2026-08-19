@@ -4,8 +4,9 @@ import { Button } from "../ui/button"
 import { NavLink } from "react-router-dom"
 import { useRef, useState } from "react"
 import { motion, useInView } from "framer-motion"
+import type { Product } from "@/features/customer/types/products"
 
-function ProductCard() {
+function ProductCard({ product }: { product: Product }) {
   const [isFavorite, setIsFavorite] = useState(false)
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true })
@@ -20,9 +21,9 @@ function ProductCard() {
         <div className="absolute inset-0 z-30 aspect-video bg-black/15" />
 
         <img
-          src="https://res.cloudinary.com/dwqlvkvup/image/upload/v1786688478/images/merchant/products/k61xdeyto2ftw85qpych.jpg"
-          alt="product"
-          className="z-20 aspect-video w-full object-cover"
+          src={product.image ?? "https://placehold.net/400x400.png"}
+          alt={product.name}
+          className="z-20 aspect-video w-full object-contain"
         />
 
         <Button
@@ -39,13 +40,15 @@ function ProductCard() {
           />
         </Button>
 
-        <NavLink to="/merchant/:merchantId/:productId">
-          <CardHeader>
-            <CardTitle>Cheese Burger</CardTitle>
-            <CardDescription>Cheesy yummy burger</CardDescription>
+        <NavLink to={`/merchant/:merchantId/:productId${product._id}`}>
+          <CardHeader className="flex flex-col gap-3">
+            <CardTitle>{product.name}</CardTitle>
+            <CardDescription className="line-clamp-3">
+              {product.description}
+            </CardDescription>
             <CardDescription className="flex flex-row gap-2">
               <Clock className="mt-0.5 size-4" />
-              <span>15 mins</span>
+              <span>{product.preparationTime} mins</span>
             </CardDescription>
           </CardHeader>
         </NavLink>

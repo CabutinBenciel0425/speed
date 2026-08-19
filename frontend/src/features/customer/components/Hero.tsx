@@ -12,7 +12,7 @@ function Hero() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
       >
-        <div className="flex w-full flex-col items-start justify-center gap-4 px-8 py-10 lg:w-1/2 lg:px-12 xl:px-16">
+        <div className="flex w-full flex-col items-start justify-center gap-4 px-8 py-6 lg:w-1/2 lg:gap-8 lg:px-12 xl:px-16">
           <h1 className="text-3xl font-semibold text-balance md:text-4xl lg:text-5xl xl:text-6xl">
             What are you{" "}
             <span className="text-primary xl:block">craving today?</span>

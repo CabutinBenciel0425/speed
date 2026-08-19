@@ -9,6 +9,7 @@ import {
   getProducts,
   toggleProductFavorite,
   getProductFavorites,
+  getFeaturedProducts,
 } from "../controller/product.controller.js";
 import {
   productSchema,
@@ -18,6 +19,9 @@ import { validate } from "../middlewares/validate.middleware.js";
 import { upload } from "../middlewares/upload.middleware.js";
 
 const productRouter = Router();
+
+//public routes
+productRouter.get("/featured", getFeaturedProducts);
 
 //merchant routes
 productRouter.post(

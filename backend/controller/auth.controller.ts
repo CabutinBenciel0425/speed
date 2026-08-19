@@ -29,12 +29,19 @@ import { REFRESH_TOKEN_SECRET_KEY } from "../config/envVars.js";
 import { redisClient } from "../lib/redis.js";
 import { createAccessToken } from "../utils/generateToken.js";
 import { ApiError } from "../utils/apiError.js";
-import { ConflictError, NotFoundError } from "../utils/errors.js";
+import {
+  ConflictError,
+  NotFoundError,
+  UnauthorizedError,
+} from "../utils/errors.js";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 
-import User from "../models/user.model.js";
+import User, { type IUser } from "../models/user.model.js";
 import type { merchantInput } from "../schemas/merchant.schema.js";
 import type { DriverInput } from "../schemas/driver.schema.js";
+import Merchant, { type IMerchant } from "../models/merchant.model.js";
+import type { IDriver } from "../models/driver.model.js";
+import Driver from "../models/driver.model.js";
 
 export const customerSignup = asyncHandler(
   async (req: Request, res: Response) => {
@@ -185,10 +192,33 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
 
 export const myProfile = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
+  const activeRole = req.userRole;
+
+  if (!user) {
+    throw new UnauthorizedError("Unauthorized user");
+  }
+
+  let data: IUser | IMerchant | IDriver | null = null;
+
+  if (activeRole === "Customer" || "Admin") {
+    data = user;
+  }
+
+  if (activeRole === "Merchant") {
+    data = await Merchant.findOne({ owner: user._id });
+  }
+
+  if (activeRole === "Driver") {
+    data = await Driver.findOne({ user: user._id });
+  }
+
+  if (!data) {
+    throw new UnauthorizedError("Unauthorized user");
+  }
 
   res.status(200).json({
     success: true,
-    data: user,
+    data,
   });
 });
 
@@ -197,12 +227,12 @@ export const recreateAccessToken = asyncHandler(
     const refreshToken = req.cookies.refreshToken;
 
     if (!refreshToken) {
-      throw new ApiError(409, "No refresh token provided.");
+      throw new ApiError(401, "No refresh token provided.");
     }
 
     if (!REFRESH_TOKEN_SECRET_KEY) {
       throw new ApiError(
-        409,
+        500,
         "REFRESH_TOKEN_SECRET_KEY is required in environment variables",
       );
     }
@@ -217,7 +247,9 @@ export const recreateAccessToken = asyncHandler(
     );
 
     if (!storedToken || storedToken !== refreshToken) {
-      throw new ApiError(409, "Invalid refresh token");
+      res.clearCookie("refreshToken");
+      res.clearCookie("accessToken");
+      throw new ApiError(401, "Invalid refresh token");
     }
 
     const newAccessToken = createAccessToken(
@@ -226,7 +258,7 @@ export const recreateAccessToken = asyncHandler(
     );
     setAccessToken(res, newAccessToken);
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message: "Access token successfully refreshed",
     });

@@ -10,13 +10,13 @@ function CategoryCard({ children }: { children: React.ReactNode }) {
     <motion.div
       ref={ref}
       initial={{ opacity: 0, y: 40 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      animate={isInView ? { opacity: 1, x: 0 } : {}}
       transition={{ duration: 0.8 }}
     >
       <Button
         variant={"outline"}
         className={
-          "flex h-25 w-30 cursor-pointer flex-col bg-gray-100 py-2 lg:h-30 lg:w-37 xl:h-35 xl:w-45"
+          "flex h-24 w-28 cursor-pointer flex-col bg-gray-100 py-2 lg:h-32 lg:w-36 xl:h-36 xl:w-44"
         }
       >
         {children}

@@ -160,7 +160,6 @@ export const createDriver = async (userId: string, data: CreateDriverInput) => {
 
 export const loginUser = async ({ email, password }: LoginInput) => {
   const user: HydratedDocument<IUser> | null = await User.findOne({ email });
-  console.log("2", user);
 
   if (!user) {
     throw new UnauthorizedError("Invalid email or password");
@@ -198,6 +197,7 @@ export const loginUser = async ({ email, password }: LoginInput) => {
       email: user.email,
       phoneNumber: user.phoneNumber,
       role: user.role,
+      avatar: user.avatar,
       isVerified: user.isVerified,
     },
     accessToken,

@@ -1,0 +1,76 @@
+export interface Merchant extends Document {
+  id: string
+  owner: string
+  name: string
+  description?: string
+  phoneNumber: string
+  logo: string
+  banner: string
+  address: {
+    location: {
+      type: string
+      coordinates: number[]
+    }
+    street: string
+    barangay: string
+    city: string
+    province: string
+  }
+  operatingHours: {
+    Monday: {
+      isOpen: boolean
+      openHour: number
+      openMinute: number
+      closeHour: number
+      closeMinute: number
+    }
+    Tuesday: {
+      isOpen: boolean
+      openHour: number
+      openMinute: number
+      closeHour: number
+      closeMinute: number
+    }
+    Wednesday: {
+      isOpen: boolean
+      openHour: number
+      openMinute: number
+      closeHour: number
+      closeMinute: number
+    }
+    Thursday: {
+      isOpen: boolean
+      openHour: number
+      openMinute: number
+      closeHour: number
+      closeMinute: number
+    }
+    Friday: {
+      isOpen: boolean
+      openHour: number
+      openMinute: number
+      closeHour: number
+      closeMinute: number
+    }
+    Saturday: {
+      isOpen: boolean
+      openHour: number
+      openMinute: number
+      closeHour: number
+      closeMinute: number
+    }
+    Sunday: {
+      isOpen: boolean
+      openHour: number
+      openMinute: number
+      closeHour: number
+      closeMinute: number
+    }
+  }
+  minimumOrder: number
+  status: "Pending" | "Approved" | "Rejected" | "Open" | "Closed" | "Suspended"
+  completedOrders: number
+  totalRevenue: number
+  ratingCount: number
+  averageRating: number
+}

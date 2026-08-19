@@ -10,7 +10,7 @@ import { Field } from "@/components/ui/field"
 import RoleSelector from "../components/RoleSelector"
 import { useForm } from "react-hook-form"
 import type { ValidUserRoleInput } from "../types/auth"
-import { useLocation, useNavigate } from "react-router-dom"
+import { useLocation } from "react-router-dom"
 import { useSelectRole } from "../hooks/useSelectRole"
 import { motion } from "framer-motion"
 
@@ -20,7 +20,6 @@ export type RoleFormValues = {
 
 function RoleSelectorPage() {
   const location = useLocation()
-  const navigate = useNavigate()
   const roles = location.state?.roles || []
 
   const { mutate, isPending } = useSelectRole()
@@ -33,12 +32,7 @@ function RoleSelectorPage() {
 
   const onSubmit = (data: RoleFormValues) => {
     if (!data.role) return
-    mutate(data.role, {
-      onSuccess: (userData) => {
-        localStorage.setItem("user", JSON.stringify(userData.data))
-        navigate("/customer/dashboard")
-      },
-    })
+    mutate(data.role)
   }
 
   return (

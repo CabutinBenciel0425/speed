@@ -86,26 +86,3 @@ const notificationSchema = new Schema<INotification>(
 
 const Notification = model<INotification>("Notification", notificationSchema);
 export default Notification;
-
-// const notificationDataCustomer: CreateNotificationInput = {
-//   targetId: order.customer,
-//   targetType: "Customer",
-//   type: "DRIVER_ARRIVED",
-//   title: "Driver arrived",
-//   message: "Driver has arrived at merchant's location",
-//   order: order._id,
-//   isRead: false,
-// };
-
-// const notificationDataMerchant: CreateNotificationInput = {
-//   targetId: order.merchant,
-//   targetType: "Merchant",
-//   type: "DRIVER_ARRIVED",
-//   title: "Driver arrived",
-//   message: "Driver has arrived at merchant's location",
-//   order: order._id,
-//   isRead: false,
-// };
-
-// await createNotification(notificationDataCustomer);
-// await createNotification(notificationDataMerchant);
