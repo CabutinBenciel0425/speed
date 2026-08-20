@@ -34,3 +34,8 @@ export type CategoryByProducts = {
   data: ProductWithCategoryName | null
   pagination: Pagination | null
 }
+
+export type TopProductTag = {
+  _id: string
+  count: number
+}

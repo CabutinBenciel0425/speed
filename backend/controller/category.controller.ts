@@ -1,4 +1,4 @@
-import mongoose, { type QueryFilter } from "mongoose";
+import { Types } from "mongoose";
 import Category from "../models/category.model.js";
 import type {
   CategoryInput,
@@ -10,28 +10,38 @@ import {
 } from "../services/category.service.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import type { Request, Response } from "express";
-import {
-  ConflictError,
-  NotFoundError,
-  UnauthorizedError,
-} from "../utils/errors.js";
+import { NotFoundError } from "../utils/errors.js";
 import { buildQuery } from "../utils/buildQuery.js";
-import Product, { type IProduct } from "../models/product.model.js";
+import Product from "../models/product.model.js";
+
+export const getTopTagsByCategory = asyncHandler(
+  async (req: Request, res: Response) => {
+    const categoryId = req.params.categoryId as string;
+    const tags = await Product.aggregate([
+      {
+        $match: {
+          category: new Types.ObjectId(categoryId),
+        },
+      },
+      { $unwind: "$tags" },
+      { $group: { _id: "$tags", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: tags,
+    });
+  },
+);
 
 export const getProductByCategory = asyncHandler(
   async (req: Request, res: Response) => {
     const categoryId = req.params.categoryId;
-
     const queryData = buildQuery(req.query);
 
-    const allowedSorts = [
-      "price",
-      "-price",
-      "createdAt",
-      "-createdAt",
-      "name",
-      "-name",
-    ];
+    const allowedSorts = ["price", "-price", "name", "-name"];
 
     const sort = allowedSorts.includes(queryData.sort)
       ? queryData.sort
@@ -53,6 +63,8 @@ export const getProductByCategory = asyncHandler(
         },
       ];
     }
+    console.log("filters", queryData.filter);
+    console.log("docs", await Product.find(queryData.filter));
 
     const docs = await Product.find(queryData.filter)
       .where("category")
@@ -70,6 +82,8 @@ export const getProductByCategory = asyncHandler(
     const total = await Product.countDocuments(queryData.filter)
       .where("category")
       .equals(categoryId);
+
+    console.log(docs);
 
     res.status(200).json({
       success: true,

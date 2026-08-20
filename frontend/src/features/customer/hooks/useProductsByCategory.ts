@@ -5,27 +5,23 @@ import { useQuery } from "@tanstack/react-query"
 const fetchProductsByCategories = async (
   categoryId: string,
   page: number,
+  tags: string = "",
   limit: number
 ): Promise<CategoryByProducts> => {
-  try {
-    const { data } = await axios.get<CategoryByProducts>(
-      `/category/${categoryId}?page=${page}&limit=${limit}`
-    )
+  const urlToUse =
+    tags !== null && tags !== ""
+      ? `/category/${categoryId}?tags=${tags}&page=${page}&limit=${limit}`
+      : `/category/${categoryId}?page=${page}&limit=${limit}`
 
-    return data
-  } catch (error) {
-    console.log(error)
-    return {
-      success: false,
-      data: null,
-      pagination: null,
-    }
-  }
+  const { data } = await axios.get<CategoryByProducts>(urlToUse)
+
+  return data
 }
 
 export const useProductsByCategory = (
   categoryId: string,
   page: number = 1,
+  tags: string = "",
   limit: number = 5
 ) => {
   const {
@@ -33,8 +29,8 @@ export const useProductsByCategory = (
     isLoading,
     error,
   } = useQuery<CategoryByProducts>({
-    queryKey: ["products", "category", categoryId, page],
-    queryFn: () => fetchProductsByCategories(categoryId, page, limit),
+    queryKey: ["products", "category", categoryId, page, tags, limit],
+    queryFn: () => fetchProductsByCategories(categoryId, page, tags, limit),
     enabled: !!categoryId,
     staleTime: 1000 * 60 * 1,
   })

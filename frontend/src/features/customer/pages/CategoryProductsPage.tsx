@@ -3,23 +3,56 @@ import { useProductsByCategory } from "../hooks/useProductsByCategory"
 import ProductCard from "@/components/common/ProductCard"
 import { PaginationPage } from "@/components/common/PaginationPage"
 import { SkeletonProductCard } from "@/components/common/Skeleton/SkeletonProductCard"
+import Filter from "@/components/common/Filter"
+import { useProductTopTags } from "../hooks/useProductTopTags"
 
 function CategoryProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const page = Number(searchParams.get("page")) || 1
+  const tagsParams = searchParams.get("tags") ?? ""
   const { categoryId } = useParams<{ categoryId: string }>()
   const { productsByCategory, isLoading, error } = useProductsByCategory(
     categoryId || "",
-    page
+    page,
+    tagsParams
   )
+  const { tags } = useProductTopTags(categoryId || "")
+
   const totalPages = productsByCategory?.pagination?.pages || 1
   const category = productsByCategory?.data?.category
   const categoryName =
     typeof category === "string" ? category : category?.name || ""
 
   const handlePageChange = (page: number) => {
-    setSearchParams({ page: String(page) })
-    window.scrollTo({ top: 0, behavior: "smooth" })
+    const params = new URLSearchParams(searchParams)
+
+    params.set("page", String(page))
+
+    setSearchParams(params)
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    })
+  }
+
+  const handleFilterChange = (tag: string) => {
+    const params = new URLSearchParams(searchParams)
+
+    params.set("page", "1")
+
+    if (tag === "all" || tag === "") {
+      params.delete("tags")
+    } else {
+      params.set("tags", tag)
+    }
+
+    setSearchParams(params)
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    })
   }
 
   return (
@@ -40,10 +73,15 @@ function CategoryProductsPage() {
         </div>
       </div>
 
-      <div className="-mb-2 ml-7 md:mb-5">
+      <div className="-mb-2 ml-7 flex flex-col gap-5 md:mb-5">
         <p className="text-md text-muted-foreground md:text-lg">
           {productsByCategory?.pagination?.total} items found
         </p>
+        <Filter
+          tags={tags}
+          value={tagsParams || "all"}
+          onFilterChange={handleFilterChange}
+        />
       </div>
 
       <div className="flex-1 overflow-hidden">

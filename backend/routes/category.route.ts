@@ -4,6 +4,7 @@ import {
   allCategory,
   createCategory,
   getProductByCategory,
+  getTopTagsByCategory,
   toggleIsActive,
   updateCategory,
 } from "../controller/category.controller.js";
@@ -18,6 +19,7 @@ const categoryRouter = Router();
 
 //customer routes
 categoryRouter.get("/:categoryId", getProductByCategory);
+categoryRouter.get("/:categoryId/tags", getTopTagsByCategory);
 
 //admin routes
 categoryRouter.get("/", allCategory);
