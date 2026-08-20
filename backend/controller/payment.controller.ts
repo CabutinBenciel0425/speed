@@ -21,7 +21,7 @@ export const createCheckout = asyncHandler(
 
     const newPayment = await createCheckoutService(user._id.toString());
 
-    res.json({
+    res.status(200).json({
       success: true,
       data: newPayment,
     });
@@ -169,7 +169,7 @@ export const paymentsHistory = asyncHandler(
 
     const payments = await Payment.find({ customer: user._id.toString() });
 
-    res.json({
+    res.status(200).json({
       success: true,
       data: payments,
     });
@@ -193,7 +193,7 @@ export const getPayment = asyncHandler(async (req: Request, res: Response) => {
     throw new NotFoundError("Payment");
   }
 
-  res.json({
+  res.status(200).json({
     success: true,
     data: payment,
   });

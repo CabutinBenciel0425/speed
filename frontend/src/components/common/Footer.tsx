@@ -1,20 +1,19 @@
 import { Link, NavLink } from "react-router-dom"
 import { Mail } from "lucide-react"
 import { FaFacebook, FaInstagram, FaTwitter, FaYoutube } from "react-icons/fa"
+import speedSmall from "@/assets/speed-sm.png"
 
 export default function Footer() {
   return (
     <footer className="w-full border-t bg-background py-10 md:py-16">
       <div className="container mx-auto max-w-7xl px-5">
-        {/* Main Grid */}
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-4">
-          {/* Col 1: Brand & Tagline */}
           <div className="flex flex-col gap-4">
             <NavLink
-              to="/customer/dashboard"
+              to="/"
               className="text-xl font-bold tracking-tight text-primary"
             >
-              Speed
+              <img src={speedSmall} alt="speed" className="h-15 w-35" />
             </NavLink>
             <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
               Fast, reliable delivery right to your doorstep. Bringing your
@@ -22,7 +21,6 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Col 2: Product / Company */}
           <div className="flex flex-col gap-4">
             <h3 className="text-sm font-semibold tracking-wider text-foreground uppercase">
               Company
@@ -55,7 +53,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Col 3: Support / Help */}
           <div className="flex flex-col gap-4">
             <h3 className="text-sm font-semibold tracking-wider text-foreground uppercase">
               Support
@@ -88,7 +85,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Col 4: Contact & Socials */}
           <div className="flex flex-col gap-4">
             <h3 className="text-sm font-semibold tracking-wider text-foreground uppercase">
               Connect
@@ -141,7 +137,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom Border & Copyright */}
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t pt-8 sm:flex-row">
           <p className="text-xs text-muted-foreground">
             &copy; {new Date().getFullYear()} Speed. All rights reserved.

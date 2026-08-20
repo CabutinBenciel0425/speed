@@ -101,7 +101,7 @@ export const getMerchants = asyncHandler(
       req.query,
     );
 
-    res.json({
+    res.status(200).json({
       success: true,
       data: limitedDocs,
       pagination: {
@@ -157,7 +157,7 @@ export const getMerchantProducts = asyncHandler(
       req.query,
       merchantId,
     );
-    res.json({
+    res.status(200).json({
       success: true,
       data: docs,
       pagination: {

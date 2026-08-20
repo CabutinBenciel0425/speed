@@ -10,24 +10,79 @@ import {
 } from "../services/category.service.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import type { Request, Response } from "express";
-import { NotFoundError, UnauthorizedError } from "../utils/errors.js";
+import {
+  ConflictError,
+  NotFoundError,
+  UnauthorizedError,
+} from "../utils/errors.js";
 import { buildQuery } from "../utils/buildQuery.js";
 import Product, { type IProduct } from "../models/product.model.js";
 
 export const getProductByCategory = asyncHandler(
   async (req: Request, res: Response) => {
     const categoryId = req.params.categoryId;
-    console.log(categoryId);
 
-    const products = await Product.find({})
+    const queryData = buildQuery(req.query);
+
+    const allowedSorts = [
+      "price",
+      "-price",
+      "createdAt",
+      "-createdAt",
+      "name",
+      "-name",
+    ];
+
+    const sort = allowedSorts.includes(queryData.sort)
+      ? queryData.sort
+      : "-createdAt";
+
+    if (queryData.search) {
+      queryData.filter.$or = [
+        {
+          name: {
+            $regex: queryData.search,
+            $options: "i",
+          },
+        },
+        {
+          description: {
+            $regex: queryData.search,
+            $options: "i",
+          },
+        },
+      ];
+    }
+
+    const docs = await Product.find(queryData.filter)
+      .where("category")
+      .equals(categoryId)
+      .sort(sort)
+      .select(queryData.select)
+      .skip(queryData.skip)
+      .limit(queryData.limit);
+    const category = await Category.findById(categoryId);
+
+    if (!category) {
+      throw new NotFoundError("Category");
+    }
+
+    const total = await Product.countDocuments(queryData.filter)
       .where("category")
       .equals(categoryId);
 
-    console.log(products);
-
     res.status(200).json({
       success: true,
-      data: products,
+      data: {
+        category: category,
+        products: docs,
+      },
+      pagination: {
+        total,
+        page: queryData.page,
+        limit: queryData.limit,
+        pages: Math.ceil(total / queryData.limit),
+      },
     });
   },
 );
@@ -71,7 +126,7 @@ export const allCategory = asyncHandler(async (req: Request, res: Response) => {
 
   const total = await Category.countDocuments(queryData.filter);
 
-  res.json({
+  res.status(200).json({
     success: true,
     data: docs,
     pagination: {

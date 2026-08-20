@@ -53,7 +53,7 @@ export const getOrders = asyncHandler(async (req: Request, res: Response) => {
 
   const total = await Order.countDocuments(queryData.filter);
 
-  res.json({
+  res.status(200).json({
     success: true,
     data: docs,
     pagination: {
@@ -89,7 +89,7 @@ export const getOrdersByAdmin = asyncHandler(
 
     const total = await Order.countDocuments(queryData.filter);
 
-    res.json({
+    res.status(200).json({
       success: true,
       data: docs,
       pagination: {

@@ -1,31 +1,40 @@
 import axios from "@/lib/axios"
-import type { ApiResponse } from "@/types/types"
-import type { Product } from "../types/products"
+import type { CategoryByProducts } from "../types/products"
 import { useQuery } from "@tanstack/react-query"
 
 const fetchProductsByCategories = async (
-  categoryId: string
-): Promise<Product[] | []> => {
+  categoryId: string,
+  page: number,
+  limit: number
+): Promise<CategoryByProducts> => {
   try {
-    const { data } = await axios.get<ApiResponse<Product[]>>(
-      `/category/${categoryId}`
+    const { data } = await axios.get<CategoryByProducts>(
+      `/category/${categoryId}?page=${page}&limit=${limit}`
     )
 
-    return data.data
+    return data
   } catch (error) {
     console.log(error)
-    return []
+    return {
+      success: false,
+      data: null,
+      pagination: null,
+    }
   }
 }
 
-export const useProductsByCategory = (categoryId: string) => {
+export const useProductsByCategory = (
+  categoryId: string,
+  page: number = 1,
+  limit: number = 5
+) => {
   const {
     data: productsByCategory,
     isLoading,
     error,
-  } = useQuery<Product[]>({
-    queryKey: ["products", "category", categoryId],
-    queryFn: () => fetchProductsByCategories(categoryId!),
+  } = useQuery<CategoryByProducts>({
+    queryKey: ["products", "category", categoryId, page],
+    queryFn: () => fetchProductsByCategories(categoryId, page, limit),
     enabled: !!categoryId,
     staleTime: 1000 * 60 * 1,
   })

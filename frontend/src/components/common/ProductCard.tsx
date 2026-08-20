@@ -16,12 +16,16 @@ function ProductCard({ product }: { product: Product }) {
       initial={{ opacity: 0, y: 40 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.8 }}
+      className="h-full w-full"
     >
       <Card className="relative mx-auto w-full max-w-2xs pt-0">
         <div className="absolute inset-0 z-30 aspect-video bg-black/15" />
 
         <img
-          src={product.image ?? "https://placehold.net/400x400.png"}
+          src={
+            product.image ??
+            `https://placeholderimage.co/400x400/f3f4f6/374151/?text=${product.name}`
+          }
           alt={product.name}
           className="z-20 aspect-video w-full object-contain"
         />
@@ -43,7 +47,7 @@ function ProductCard({ product }: { product: Product }) {
         <NavLink to={`/merchant/:merchantId/:productId${product._id}`}>
           <CardHeader className="flex flex-col gap-3">
             <CardTitle>{product.name}</CardTitle>
-            <CardDescription className="line-clamp-3">
+            <CardDescription className="line-clamp-2 lg:line-clamp-3">
               {product.description}
             </CardDescription>
             <CardDescription className="flex flex-row gap-2">

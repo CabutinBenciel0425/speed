@@ -27,7 +27,7 @@ export const getNotifications = asyncHandler(
 
     const notifications = await getNotificationsService(id, role);
 
-    res.json({
+    res.status(200).json({
       success: true,
       data: notifications,
     });
@@ -47,7 +47,7 @@ export const getNotification = asyncHandler(
 
     const notification = await getNotificationService(notificationId, id, role);
 
-    res.json({
+    res.status(200).json({
       success: true,
       data: notification,
     });
@@ -71,7 +71,7 @@ export const readNotification = asyncHandler(
       role,
     );
 
-    res.json({
+    res.status(200).json({
       success: true,
       data: notification,
     });
@@ -96,7 +96,7 @@ export const readAllNotifications = asyncHandler(
       );
     }
 
-    res.json({
+    res.status(200).json({
       success: true,
       data: notifications,
     });
@@ -124,7 +124,7 @@ export const deleteNotification = asyncHandler(
       throw new NotFoundError("Notification");
     }
 
-    res.json({
+    res.status(200).json({
       success: true,
       message: "Notification successfully deleted",
     });
@@ -149,7 +149,7 @@ export const deleteNotifications = asyncHandler(
       );
     }
 
-    res.json({
+    res.status(200).json({
       success: true,
       message: "Notifications successfully cleared",
     });

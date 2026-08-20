@@ -12,7 +12,7 @@ import type {
   ProductInput,
   UpdateProductInput,
 } from "../schemas/product.schema.js";
-import Product, { type IProduct } from "../models/product.model.js";
+import Product from "../models/product.model.js";
 import { DEFAULT_PRODUCT_IMAGE } from "../config/constants.js";
 import cloudinary from "../config/cloudinary.js";
 import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";
@@ -183,7 +183,7 @@ export const getProducts = asyncHandler(async (req: Request, res: Response) => {
 
   const total = await Product.countDocuments(queryData.filter);
 
-  res.json({
+  res.status(200).json({
     success: true,
     data: docs,
     pagination: {
@@ -240,7 +240,7 @@ export const getFeaturedProducts = asyncHandler(
       isFeatured: true,
       isAvailable: true,
     });
-    res.json({
+    res.status(200).json({
       success: true,
       data: featuredProducts,
     });

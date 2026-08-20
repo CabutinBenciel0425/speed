@@ -54,7 +54,9 @@ export function Addressbar() {
             >
               <MapPin className="size-5 text-primary" />
               <div className="flex flex-col items-start">
-                <span className="text-xs text-gray-400">Deliver to</span>
+                <span className="text-xs text-muted-foreground">
+                  Deliver to
+                </span>
                 <span className="line-clamp-1 text-sm leading-tight font-semibold">
                   {formatAddress(currentAddress)}
                 </span>

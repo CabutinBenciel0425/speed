@@ -120,7 +120,7 @@ export const allUsers = asyncHandler(async (req: Request, res: Response) => {
 
   const total = await User.countDocuments(queryData.filter);
 
-  res.json({
+  res.status(200).json({
     success: true,
     data: docs,
     pagination: {
@@ -225,7 +225,7 @@ export const allMerchants = asyncHandler(
 
     const total = await Merchant.countDocuments(queryData.filter);
 
-    res.json({
+    res.status(200).json({
       success: true,
       data: docs,
       pagination: {
@@ -332,7 +332,7 @@ export const allDrivers = asyncHandler(async (req: Request, res: Response) => {
 
   const total = await Driver.countDocuments(queryData.filter);
 
-  res.json({
+  res.status(200).json({
     success: true,
     data: docs,
     pagination: {
@@ -431,7 +431,7 @@ export const allOrders = asyncHandler(async (req: Request, res: Response) => {
 
   const total = await Order.countDocuments(queryData.filter);
 
-  res.json({
+  res.status(200).json({
     success: true,
     data: docs,
     pagination: {
@@ -529,7 +529,7 @@ export const allProducts = asyncHandler(async (req: Request, res: Response) => {
 
   const total = await Product.countDocuments(queryData.filter);
 
-  res.json({
+  res.status(200).json({
     success: true,
     data: docs,
     pagination: {
@@ -588,7 +588,7 @@ export const allReviews = asyncHandler(async (req: Request, res: Response) => {
 
   const total = await Review.countDocuments(queryData.filter);
 
-  res.json({
+  res.status(200).json({
     success: true,
     data: docs,
     pagination: {

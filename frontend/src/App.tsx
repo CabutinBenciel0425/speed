@@ -7,13 +7,15 @@ import CustomerLayout from "./components/layout/CustomerLayout"
 import Dashboard from "./features/customer/pages/Dashboard"
 import { useAuth } from "./hooks/useAuth"
 import CategoryProductsPage from "./features/customer/pages/CategoryProductsPage"
+import ScrollToTop from "./components/common/ScrollToTop"
 
 export function App() {
   const { isAuthenticated } = useAuth()
 
   return (
-    <div className="flex scrollbar-gutter-stable items-center justify-center">
+    <div className="flex min-h-screen w-full scrollbar-gutter-stable items-center justify-center">
       {/* authentication */}
+      <ScrollToTop />
       <Routes>
         <Route element={<AuthLayout />}>
           <Route

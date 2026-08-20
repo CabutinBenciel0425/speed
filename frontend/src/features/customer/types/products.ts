@@ -1,3 +1,5 @@
+import type { Category } from "./category"
+
 export interface Product {
   _id: string
   merchant: string
@@ -13,4 +15,22 @@ export interface Product {
   isAvailable: boolean
   isFeatured: boolean
   totalSold: number
+}
+
+export type Pagination = {
+  total: number
+  page: number
+  limit: number
+  pages: number
+}
+
+export type ProductWithCategoryName = {
+  category: Category
+  products: Product[]
+}
+
+export type CategoryByProducts = {
+  success: boolean
+  data: ProductWithCategoryName | null
+  pagination: Pagination | null
 }

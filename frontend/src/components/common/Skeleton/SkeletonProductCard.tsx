@@ -12,6 +12,7 @@ export function SkeletonProductCard() {
       initial={{ opacity: 0, y: 40 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.8 }}
+      className="h-full w-full"
     >
       <Card className="mx-auto w-full max-w-2xs overflow-hidden pt-0">
         <div className="aspect-video w-full">
