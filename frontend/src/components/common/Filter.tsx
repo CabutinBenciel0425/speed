@@ -10,12 +10,8 @@ type FilterProps = {
 function Filter({ tags, value, onFilterChange }: FilterProps) {
   const handleValueChange = (values: string[]) => {
     const selectedValue = values[values.length - 1] ?? "all"
-    console.log(selectedValue)
     onFilterChange(selectedValue)
   }
-
-  console.log("TAGS", tags)
-  console.log("DEFAULT VALUE", value)
 
   return (
     <ToggleGroup

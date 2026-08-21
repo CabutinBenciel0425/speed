@@ -5,16 +5,20 @@ import { PaginationPage } from "@/components/common/PaginationPage"
 import { SkeletonProductCard } from "@/components/common/Skeleton/SkeletonProductCard"
 import Filter from "@/components/common/Filter"
 import { useProductTopTags } from "../hooks/useProductTopTags"
+import { CategoryHeader } from "@/components/common/CategoryHeader"
+import Sort from "@/components/common/Sort"
 
 function CategoryProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const page = Number(searchParams.get("page")) || 1
   const tagsParams = searchParams.get("tags") ?? ""
+  const sortParams = searchParams.get("sort") ?? ""
   const { categoryId } = useParams<{ categoryId: string }>()
   const { productsByCategory, isLoading, error } = useProductsByCategory(
     categoryId || "",
     page,
-    tagsParams
+    tagsParams,
+    sortParams
   )
   const { tags } = useProductTopTags(categoryId || "")
 
@@ -55,33 +59,46 @@ function CategoryProductsPage() {
     })
   }
 
+  const handleSortChange = (sort: string) => {
+    const params = new URLSearchParams(searchParams)
+
+    params.set("sort", "-price")
+
+    if (sort === "-price" || sort === "") {
+      params.delete("tags")
+    } else {
+      params.set("sort", sort)
+    }
+
+    setSearchParams(params)
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    })
+  }
+
   return (
     <div className="flex h-full flex-col gap-5 px-5 py-4">
-      <div className="mb-5 flex flex-row items-center">
-        <img
-          src={category?.image}
-          alt={categoryName}
-          className="h-25 w-25 md:h-30 md:w-30 lg:h-35 lg:w-35"
-        />
-        <div>
-          <h1 className="mb-2 text-2xl font-bold md:mb-5 md:text-3xl">
-            {categoryName}
-          </h1>
-          <p className="md:text-md text-sm text-muted-foreground lg:text-lg">
-            {category?.description}
-          </p>
-        </div>
-      </div>
+      <CategoryHeader
+        name={categoryName}
+        description={category?.description || ""}
+        image={category?.image || ""}
+      />
 
       <div className="-mb-2 ml-7 flex flex-col gap-5 md:mb-5">
         <p className="text-md text-muted-foreground md:text-lg">
           {productsByCategory?.pagination?.total} items found
         </p>
-        <Filter
-          tags={tags}
-          value={tagsParams || "all"}
-          onFilterChange={handleFilterChange}
-        />
+        <div className="flex w-full items-center justify-between">
+          <Filter
+            tags={tags}
+            value={tagsParams || "all"}
+            onFilterChange={handleFilterChange}
+          />
+
+          <Sort value={sortParams} onSortChange={handleSortChange} />
+        </div>
       </div>
 
       <div className="flex-1 overflow-hidden">
