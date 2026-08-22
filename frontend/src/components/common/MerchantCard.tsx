@@ -19,11 +19,11 @@ function MerchantCard({ merchant }: { merchant: Merchant }) {
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 40 }}
+      initial={{ opacity: 0, y: -20 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5 }}
     >
-      <NavLink to="/merchant/:merchantId">
+      <NavLink to={`/merchant/${merchant.id}`}>
         <Card className="relative mx-auto w-full max-w-sm pt-0">
           <div className="absolute inset-0 z-30 aspect-video bg-black/35" />
           <img

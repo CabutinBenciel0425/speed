@@ -49,6 +49,10 @@ export const resetPasswordSchema = z.object({
     .regex(/[0-9]/, "Password must contain at least one number"),
 })
 
+export const emailVerifySchema = z.object({
+  email: z.email("Invalid email format"),
+})
+
 export const selectRoleSchema = z.enum([
   "Customer",
   "Merchant",

@@ -8,9 +8,12 @@ import Dashboard from "./features/customer/pages/Dashboard"
 import { useAuth } from "./hooks/useAuth"
 import CategoryProductsPage from "./features/customer/pages/CategoryProductsPage"
 import ScrollToTop from "./components/common/ScrollToTop"
+import MerchantPage from "./features/customer/pages/MerchantPage"
+import EmailVerificationPage from "./features/customer/pages/EmailVerificationPage"
+import InputCodePage from "./features/customer/pages/InputCodePage"
 
 export function App() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isVerified } = useAuth()
 
   return (
     <div className="flex min-h-screen w-full scrollbar-gutter-stable items-center justify-center">
@@ -37,9 +40,17 @@ export function App() {
         <Route element={<CustomerLayout />}>
           <Route path="/" element={<Dashboard />} />
           <Route
+            path="/verify-email"
+            element={
+              !isVerified ? <EmailVerificationPage /> : <Navigate to="/" />
+            }
+          />
+          <Route path="/input-otp" element={<InputCodePage />} />
+          <Route
             path="/category/:categoryId"
             element={<CategoryProductsPage />}
           />
+          <Route path="/category/:merchantId" element={<MerchantPage />} />
           {/* <Route path="/products" element={<LoginPage />} />
           <Route path="/orders" element={<RegisterPage />} />
           <Route path="/favorites" element={<RoleSelectorPage />} /> */}

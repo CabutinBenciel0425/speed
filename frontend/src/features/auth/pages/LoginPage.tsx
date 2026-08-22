@@ -69,32 +69,23 @@ export function LoginPage() {
         className="w-full max-w-md"
       >
         <Card className="w-full border-4 border-accent px-6 pt-5 shadow-lg shadow-accent">
-          <CardAction>
-            <NavLink to="/register" className={"text-primary hover:underline"}>
-              Register
-            </NavLink>
-          </CardAction>
           <CardHeader>
             <CardTitle className="text-2xl">Login your account</CardTitle>
             <CardDescription>It's great having you back!</CardDescription>
+            <CardAction className="mt-2">
+              <NavLink
+                to="/register"
+                className={"text-md font-semibold text-primary hover:underline"}
+              >
+                Register
+              </NavLink>
+            </CardAction>
           </CardHeader>
 
           <CardContent>
             <LoginForm handleSubmitFn={onSubmit} form={form} />
           </CardContent>
           <CardFooter className="mb-2 flex flex-col gap-5">
-            {/* <Field
-              orientation={"horizontal"}
-              className="flex flex-row items-center justify-center"
-            >
-              <span>Do you already have an account?</span>
-              <Button
-                variant={"ghost"}
-                className={"mt-0.5 px-1 text-primary hover:underline"}
-              >
-                Login
-              </Button>
-            </Field> */}
             <Field
               orientation="horizontal"
               className="flex items-center justify-around"

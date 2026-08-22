@@ -49,6 +49,15 @@ export const resetPasswordSchema = z.object({
     .regex(/[0-9]/, "Password must contain at least one number"),
 });
 
+export const emailVerifySchema = z.object({
+  email: z.email("Invalid email format"),
+});
+
+export const verificationCodeSchema = z.object({
+  email: z.email("Invalid email format"),
+  code: z.string().length(6),
+});
+
 export const selectRoleSchema = z.enum([
   "Customer",
   "Merchant",
@@ -63,3 +72,5 @@ export type UserInput = z.infer<typeof userSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type ValidUserRoleInput = z.infer<typeof selectRoleSchema>;
+export type VerificationCodeInput = z.infer<typeof verificationCodeSchema>;
+export type EmailVerifyInput = z.infer<typeof emailVerifySchema>;

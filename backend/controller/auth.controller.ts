@@ -18,10 +18,12 @@ import {
 } from "../utils/setCookie.js";
 import {
   selectRoleSchema,
+  type EmailVerifyInput,
   type LoginInput,
   type ResetPasswordInput,
   type SignupInput,
   type ValidUserRoleInput,
+  type VerificationCodeInput,
 } from "./../schemas/user.schema.js";
 import { asyncHandler } from "./../utils/asyncHandler.js";
 import type { Response, Request } from "express";
@@ -294,7 +296,7 @@ export const resetPassword = asyncHandler(
 
 export const sendVerificationCode = asyncHandler(
   async (req: Request, res: Response) => {
-    const { email } = req.body ?? {};
+    const { email }: EmailVerifyInput = req.body ?? {};
     if (!email) {
       throw new ApiError(400, "Email is required");
     }
@@ -320,13 +322,13 @@ export const sendVerificationCode = asyncHandler(
 
 export const codeVerification = asyncHandler(
   async (req: Request, res: Response) => {
-    const { email, code } = req.body ?? {};
+    const { email, code }: VerificationCodeInput = req.body ?? {};
 
     const updatedUser = await verifyCode(email, code);
 
     res.status(200).json({
       success: true,
-      message: "Verification email sent",
+      message: "Verification code sent",
       data: updatedUser,
     });
   },

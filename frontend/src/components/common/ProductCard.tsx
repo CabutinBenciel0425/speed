@@ -1,5 +1,11 @@
 import { Clock, Heart } from "lucide-react"
-import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card"
 import { Button } from "../ui/button"
 import { NavLink } from "react-router-dom"
 import { useRef, useState } from "react"
@@ -13,7 +19,7 @@ function ProductCard({ product }: { product: Product }) {
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 40 }}
+      initial={{ opacity: 0, y: -20 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.8 }}
       className="h-full w-full"
@@ -45,7 +51,7 @@ function ProductCard({ product }: { product: Product }) {
         </Button>
 
         <NavLink to={`/merchant/:merchantId/:productId${product._id}`}>
-          <CardHeader className="flex flex-col gap-3">
+          <CardHeader className="mb-5 flex flex-col gap-3">
             <CardTitle>{product.name}</CardTitle>
             <CardDescription className="line-clamp-2 lg:line-clamp-3">
               {product.description}
@@ -55,6 +61,11 @@ function ProductCard({ product }: { product: Product }) {
               <span>{product.preparationTime} mins</span>
             </CardDescription>
           </CardHeader>
+          <CardContent>
+            <span className="text-xl font-bold text-primary">
+              ₱{product?.price}
+            </span>
+          </CardContent>
         </NavLink>
       </Card>
     </motion.div>

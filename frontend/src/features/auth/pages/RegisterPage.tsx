@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -17,6 +18,7 @@ import type { SignupInput } from "../types/auth"
 import { signupSchema } from "../schemas/authSchema"
 import { motion } from "framer-motion"
 import { useRegister } from "../hooks/useRegister"
+import { NavLink } from "react-router-dom"
 
 export function RegisterPage() {
   const { mutate, isPending, error } = useRegister()
@@ -51,6 +53,14 @@ export function RegisterPage() {
           <CardHeader>
             <CardTitle className="text-2xl">Register an account</CardTitle>
             <CardDescription>Let's get you started with Speed</CardDescription>
+            <CardAction className="mt-2">
+              <NavLink
+                to="/login"
+                className={"text-md font-semibold text-primary hover:underline"}
+              >
+                Login
+              </NavLink>
+            </CardAction>
           </CardHeader>
           <CardContent>
             <RegisterForm handleSubmitFn={onSubmit} form={form} />

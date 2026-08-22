@@ -7,12 +7,14 @@ import Filter from "@/components/common/Filter"
 import { useProductTopTags } from "../hooks/useProductTopTags"
 import { CategoryHeader } from "@/components/common/CategoryHeader"
 import Sort from "@/components/common/Sort"
+import SkeletonCategoryHeader from "@/components/common/Skeleton/SkeletonCategoryHeader"
+import SkeletonPagination from "@/components/common/Skeleton/SkeletonPagination"
 
 function CategoryProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const page = Number(searchParams.get("page")) || 1
   const tagsParams = searchParams.get("tags") ?? ""
-  const sortParams = searchParams.get("sort") ?? ""
+  const sortParams = searchParams.get("sort") ?? "-price"
   const { categoryId } = useParams<{ categoryId: string }>()
   const { productsByCategory, isLoading, error } = useProductsByCategory(
     categoryId || "",
@@ -64,8 +66,8 @@ function CategoryProductsPage() {
 
     params.set("sort", "-price")
 
-    if (sort === "-price" || sort === "") {
-      params.delete("tags")
+    if (sort === "") {
+      params.delete("sort")
     } else {
       params.set("sort", sort)
     }
@@ -80,11 +82,15 @@ function CategoryProductsPage() {
 
   return (
     <div className="flex h-full flex-col gap-5 px-5 py-4">
-      <CategoryHeader
-        name={categoryName}
-        description={category?.description || ""}
-        image={category?.image || ""}
-      />
+      {isLoading ? (
+        <SkeletonCategoryHeader />
+      ) : (
+        <CategoryHeader
+          name={categoryName}
+          description={category?.description || ""}
+          image={category?.image || ""}
+        />
+      )}
 
       <div className="-mb-2 ml-7 flex flex-col gap-5 md:mb-5">
         <p className="text-md text-muted-foreground md:text-lg">
@@ -134,12 +140,16 @@ function CategoryProductsPage() {
       </div>
 
       <div className="shrink-0 py-4">
-        <PaginationPage
-          id={categoryId || ""}
-          currentPage={page}
-          onPageChange={handlePageChange}
-          totalPages={totalPages}
-        />
+        {isLoading ? (
+          <SkeletonPagination />
+        ) : (
+          <PaginationPage
+            id={categoryId || ""}
+            currentPage={page}
+            onPageChange={handlePageChange}
+            totalPages={totalPages}
+          />
+        )}
       </div>
     </div>
   )

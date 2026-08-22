@@ -6,13 +6,14 @@ const fetchProductsByCategories = async (
   categoryId: string,
   page: number,
   tags: string = "",
-  sort: string = "",
+  sort: string = "-price",
   limit: number
 ): Promise<CategoryByProducts> => {
   const urlToUse =
     tags !== null && tags !== ""
       ? `/category/${categoryId}?tags=${tags}&sort=${sort}&page=${page}&limit=${limit}`
       : `/category/${categoryId}?sort=${sort}&page=${page}&limit=${limit}`
+  console.log(sort)
 
   const { data } = await axios.get<CategoryByProducts>(urlToUse)
 

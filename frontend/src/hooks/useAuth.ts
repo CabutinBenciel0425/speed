@@ -15,8 +15,16 @@ const fetchCurrentUser = async (): Promise<User | null> => {
 }
 
 export const useAuth = () => {
-  const { user, isAuthenticated, isLoading, setAuth, setLoading, logout } =
-    useAuthStore()
+  const {
+    user,
+    isAuthenticated,
+    isVerified,
+    isLoading,
+    setAuth,
+    setVerified,
+    setLoading,
+    logout,
+  } = useAuthStore()
 
   const {
     data,
@@ -33,13 +41,14 @@ export const useAuth = () => {
 
     if (!isError && data) {
       setAuth(data)
+      setVerified(data.isVerified)
     } else if (isError) {
       logout()
       setLoading(false)
     } else {
       setLoading(false)
     }
-  }, [data, isQueryLoading, isError, setAuth, setLoading, logout])
+  }, [data, isQueryLoading, isError, setAuth, setVerified, setLoading, logout])
 
   useEffect(() => {
     if (!isQueryLoading) {
@@ -50,6 +59,8 @@ export const useAuth = () => {
   return {
     user,
     isAuthenticated,
+    isVerified,
+    setVerified,
     isLoading: isLoading || isQueryLoading,
     logout: () => {
       logout()

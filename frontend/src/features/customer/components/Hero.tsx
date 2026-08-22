@@ -8,9 +8,9 @@ function Hero() {
     <section className="w-full px-6 md:px-12 lg:px-20 xl:px-30">
       <motion.div
         className="flex min-h-100 w-full flex-col overflow-hidden rounded-3xl bg-secondary lg:flex-row"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.4 }}
       >
         <div className="flex w-full flex-col items-start justify-center gap-4 px-8 py-6 lg:w-1/2 lg:gap-8 lg:px-12 xl:px-16">
           <h1 className="text-3xl font-semibold text-balance md:text-4xl lg:text-5xl xl:text-6xl">

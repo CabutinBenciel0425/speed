@@ -74,7 +74,9 @@ export function Addressbar() {
           <DropdownMenuContent className="w-80" align="start">
             <DropdownMenuGroup>
               <DropdownMenuLabel className="font-semibold">
-                Your Addresses
+                {addresses.length > 0
+                  ? "Your Addresses"
+                  : "You have no saved address"}
               </DropdownMenuLabel>
 
               <DropdownMenuRadioGroup

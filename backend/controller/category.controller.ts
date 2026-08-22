@@ -63,8 +63,6 @@ export const getProductByCategory = asyncHandler(
         },
       ];
     }
-    console.log("filters", queryData.filter);
-    console.log("docs", await Product.find(queryData.filter));
 
     const docs = await Product.find(queryData.filter)
       .where("category")
@@ -82,8 +80,6 @@ export const getProductByCategory = asyncHandler(
     const total = await Product.countDocuments(queryData.filter)
       .where("category")
       .equals(categoryId);
-
-    console.log(docs);
 
     res.status(200).json({
       success: true,

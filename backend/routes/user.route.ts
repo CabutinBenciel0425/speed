@@ -16,11 +16,13 @@ import {
 } from "../controller/auth.controller.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import {
+  emailVerifySchema,
   forgotPasswordSchema,
   loginSchema,
   resetPasswordSchema,
   signupSchema,
   updateSchema,
+  verificationCodeSchema,
 } from "../schemas/user.schema.js";
 import { protectRoute } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/upload.middleware.js";
@@ -74,8 +76,18 @@ userRoute.patch(
   validate(resetPasswordSchema),
   resetPassword,
 );
-userRoute.post("/send-code", protectRoute, sendVerificationCode);
-userRoute.post("/verify-code", protectRoute, codeVerification);
+userRoute.post(
+  "/send-code",
+  protectRoute,
+  validate(emailVerifySchema),
+  sendVerificationCode,
+);
+userRoute.post(
+  "/verify-code",
+  protectRoute,
+  validate(verificationCodeSchema),
+  codeVerification,
+);
 userRoute.patch(
   "/update-user",
   protectRoute,

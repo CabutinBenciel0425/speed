@@ -69,7 +69,7 @@ export const createCustomerUser = async ({
     role: "Customer",
     avatar:
       cloudinaryImageUrl ||
-      `${RANDOM_PROFILE_URL}name=${encodeURIComponent(firstName + lastName)}&size=128&background=random&color=fff&bold=true`,
+      `${RANDOM_PROFILE_URL}name=${encodeURIComponent(firstName)}+${encodeURIComponent(lastName)}&size=128&background=random&color=fff&bold=true`,
   });
 
   await newCustomer.save();

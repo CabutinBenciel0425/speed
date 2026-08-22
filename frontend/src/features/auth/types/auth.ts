@@ -1,5 +1,6 @@
 import type { z } from "zod"
 import {
+  emailVerifySchema,
   forgotPasswordSchema,
   loginSchema,
   resetPasswordSchema,
@@ -16,6 +17,7 @@ export type UserInput = z.infer<typeof userSchema>
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>
 export type ValidUserRoleInput = z.infer<typeof selectRoleSchema>
+export type VerifyEmailInput = z.infer<typeof emailVerifySchema>
 
 export type HandleSubmitRegisterType = (data: SignupInput) => void
 export type FormRegisterType = (data: SignupInput) => SignupInput
