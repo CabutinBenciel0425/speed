@@ -13,7 +13,6 @@ const fetchProductsByCategories = async (
     tags !== null && tags !== ""
       ? `/category/${categoryId}?tags=${tags}&sort=${sort}&page=${page}&limit=${limit}`
       : `/category/${categoryId}?sort=${sort}&page=${page}&limit=${limit}`
-  console.log(sort)
 
   const { data } = await axios.get<CategoryByProducts>(urlToUse)
 

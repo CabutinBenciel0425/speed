@@ -1,4 +1,4 @@
-import { type QueryFilter, Types } from "mongoose";
+import mongoose, { type QueryFilter, Types } from "mongoose";
 import Merchant, { type IMerchant } from "../models/merchant.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import type { Request, Response } from "express";
@@ -147,19 +147,20 @@ export const getMerchantDetails = asyncHandler(
 
 export const getMerchantProducts = asyncHandler(
   async (req: Request, res: Response) => {
-    const merchantId = req.params.merchantId ? req.params.merchantId[0] : null;
+    const merchantId = req.params.merchantId as string;
 
     if (!merchantId) {
       throw new NotFoundError("Merchant Id");
     }
 
-    const { docs, total, queryData } = await getMerchantProductsService(
-      req.query,
-      merchantId,
-    );
+    const { docs, merchant, total, queryData } =
+      await getMerchantProductsService(req.query, merchantId);
     res.status(200).json({
       success: true,
-      data: docs,
+      data: {
+        merchant,
+        products: docs,
+      },
       pagination: {
         total,
         page: queryData.page,

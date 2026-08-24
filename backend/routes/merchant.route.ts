@@ -22,9 +22,7 @@ const merchantRouter = Router();
 //public routes
 merchantRouter.get("/:merchantId/details", getMerchantDetails);
 merchantRouter.get("/", getMerchants);
-
-//customer routes
-merchantRouter.get("/:merchantId/products", protectRoute, getMerchantProducts);
+merchantRouter.get("/:merchantId/products", getMerchantProducts);
 
 merchantRouter.patch(
   "/favorites/:merchantId/status",

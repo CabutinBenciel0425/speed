@@ -12,6 +12,7 @@ import cloudinary from "../config/cloudinary.js";
 import { imageUpload } from "../utils/imageUpload.js";
 import MerchantFavorite from "../models/merchantFavorite.model.js";
 import { ApiError } from "../utils/apiError.js";
+import Product from "../models/product.model.js";
 
 export const merchantRejectOrder = async (
   orderId: string,
@@ -301,15 +302,24 @@ export const getMerchantProductsService = async (
     };
   }
 
-  const docs = await Merchant.find(queryData.filter)
+  console.log(queryData.filter);
+
+  const docs = await Product.find(filter)
+    .populate("merchant")
     .sort(sort)
     .select(queryData.select)
     .skip(queryData.skip)
     .limit(queryData.limit);
 
+  const merchant = await Merchant.findById(merchantId);
+
+  if (!merchant) {
+    throw new NotFoundError("Merchant");
+  }
+
   const total = await Merchant.countDocuments(queryData.filter);
 
-  return { docs, total, queryData };
+  return { docs, merchant, total, queryData };
 };
 
 export const updateMerchantProfileService = async (

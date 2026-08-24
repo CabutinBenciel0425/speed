@@ -35,7 +35,6 @@ function InputCodeCard() {
       toast.error("User email not found")
     }
     mutate(data)
-    console.log(data)
   }
 
   useEffect(() => {

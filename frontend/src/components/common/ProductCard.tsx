@@ -1,4 +1,4 @@
-import { Clock, Heart } from "lucide-react"
+import { Clock, Heart, LucidePlus } from "lucide-react"
 import {
   Card,
   CardContent,
@@ -50,23 +50,34 @@ function ProductCard({ product }: { product: Product }) {
           />
         </Button>
 
-        <NavLink to={`/merchant/:merchantId/:productId${product._id}`}>
-          <CardHeader className="mb-5 flex flex-col gap-3">
-            <CardTitle>{product.name}</CardTitle>
-            <CardDescription className="line-clamp-2 lg:line-clamp-3">
-              {product.description}
-            </CardDescription>
-            <CardDescription className="flex flex-row gap-2">
-              <Clock className="mt-0.5 size-4" />
-              <span>{product.preparationTime} mins</span>
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <span className="text-xl font-bold text-primary">
-              ₱{product?.price}
-            </span>
-          </CardContent>
-        </NavLink>
+        <CardHeader className="mb-5 flex flex-col gap-3">
+          <CardTitle>
+            <NavLink to={`/merchant/:merchantId/:productId${product._id}`}>
+              {product.name}
+            </NavLink>
+          </CardTitle>
+
+          <CardDescription className="line-clamp-2 lg:line-clamp-3">
+            {product.description}
+          </CardDescription>
+          <CardDescription className="flex flex-row gap-2">
+            <Clock className="mt-0.5 size-4" />
+            <span>{product.preparationTime} mins</span>
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-row items-center justify-between">
+          <span className="text-xl font-bold text-primary">
+            ₱{product?.price}
+          </span>
+          <span>
+            <Button
+              className={"w-8 cursor-pointer rounded-full p-4"}
+              aria-label="Add to cart"
+            >
+              <LucidePlus className="size-7" />
+            </Button>
+          </span>
+        </CardContent>
       </Card>
     </motion.div>
   )

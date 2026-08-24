@@ -5,7 +5,7 @@ import speedSmall from "@/assets/speed-sm.png"
 
 export default function Footer() {
   return (
-    <footer className="w-full border-t bg-background py-10 md:py-16">
+    <footer className="mt-20 w-full border-t bg-background py-10 md:py-16">
       <div className="container mx-auto max-w-7xl px-5">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-4">
           <div className="flex flex-col gap-4">

@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/pagination"
 
 type PaginationProps = {
-  id: string
   currentPage: number
   onPageChange: (page: number) => void
   totalPages: number

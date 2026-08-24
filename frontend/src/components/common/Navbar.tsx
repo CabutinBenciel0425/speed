@@ -18,7 +18,7 @@ function Navbar() {
 
   return (
     <>
-      <header className="flex w-full flex-row items-center justify-between gap-1 px-2 py-4 lg:px-10 lg:py-5 xl:gap-5">
+      <header className="z-20 flex w-full flex-row items-center justify-between gap-1 bg-transparent px-2 py-4 lg:px-10 lg:py-5 xl:gap-5">
         <div className="mr-5 w-1/4 shrink-0 lg:mr-0">
           <div className="w-fit">
             <NavLink to="/">

@@ -45,12 +45,15 @@ export function App() {
               !isVerified ? <EmailVerificationPage /> : <Navigate to="/" />
             }
           />
-          <Route path="/input-otp" element={<InputCodePage />} />
+          <Route
+            path="/input-otp"
+            element={!isVerified ? <InputCodePage /> : <Navigate to="/" />}
+          />
           <Route
             path="/category/:categoryId"
             element={<CategoryProductsPage />}
           />
-          <Route path="/category/:merchantId" element={<MerchantPage />} />
+          <Route path="/merchant/:merchantId" element={<MerchantPage />} />
           {/* <Route path="/products" element={<LoginPage />} />
           <Route path="/orders" element={<RegisterPage />} />
           <Route path="/favorites" element={<RoleSelectorPage />} /> */}

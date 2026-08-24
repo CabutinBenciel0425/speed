@@ -13,7 +13,7 @@ import {
 function FeaturedProducts() {
   const { featuredProducts, isLoading, error } = useFeaturedProducts()
   return (
-    <div className="flex w-full flex-col gap-5 px-5">
+    <div className="flex w-full flex-col gap-5 px-20">
       <div className="flex items-center justify-between">
         <p className="block text-lg font-semibold">Featured Products</p>
         <ViewAllButton />

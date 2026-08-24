@@ -21,7 +21,7 @@ function MerchantCard({ merchant }: { merchant: Merchant }) {
       ref={ref}
       initial={{ opacity: 0, y: -20 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.8 }}
     >
       <NavLink to={`/merchant/${merchant.id}`}>
         <Card className="relative mx-auto w-full max-w-sm pt-0">

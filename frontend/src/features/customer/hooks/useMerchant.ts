@@ -3,21 +3,26 @@ import axios from "@/lib/axios"
 import type { ApiResponse } from "@/types/types"
 import type { Merchant } from "../types/merchant"
 
-const fetchMerchant = async (): Promise<Merchant[]> => {
-  const { data } = await axios.get<ApiResponse<Merchant[]>>("/merchant")
+const fetchMerchant = async (merchantId: string): Promise<Merchant | null> => {
+  if (!merchantId) return null
+  const { data } = await axios.get<ApiResponse<Merchant>>(
+    `/merchant/${merchantId}/details`
+  )
 
   return data.data
 }
 
-export const useMerchants = () => {
+export const useMerchant = (merchantId: string) => {
   const {
-    data: merchants = [],
+    data: merchant,
     isLoading,
     error,
-  } = useQuery<Merchant[]>({
-    queryKey: ["merchants"],
-    queryFn: fetchMerchant,
+  } = useQuery<Merchant | null>({
+    queryKey: ["merchant", merchantId],
+    queryFn: () => fetchMerchant(merchantId),
+    enabled: !!merchantId,
+    staleTime: 1000 * 60 * 5,
   })
 
-  return { merchants, isLoading, error }
+  return { merchant, isLoading, error }
 }

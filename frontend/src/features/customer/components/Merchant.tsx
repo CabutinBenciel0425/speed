@@ -1,6 +1,6 @@
 import MerchantCard from "@/components/common/MerchantCard"
 import ViewAllButton from "@/components/common/ViewAllButton"
-import { useMerchants } from "../hooks/useMerchant"
+import { useMerchants } from "../hooks/useMerchants"
 import { SkeletonMerchantCard } from "@/components/common/Skeleton/SkeletonMerchantCard"
 import {
   Carousel,
@@ -13,7 +13,7 @@ import {
 function Merchant() {
   const { merchants, isLoading, error } = useMerchants()
   return (
-    <div className="flex flex-col gap-5 px-5">
+    <div className="flex flex-col gap-5 px-20">
       <div className="flex items-center justify-between">
         <p className="block text-lg font-semibold">Popular Restaurants</p>
         <ViewAllButton />

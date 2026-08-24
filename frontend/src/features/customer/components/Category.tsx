@@ -7,7 +7,7 @@ function Category() {
   const { categories, isLoading, error } = useCategories()
 
   return (
-    <div className="mb-10 flex flex-col gap-3 px-5">
+    <div className="mb-10 flex flex-col gap-3 px-20">
       <div className="flex items-center justify-start">
         <p className="block text-lg font-semibold">Browse by category</p>
       </div>

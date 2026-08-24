@@ -1,4 +1,5 @@
 import type { Category } from "./category"
+import type { Merchant } from "./merchant"
 
 export interface Product {
   _id: string
@@ -24,14 +25,25 @@ export type Pagination = {
   pages: number
 }
 
-export type ProductWithCategoryName = {
+export type ProductWithCategory = {
   category: Category
+  products: Product[]
+}
+
+export type ProductWithMerchant = {
+  merchant: Merchant
   products: Product[]
 }
 
 export type CategoryByProducts = {
   success: boolean
-  data: ProductWithCategoryName | null
+  data: ProductWithCategory | null
+  pagination: Pagination | null
+}
+
+export type MerchantByProducts = {
+  success: boolean
+  data: ProductWithMerchant | null
   pagination: Pagination | null
 }
 

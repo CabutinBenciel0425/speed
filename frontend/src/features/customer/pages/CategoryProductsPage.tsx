@@ -144,7 +144,6 @@ function CategoryProductsPage() {
           <SkeletonPagination />
         ) : (
           <PaginationPage
-            id={categoryId || ""}
             currentPage={page}
             onPageChange={handlePageChange}
             totalPages={totalPages}
