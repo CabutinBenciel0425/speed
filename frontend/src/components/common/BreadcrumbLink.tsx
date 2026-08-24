@@ -14,17 +14,27 @@ function BreadcrumbLinkComponent({
   currentPage,
 }: BreadcrumbLinkComponent) {
   return (
-    <Breadcrumb>
+    <Breadcrumb className="text-lg">
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink render={<NavLink to="/">Home</NavLink>} />
+          <BreadcrumbLink
+            render={
+              <NavLink to="/" className="text-lg">
+                Home
+              </NavLink>
+            }
+          />
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         {pages?.map((page) => (
           <>
             <BreadcrumbItem>
               <BreadcrumbLink
-                render={<NavLink to={page.link}>{page.pageName}</NavLink>}
+                render={
+                  <NavLink to={page.link} className="text-lg">
+                    {page.pageName}
+                  </NavLink>
+                }
               />
             </BreadcrumbItem>
             <BreadcrumbSeparator />
@@ -32,7 +42,7 @@ function BreadcrumbLinkComponent({
         ))}
 
         <BreadcrumbItem>
-          <BreadcrumbPage>{currentPage}</BreadcrumbPage>
+          <BreadcrumbPage className="text-lg">{currentPage}</BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>

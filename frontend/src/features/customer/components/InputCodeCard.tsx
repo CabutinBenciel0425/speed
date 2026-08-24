@@ -23,18 +23,44 @@ import type { VerificationCodeInput } from "../types/emailVerification"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { Spinner } from "@/components/ui/spinner"
+import { useCountdown } from "../hooks/useCountdown"
+import { useVerifyEmail } from "../hooks/useVerifyEmail"
 
 function InputCodeCard() {
   const navigate = useNavigate()
   const [otp, setOtp] = useState("")
   const { user } = useAuth()
-  const { mutate, isPending, error } = useVerifyCode()
+  const {
+    mutate: verifyCode,
+    isPending: isVerifying,
+    error: verifyCodeError,
+  } = useVerifyCode()
+  const {
+    mutate: resendCode,
+    data,
+    isPending: isResending,
+    error: verifyEmailError,
+  } = useVerifyEmail()
+  const { seconds, reset, isRunning } = useCountdown(60)
 
   const handleSubmit = (data: VerificationCodeInput) => {
     if (!data.email) {
       toast.error("User email not found")
     }
-    mutate(data)
+    verifyCode(data)
+  }
+
+  const handleResend = () => {
+    if (isRunning) {
+      toast.warning(`Please wait ${seconds} seconds before resending`)
+      return
+    }
+
+    resendCode({ email: user?.email ?? "" })
+    reset(60)
+    if (data?.success) {
+      toast.success("A new OTP has been sent to your email")
+    }
   }
 
   useEffect(() => {
@@ -64,9 +90,11 @@ function InputCodeCard() {
               <FieldLabel htmlFor="otp-verification">
                 Verification code
               </FieldLabel>
-              <Button variant="outline" size="xs">
-                <RefreshCwIcon />
-                Resend Code
+              <Button variant="outline" size="xs" onClick={handleResend}>
+                <RefreshCwIcon
+                  className={`${isResending ? "animate-spin" : ""}`}
+                />
+                {isResending ? "Resending" : "Resend code"}
               </Button>
             </div>
             <div className="mb-4 flex w-full items-center justify-center">
@@ -99,7 +127,7 @@ function InputCodeCard() {
         <CardFooter>
           <Field>
             <Button type="submit" className="w-full">
-              {!isPending ? (
+              {!isVerifying ? (
                 "Verify"
               ) : (
                 <>
@@ -108,11 +136,13 @@ function InputCodeCard() {
                 </>
               )}
             </Button>
-            {error && (
+            {verifyCodeError || verifyEmailError ? (
               <p className="text-sm text-destructive">
-                {error.message || "Something went wrong"}
+                {verifyCodeError?.message ||
+                  verifyEmailError?.message ||
+                  "Something went wrong"}
               </p>
-            )}
+            ) : null}
           </Field>
         </CardFooter>
       </form>
