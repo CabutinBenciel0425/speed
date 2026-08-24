@@ -9,6 +9,7 @@ import { CategoryHeader } from "@/components/common/CategoryHeader"
 import Sort from "@/components/common/Sort"
 import SkeletonCategoryHeader from "@/components/common/Skeleton/SkeletonCategoryHeader"
 import SkeletonPagination from "@/components/common/Skeleton/SkeletonPagination"
+import BreadcrumbLinkComponent from "@/components/common/BreadcrumbLink"
 
 function CategoryProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -82,6 +83,9 @@ function CategoryProductsPage() {
 
   return (
     <div className="flex h-full flex-col gap-5 px-5 py-4">
+      <div className="mt-5 ml-9">
+        <BreadcrumbLinkComponent currentPage={categoryName} />
+      </div>
       {isLoading ? (
         <SkeletonCategoryHeader />
       ) : (

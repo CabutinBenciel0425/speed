@@ -13,7 +13,7 @@ function MerchantPageProducts({
   errorProducts,
 }: MerchantPageProducts) {
   return (
-    <div className="flex w-full flex-col gap-5 px-5">
+    <div className="flex w-full flex-col gap-5 px-5 lg:px-20">
       <div className="grid w-full grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-4 lg:grid-cols-[repeat(auto-fit,minmax(220px,1fr))] xl:grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
         {isLoadingProducts && (
           <>

@@ -1,4 +1,4 @@
-import { Clock, Heart, LucidePlus } from "lucide-react"
+import { Clock, Plus } from "lucide-react"
 import {
   Card,
   CardContent,
@@ -6,11 +6,12 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card"
-import { Button } from "../ui/button"
 import { NavLink } from "react-router-dom"
 import { useRef, useState } from "react"
 import { motion, useInView } from "framer-motion"
 import type { Product } from "@/features/customer/types/products"
+import LikeButton from "./LikeButton"
+import PressButton from "./PressButton"
 
 function ProductCard({ product }: { product: Product }) {
   const [isFavorite, setIsFavorite] = useState(false)
@@ -36,19 +37,13 @@ function ProductCard({ product }: { product: Product }) {
           className="z-20 aspect-video w-full object-contain"
         />
 
-        <Button
-          variant="ghost"
-          onClick={() => setIsFavorite(!isFavorite)}
-          className={
-            "absolute top-2 right-2 z-40 cursor-pointer hover:bg-transparent"
-          }
-        >
-          <Heart
-            className={`size-6 transition-colors ${
-              isFavorite ? "fill-red-500 text-red-500" : "text-gray-700"
-            }`}
+        <div className="absolute top-3 right-3 z-40">
+          <LikeButton
+            isFavorite={isFavorite}
+            setIsFavorite={setIsFavorite}
+            size="7"
           />
-        </Button>
+        </div>
 
         <CardHeader className="mb-5 flex flex-col gap-3">
           <CardTitle>
@@ -70,12 +65,9 @@ function ProductCard({ product }: { product: Product }) {
             ₱{product?.price}
           </span>
           <span>
-            <Button
-              className={"w-8 cursor-pointer rounded-full p-4"}
-              aria-label="Add to cart"
-            >
-              <LucidePlus className="size-7" />
-            </Button>
+            <PressButton className="h-9 w-9 rounded-full bg-primary font-bold text-white shadow-lg">
+              <Plus />
+            </PressButton>
           </span>
         </CardContent>
       </Card>

@@ -1,14 +1,11 @@
 import { memo } from "react"
+import type { CategoryHeaderProps } from "../types/PropTypes"
 
 export const CategoryHeader = memo(function CategoryHeader({
   name,
   description,
   image,
-}: {
-  name: string
-  description: string
-  image: string
-}) {
+}: CategoryHeaderProps) {
   return (
     <div className="mb-5 flex flex-row items-center">
       {image && (

@@ -1,7 +1,6 @@
-import { Button } from "@/components/ui/button"
-import { Heart, MapPin } from "lucide-react"
+import LikeButton from "@/components/common/LikeButton"
+import { MapPin } from "lucide-react"
 import { PiStarFill } from "react-icons/pi"
-
 type MerchantPageContentProps = {
   logo: string
   name: string
@@ -61,17 +60,11 @@ function MerchantPageContent({
         </div>
 
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onFavorite(!isFavorite)}
-            className="text-md gap-2 rounded-full px-3 py-4"
-          >
-            <Heart
-              className={`size-5 ${isFavorite ? "fill-red-500 text-red-500" : ""}`}
-            />
-            <span className="hidden md:block">Favorite</span>
-          </Button>
+          <LikeButton
+            isFavorite={isFavorite}
+            setIsFavorite={onFavorite}
+            size="10"
+          />
         </div>
       </div>
     </div>

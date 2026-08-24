@@ -1,11 +1,5 @@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import type { TopProductTag } from "@/features/customer/types/products"
-
-type FilterProps = {
-  tags: TopProductTag[]
-  value: string
-  onFilterChange: (value: string) => void
-}
+import type { FilterProps } from "../types/PropTypes"
 
 function Filter({ tags, value, onFilterChange }: FilterProps) {
   const handleValueChange = (values: string[]) => {
@@ -19,7 +13,7 @@ function Filter({ tags, value, onFilterChange }: FilterProps) {
       onValueChange={handleValueChange}
       size="lg"
       variant="outline"
-      spacing={2}
+      spacing={4}
       className="flex-wrap"
     >
       <ToggleGroupItem value="all">All</ToggleGroupItem>
@@ -28,7 +22,7 @@ function Filter({ tags, value, onFilterChange }: FilterProps) {
         <ToggleGroupItem
           key={tag._id}
           value={tag._id}
-          className="text-sm capitalize"
+          className={`text-sm capitalize ${tag._id === value ? "scale-110" : ""}`}
         >
           {tag._id}
         </ToggleGroupItem>

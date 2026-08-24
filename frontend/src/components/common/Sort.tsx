@@ -9,11 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { formatSortTitle } from "@/utils/formatSortTitle"
-
-type SortProps = {
-  value: string
-  onSortChange: (value: string) => void
-}
+import type { SortProps } from "../types/PropTypes"
 
 function Sort({ value, onSortChange }: SortProps) {
   return (
