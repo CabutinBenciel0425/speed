@@ -35,7 +35,7 @@ function Merchant() {
         )}
 
         <Carousel className="w-full">
-          <CarouselContent>
+          <CarouselContent className="py-3">
             {!isLoading &&
               !error &&
               merchants.map((merchant) => (

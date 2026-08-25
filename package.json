@@ -4,7 +4,8 @@
   "description": "",
   "main": "backend/server.ts",
   "scripts": {
-    "dev": "nodemon --ext ts,json --legacy-watch --exec tsx backend/server.ts"
+    "dev": "nodemon --ext ts,json --legacy-watch --exec tsx backend/server.ts",
+    "migrate": "tsx backend/scripts/migrate-product-merchant.ts"
   },
   "keywords": [],
   "author": "",

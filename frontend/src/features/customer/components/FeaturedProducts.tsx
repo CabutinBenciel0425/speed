@@ -33,10 +33,10 @@ function FeaturedProducts() {
           </div>
         )}
 
-        <Carousel className="mx-auto flex w-full flex-row items-center justify-center">
+        <Carousel className="w-full">
           <CarouselPrevious />
           {!isLoading && !error && (
-            <CarouselContent className="mx-auto flex w-full items-start justify-start p-0">
+            <CarouselContent className="py-3">
               {featuredProducts.map((product) => (
                 <CarouselItem
                   key={product._id}

@@ -11,7 +11,7 @@ function Searchbar() {
 
   return (
     <InputGroup
-      className={`flex h-12 flex-row items-center rounded-2xl px-2 transition-all duration-300 ${!isAuthenticated ? "hidden md:flex md:w-80 lg:w-120" : "w-40 sm:w-70 2xl:focus-within:w-160"} `}
+      className={`flex h-12 flex-row items-center rounded-2xl px-2 transition-all duration-300 ${!isAuthenticated ? "hidden md:flex md:w-full lg:w-120" : "w-full 2xl:focus-within:w-160"}`}
     >
       <InputGroupInput
         placeholder="Search for food or restaurant"

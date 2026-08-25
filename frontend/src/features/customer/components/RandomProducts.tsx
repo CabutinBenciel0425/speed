@@ -1,4 +1,3 @@
-// frontend/src/features/customer/components/RandomProducts.tsx
 import { useRandomProducts } from "../hooks/useRandomProducts"
 import ProductCard from "@/components/common/ProductCard"
 import { SkeletonProductCard } from "@/components/common/Skeleton/SkeletonProductCard"

@@ -400,7 +400,7 @@ export const updateMerchantProfileService = async (
       }
     }
     const cloudinaryImageUrl = await imageUpload(banner, "merchant/banner");
-    updateData.banner = cloudinaryImageUrl; // ✅ Fixed: was logo before
+    updateData.banner = cloudinaryImageUrl;
   }
 
   const updatedMerchant = await Merchant.findByIdAndUpdate(

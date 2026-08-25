@@ -1,5 +1,6 @@
 import {
   BellIcon,
+  File,
   Heart,
   LogOutIcon,
   PaperBag,
@@ -53,6 +54,12 @@ export function ProfileButton() {
             <NavLink to="/favorites" className={"flex flex-row gap-2"}>
               <Heart className="size-5" />
               <span className="text-md">Favorites</span>
+            </NavLink>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <NavLink to="/reviews" className={"flex flex-row gap-2"}>
+              <File className="size-5" />
+              <span className="text-md">Reviews</span>
             </NavLink>
           </DropdownMenuItem>
           <DropdownMenuItem>

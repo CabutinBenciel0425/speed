@@ -3,6 +3,8 @@ import { number } from "zod";
 
 export interface IProduct extends Document {
   merchant: Types.ObjectId;
+  merchantName: string;
+  merchantLogo: string;
   category: Types.ObjectId;
   name: string;
   slug: string;
@@ -22,6 +24,14 @@ const productSchema = new Schema<IProduct>(
     merchant: {
       type: mongoose.Types.ObjectId,
       ref: "Merchant",
+      required: true,
+    },
+    merchantName: {
+      type: String,
+      required: true,
+    },
+    merchantLogo: {
+      type: String,
       required: true,
     },
     category: {
@@ -81,6 +91,16 @@ const productSchema = new Schema<IProduct>(
   },
   { timestamps: true },
 );
+
+productSchema.pre("save", async function (this: IProduct) {
+  if (this.isNew || this.isModified("merchant")) {
+    const merchant = await mongoose.model("Merchant").findById(this.merchant);
+    if (merchant) {
+      this.merchantName = merchant.merchantName;
+      this.merchantLogo = merchant.logo;
+    }
+  }
+});
 
 const Product = model<IProduct>("Product", productSchema);
 export default Product;
