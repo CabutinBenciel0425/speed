@@ -3,7 +3,7 @@ import { MapPin } from "lucide-react"
 import { PiStarFill } from "react-icons/pi"
 type MerchantPageContentProps = {
   logo: string
-  name: string
+  merchantName: string
   averageRating: number
   ratingCount: number
   description: string
@@ -23,7 +23,7 @@ type MerchantPageContentProps = {
 
 function MerchantPageContent({
   logo,
-  name,
+  merchantName,
   averageRating,
   ratingCount,
   description,
@@ -36,9 +36,9 @@ function MerchantPageContent({
     <div className="mx-auto max-w-full px-4 py-6 md:px-6 lg:px-20">
       <div className="mb-6 flex flex-row items-center justify-between gap-3">
         <div className="flex flex-row items-center justify-center">
-          <img src={logo} alt={name} className="w-30 md:w-45 lg:w-60" />
+          <img src={logo} alt={merchantName} className="w-30 md:w-45 lg:w-60" />
           <div className="flex flex-col gap-2">
-            <h1 className="text-lg lg:text-2xl">{name}</h1>
+            <h1 className="text-lg lg:text-2xl">{merchantName}</h1>
             <p className="text-sm text-wrap text-muted-foreground lg:text-base">
               {description}
             </p>

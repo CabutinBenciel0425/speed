@@ -1,11 +1,11 @@
 import { ArrowRight } from "lucide-react"
 import heroImage from "@/assets/hero.png"
 import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
+import PressButton from "@/components/common/PressButton"
 
 function Hero() {
   return (
-    <section className="w-full px-6 md:px-12 lg:px-20 xl:px-30">
+    <section className="mx-auto max-w-7xl">
       <motion.div
         className="flex min-h-100 w-full flex-col overflow-hidden rounded-3xl bg-secondary lg:flex-row"
         initial={{ opacity: 0, y: -50 }}
@@ -24,10 +24,12 @@ function Hero() {
             delivered fast to your door.
           </p>
 
-          <Button className="h-12 w-fit rounded-xl px-4">
-            <span className="font-semibold">Order now</span>
-            <ArrowRight />
-          </Button>
+          <PressButton className="h-8 w-fit rounded-xl bg-primary px-2 lg:h-12 lg:px-4">
+            <span className="lg:text-md text-xs font-normal xl:text-lg">
+              Order now
+            </span>
+            <ArrowRight className="size-5 lg:size-6" />
+          </PressButton>
         </div>
 
         <div className="flex w-full items-center justify-center overflow-hidden lg:w-1/2">

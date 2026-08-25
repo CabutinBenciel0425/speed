@@ -1,4 +1,10 @@
-import { BellIcon, Heart, LogOutIcon, PaperBag } from "lucide-react"
+import {
+  BellIcon,
+  Heart,
+  LogOutIcon,
+  PaperBag,
+  ShoppingCart,
+} from "lucide-react"
 
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -12,9 +18,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { NavLink } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
+import { useLogout } from "@/features/auth/hooks/useLogout"
 
 export function ProfileButton() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
+  const { mutate: logout } = useLogout()
 
   return (
     <DropdownMenu>
@@ -29,6 +37,12 @@ export function ProfileButton() {
       />
       <DropdownMenuContent align="end">
         <DropdownMenuGroup>
+          <DropdownMenuItem className={"block md:hidden"}>
+            <NavLink to="/cart" className={"flex flex-row gap-2"}>
+              <ShoppingCart className="size-5" />
+              <span className="text-md">Cart</span>
+            </NavLink>
+          </DropdownMenuItem>
           <DropdownMenuItem>
             <NavLink to="/orders" className={"flex flex-row gap-2"}>
               <PaperBag className="size-5" />
@@ -47,7 +61,7 @@ export function ProfileButton() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={logout}>
+        <DropdownMenuItem onClick={() => logout()}>
           <LogOutIcon />
           Log Out
         </DropdownMenuItem>

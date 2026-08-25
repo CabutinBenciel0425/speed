@@ -131,8 +131,8 @@ export const getMerchantDetails = asyncHandler(
     res.status(200).json({
       success: true,
       data: {
-        id: merchant._id,
-        name: merchant.merchantName,
+        _id: merchant._id,
+        merchantName: merchant.merchantName,
         description: merchant.description || null,
         logo: merchant.logo || null,
         banner: merchant.banner || null,
@@ -155,6 +155,7 @@ export const getMerchantProducts = asyncHandler(
 
     const { docs, merchant, total, queryData } =
       await getMerchantProductsService(req.query, merchantId);
+
     res.status(200).json({
       success: true,
       data: {

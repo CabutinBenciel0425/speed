@@ -10,6 +10,8 @@ import {
   toggleProductFavorite,
   getProductFavorites,
   getFeaturedProducts,
+  getProduct,
+  getRandom,
 } from "../controller/product.controller.js";
 import {
   productSchema,
@@ -22,6 +24,8 @@ const productRouter = Router();
 
 //public routes
 productRouter.get("/featured", getFeaturedProducts);
+productRouter.get("/:productId/details", getProduct);
+productRouter.get("/:productId/random", getRandom);
 
 //merchant routes
 productRouter.post(

@@ -15,7 +15,6 @@ import type { Merchant } from "@/features/customer/types/merchant"
 function MerchantCard({ merchant }: { merchant: Merchant }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true })
-
   return (
     <motion.div
       ref={ref}
@@ -23,7 +22,7 @@ function MerchantCard({ merchant }: { merchant: Merchant }) {
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.8 }}
     >
-      <NavLink to={`/merchant/${merchant.id}`}>
+      <NavLink to={`/merchant/${merchant._id}`}>
         <Card className="relative mx-auto w-full max-w-sm pt-0">
           <div className="absolute inset-0 z-30 aspect-video bg-black/35" />
           <img
@@ -34,7 +33,7 @@ function MerchantCard({ merchant }: { merchant: Merchant }) {
           <img
             src={merchant.logo}
             alt="merchant logo"
-            className="absolute -top-8 -left-8 z-50 size-15 min-h-40 min-w-40 rounded-full"
+            className="absolute -top-1 -left-1 z-50 size-15 min-h-20 min-w-20 rounded-full 2xl:h-30 2xl:w-30"
           />
           <CardHeader>
             <CardAction>
@@ -42,7 +41,7 @@ function MerchantCard({ merchant }: { merchant: Merchant }) {
                 {merchant.averageRating} <Star fill="#fdc500" />
               </Badge>
             </CardAction>
-            <CardTitle>{merchant.name}</CardTitle>
+            <CardTitle>{merchant.merchantName}</CardTitle>
             <CardDescription className="line-clamp-1">
               {merchant.description}
             </CardDescription>

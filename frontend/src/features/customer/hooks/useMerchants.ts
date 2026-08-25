@@ -5,7 +5,6 @@ import type { Merchant } from "../types/merchant"
 
 const fetchMerchants = async (): Promise<Merchant[]> => {
   const { data } = await axios.get<ApiResponse<Merchant[]>>("/merchant")
-
   return data.data
 }
 

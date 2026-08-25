@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 type MerchantPageHeaderProps = {
   banner: string
   logo: string
-  name: string
+  merchantName: string
   averageRating: number
   ratingCount: number
   isOpen: boolean
@@ -24,7 +24,7 @@ type MerchantPageHeaderProps = {
 function MerchantPageHeader({
   banner,
   logo,
-  name,
+  merchantName,
   ratingCount,
   isOpen,
   operatingHoursToday,
@@ -32,12 +32,10 @@ function MerchantPageHeader({
 }: MerchantPageHeaderProps) {
   const navigate = useNavigate()
 
-  console.log(operatingHoursToday)
-
   return (
     <div className="relative h-64 w-full md:h-80 lg:h-112.5">
       <Button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate("/")}
         className="absolute top-4 left-4 z-20 h-12 w-12 rounded-full bg-black/40 p-2 text-white shadow-lg backdrop-blur-sm transition hover:bg-black/60 lg:left-8"
       >
         <ChevronLeft className="-ml-1 size-6" />
@@ -61,14 +59,14 @@ function MerchantPageHeader({
           <div className="h-20 w-20 overflow-hidden rounded-2xl border-4 border-white bg-white shadow-lg md:h-24 md:w-24">
             <img
               src={logo || "/placeholder-logo.png"}
-              alt={`${name} logo`}
+              alt={`${merchantName} logo`}
               className="h-full w-full object-cover"
             />
           </div>
 
           <div className="flex flex-col text-white">
             <h1 className="text-2xl font-bold md:text-3xl lg:text-4xl">
-              {name}
+              {merchantName}
             </h1>
             <div className="flex flex-wrap items-center gap-2 text-sm md:text-base">
               {ratingCount > 0 && (

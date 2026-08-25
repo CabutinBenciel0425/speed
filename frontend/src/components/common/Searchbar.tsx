@@ -8,16 +8,18 @@ import { SearchIcon } from "lucide-react"
 
 function Searchbar() {
   const { isAuthenticated } = useAuth()
+
   return (
     <InputGroup
-      className={`h-12 grow-0 rounded-2xl px-2 transition-all duration-300 ${!isAuthenticated ? "w-160" : "w-40 sm:w-70 2xl:focus-within:w-160"}`}
+      className={`flex h-12 flex-row items-center rounded-2xl px-2 transition-all duration-300 ${!isAuthenticated ? "hidden md:flex md:w-80 lg:w-120" : "w-40 sm:w-70 2xl:focus-within:w-160"} `}
     >
       <InputGroupInput
         placeholder="Search for food or restaurant"
         type="search"
+        className="flex-1 bg-transparent outline-none"
       />
-      <InputGroupAddon align="inline-end">
-        <SearchIcon className="h-8 w-8" />
+      <InputGroupAddon align="inline-end" className="flex items-center">
+        <SearchIcon className="h-5 w-5 text-muted-foreground" />
       </InputGroupAddon>
     </InputGroup>
   )

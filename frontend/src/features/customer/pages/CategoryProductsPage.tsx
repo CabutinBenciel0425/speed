@@ -82,8 +82,8 @@ function CategoryProductsPage() {
   }
 
   return (
-    <div className="flex h-full flex-col gap-5 px-5 py-4">
-      <div className="mt-5 ml-9">
+    <div className="flex h-full flex-col gap-5 px-5 py-4 lg:px-10">
+      <div className="mt-5">
         <BreadcrumbLinkComponent currentPage={categoryName} />
       </div>
       {isLoading ? (
@@ -96,7 +96,7 @@ function CategoryProductsPage() {
         />
       )}
 
-      <div className="-mb-2 ml-7 flex flex-col gap-5 md:mb-5">
+      <div className="-mb-2 flex flex-col gap-5 md:mb-5">
         <p className="text-md text-muted-foreground md:text-lg">
           {productsByCategory?.pagination?.total} items found
         </p>

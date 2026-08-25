@@ -12,13 +12,14 @@ import {
 
 function Merchant() {
   const { merchants, isLoading, error } = useMerchants()
+
   return (
-    <div className="flex flex-col gap-5 px-20">
+    <div className="flex flex-col gap-5 px-10 lg:px-20">
       <div className="flex items-center justify-between">
         <p className="block text-lg font-semibold">Popular Restaurants</p>
         <ViewAllButton />
       </div>
-      <div className="grid w-full grid-cols-[repeat(auto-fit,minmax(400px,1fr))] gap-4">
+      <div className="w-full px-5 lg:px-10 2xl:px-15">
         {isLoading && (
           <>
             {[1, 2, 3, 4].map((i) => (
@@ -39,10 +40,10 @@ function Merchant() {
               !error &&
               merchants.map((merchant) => (
                 <CarouselItem
-                  key={merchant.id}
-                  className="basis-1/2 pl-1 lg:basis-1/4"
+                  key={merchant._id}
+                  className="basis-1/1 md:basis-1/2 lg:basis-1/4"
                 >
-                  <div className="p-1">
+                  <div className="px-5">
                     <MerchantCard merchant={merchant} />
                   </div>
                 </CarouselItem>

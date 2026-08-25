@@ -19,9 +19,13 @@ const particles = Array.from({ length: PARTICLE_COUNT }, (_, index) => {
 function LikeButton({
   isFavorite,
   setIsFavorite,
-  size = "7",
+  baseSize = 9,
 }: LikeButtonProps) {
   const [burstKey, setBurstKey] = useState(0)
+  const heartBase = baseSize
+  const offset = Math.ceil(baseSize / 2)
+  const heartSm = baseSize / 2 + offset
+  const heartXl = baseSize + offset
 
   const handleLike = () => {
     if (isFavorite) {
@@ -90,7 +94,7 @@ function LikeButton({
         }}
       >
         <Heart
-          className={`h-${size} w-${size}`}
+          className={`lg:h-${heartBase} lg:w-${heartBase} h-${heartSm} w-${heartSm} xl:h-${heartXl} xl:w-${heartXl}`}
           fill={isFavorite ? "#FF6B00" : "none"}
           stroke={isFavorite ? "#FF6B00" : "currentColor"}
         />

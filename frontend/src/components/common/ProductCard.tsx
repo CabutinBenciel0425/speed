@@ -41,35 +41,36 @@ function ProductCard({ product }: { product: Product }) {
           <LikeButton
             isFavorite={isFavorite}
             setIsFavorite={setIsFavorite}
-            size="7"
+            baseSize={6}
           />
         </div>
 
-        <CardHeader className="mb-5 flex flex-col gap-3">
+        <CardHeader className="flex flex-col gap-3">
           <CardTitle>
-            <NavLink to={`/merchant/:merchantId/:productId${product._id}`}>
+            <NavLink
+              to={`/merchant/${product?.merchant}/${product?._id}`}
+              className={"md:text-md text-sm lg:text-lg"}
+            >
               {product.name}
             </NavLink>
           </CardTitle>
 
-          <CardDescription className="line-clamp-2 lg:line-clamp-3">
+          <CardDescription className="lg:text-md line-clamp-1 text-xs md:line-clamp-2 lg:line-clamp-1">
             {product.description}
           </CardDescription>
           <CardDescription className="flex flex-row gap-2">
-            <Clock className="mt-0.5 size-4" />
+            <Clock className="lg:text-md mt-0.5 size-4 text-xs" />
             <span>{product.preparationTime} mins</span>
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-row items-center justify-between">
-          <span className="text-xl font-bold text-primary">
+          <span className="md:text-md text-sm font-bold text-primary lg:text-lg">
             ₱{product?.price}
           </span>
-          <span>
-            <PressButton className="h-9 w-9 rounded-full bg-primary font-bold text-white shadow-lg">
-              <Plus />
-            </PressButton>
-          </span>
         </CardContent>
+        <PressButton className="absolute right-3 bottom-3 h-7 w-7 rounded-full bg-primary font-bold text-white shadow-lg md:right-4 md:bottom-4 lg:right-5 lg:bottom-5 lg:h-9 lg:w-9">
+          <Plus />
+        </PressButton>
       </Card>
     </motion.div>
   )

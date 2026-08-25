@@ -10,7 +10,7 @@ import { ShoppingCart } from "lucide-react"
 
 function NavigationLinks() {
   return (
-    <NavigationMenu>
+    <NavigationMenu className={"hidden md:block"}>
       <NavigationMenuList className={"flex flex-row gap-2 2xl:gap-10"}>
         <NavigationMenuItem>
           <NavigationMenuLink

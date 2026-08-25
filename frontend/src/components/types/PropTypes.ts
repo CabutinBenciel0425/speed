@@ -1,4 +1,5 @@
 import type { TopProductTag } from "@/features/customer/types/products"
+import type { Dispatch, SetStateAction } from "react"
 import type { FieldError } from "react-hook-form"
 
 export type FieldStateType = {
@@ -45,5 +46,10 @@ export type BreadcrumbLinkComponent = {
 export type LikeButtonProps = {
   isFavorite: boolean
   setIsFavorite: (value: boolean) => void
-  size: string
+  baseSize: number
+}
+
+export type ToggleQuantityProps = {
+  quantity: number
+  onQuantityChange: Dispatch<SetStateAction<number>>
 }

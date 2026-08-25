@@ -1,7 +1,7 @@
 export interface Merchant extends Document {
-  id: string
+  _id: string
   owner: string
-  name: string
+  merchantName: string
   description?: string
   phoneNumber: string
   logo: string

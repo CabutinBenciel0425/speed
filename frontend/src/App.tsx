@@ -11,6 +11,7 @@ import ScrollToTop from "./components/common/ScrollToTop"
 import MerchantPage from "./features/customer/pages/MerchantPage"
 import EmailVerificationPage from "./features/customer/pages/EmailVerificationPage"
 import InputCodePage from "./features/customer/pages/InputCodePage"
+import ProductPage from "./features/customer/pages/ProductPage"
 
 export function App() {
   const { isAuthenticated, isVerified } = useAuth()
@@ -54,9 +55,10 @@ export function App() {
             element={<CategoryProductsPage />}
           />
           <Route path="/merchant/:merchantId" element={<MerchantPage />} />
-          {/* <Route path="/products" element={<LoginPage />} />
-          <Route path="/orders" element={<RegisterPage />} />
-          <Route path="/favorites" element={<RoleSelectorPage />} /> */}
+          <Route
+            path="/merchant/:merchantId/:productId"
+            element={<ProductPage />}
+          />
         </Route>
       </Routes>
     </div>

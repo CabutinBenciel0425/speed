@@ -13,12 +13,12 @@ import {
 function FeaturedProducts() {
   const { featuredProducts, isLoading, error } = useFeaturedProducts()
   return (
-    <div className="flex w-full flex-col gap-5 px-20">
+    <div className="flex w-full flex-col gap-5 px-10 lg:px-20">
       <div className="flex items-center justify-between">
         <p className="block text-lg font-semibold">Featured Products</p>
         <ViewAllButton />
       </div>
-      <div className="grid w-full grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-4 lg:grid-cols-[repeat(auto-fit,minmax(220px,1fr))] xl:grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
+      <div className="w-full px-5 lg:px-10 2xl:px-15">
         {isLoading && (
           <>
             {[1, 2, 3, 4, 5].map((i) => (
@@ -33,16 +33,16 @@ function FeaturedProducts() {
           </div>
         )}
 
-        <Carousel className="flex w-full flex-row justify-between">
+        <Carousel className="mx-auto flex w-full flex-row items-center justify-center">
           <CarouselPrevious />
           {!isLoading && !error && (
-            <CarouselContent>
+            <CarouselContent className="mx-auto flex w-full items-start justify-start p-0">
               {featuredProducts.map((product) => (
                 <CarouselItem
                   key={product._id}
-                  className="basis-1/2 pl-1 lg:basis-1/5"
+                  className="basis-1/1 md:basis-1/2 lg:basis-1/4"
                 >
-                  <div className="p-1">
+                  <div className="px-5">
                     <ProductCard product={product} />
                   </div>
                 </CarouselItem>

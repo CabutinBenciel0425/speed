@@ -30,7 +30,7 @@ function MerchantPage() {
   }
 
   const {
-    name,
+    merchantName,
     banner,
     logo,
     description,
@@ -55,8 +55,6 @@ function MerchantPage() {
   const isOpen = isMerchantOpen(todayHours)
   const operatingHoursToday = formatOperatingHours(todayHours)
 
-  console.log(currentDay)
-
   const handleFavorite = () => {
     setIsFavorite(!isFavorite)
     toast.success(isFavorite ? "Removed from favorites" : "Added to favorites")
@@ -65,7 +63,7 @@ function MerchantPage() {
   return (
     <div className="relative min-h-screen w-full pb-20">
       <MerchantPageHeader
-        name={name}
+        merchantName={merchantName}
         banner={banner}
         logo={logo}
         averageRating={averageRating}
@@ -77,7 +75,7 @@ function MerchantPage() {
 
       <MerchantPageContent
         logo={logo}
-        name={name}
+        merchantName={merchantName}
         averageRating={averageRating}
         ratingCount={ratingCount}
         description={description || ""}

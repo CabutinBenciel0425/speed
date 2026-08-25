@@ -12,7 +12,7 @@ function Category() {
         <p className="block text-lg font-semibold">Browse by category</p>
       </div>
 
-      <div className="grid w-full grid-cols-[repeat(auto-fit,minmax(110px,1fr))] place-items-center gap-4 lg:grid-cols-[repeat(auto-fit,minmax(170px,1fr))]">
+      <div className="grid w-full grid-cols-[repeat(auto-fit,minmax(100px,3fr))] place-items-center gap-4 lg:grid-cols-[repeat(auto-fit,minmax(170px,1fr))]">
         {isLoading && (
           <>
             {[1, 2, 3, 4, 5, 6, 7].map((i) => (

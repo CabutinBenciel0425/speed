@@ -23,7 +23,6 @@ export const useAuth = () => {
     setAuth,
     setVerified,
     setLoading,
-    logout,
   } = useAuthStore()
 
   const {
@@ -42,13 +41,10 @@ export const useAuth = () => {
     if (!isError && data) {
       setAuth(data)
       setVerified(data.isVerified)
-    } else if (isError) {
-      logout()
-      setLoading(false)
     } else {
       setLoading(false)
     }
-  }, [data, isQueryLoading, isError, setAuth, setVerified, setLoading, logout])
+  }, [data, isQueryLoading, isError, setAuth, setVerified, setLoading])
 
   useEffect(() => {
     if (!isQueryLoading) {
@@ -62,11 +58,5 @@ export const useAuth = () => {
     isVerified,
     setVerified,
     isLoading: isLoading || isQueryLoading,
-    logout: () => {
-      logout()
-      import("@/lib/queryClient").then(({ queryClient }) => {
-        queryClient.clear()
-      })
-    },
   }
 }

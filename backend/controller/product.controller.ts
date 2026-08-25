@@ -195,6 +195,40 @@ export const getProducts = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+export const getProduct = asyncHandler(async (req: Request, res: Response) => {
+  const productId = req.params.productId as string;
+  const product = await Product.findById(productId).populate("merchant");
+
+  if (!product) {
+    throw new NotFoundError("Product");
+  }
+
+  res.status(200).json({
+    success: true,
+    data: product,
+  });
+});
+
+export const getRandom = asyncHandler(async (req: Request, res: Response) => {
+  const productId = req.params.productId as string;
+  const limit = Number(req.query.limit) || 5;
+  const product = await Product.findById(productId);
+
+  if (!product) {
+    throw new NotFoundError("Product");
+  }
+
+  const randomProducts = await Product.aggregate([
+    { $match: { _id: { $ne: productId } } },
+    { $sample: { size: limit } },
+  ]);
+
+  res.status(200).json({
+    success: true,
+    data: randomProducts,
+  });
+});
+
 export const toggleProductFavorite = asyncHandler(
   async (req: Request, res: Response) => {
     const user = req.user;

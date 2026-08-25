@@ -3,7 +3,7 @@ import type { Merchant } from "./merchant"
 
 export interface Product {
   _id: string
-  merchant: string
+  merchant: Merchant | string
   category: string
   name: string
   slug: string

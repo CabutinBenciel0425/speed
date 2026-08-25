@@ -5,7 +5,7 @@ import Merchant from "../components/Merchant"
 
 function Dashboard() {
   return (
-    <div className="flex w-full flex-col gap-10">
+    <div className="mx-auto flex w-full flex-col gap-10">
       <Hero />
       <Category />
       <Merchant />
