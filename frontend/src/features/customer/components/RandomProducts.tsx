@@ -29,7 +29,7 @@ function RandomProducts({ productId, limit = 4 }: RandomProductsProps) {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
       {randomProducts.map((product) => (
         <ProductCard key={product._id} product={product} />
       ))}

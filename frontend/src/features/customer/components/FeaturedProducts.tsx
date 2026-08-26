@@ -40,7 +40,7 @@ function FeaturedProducts() {
               {featuredProducts.map((product) => (
                 <CarouselItem
                   key={product._id}
-                  className="basis-1/1 md:basis-1/2 lg:basis-1/4"
+                  className="basis-1/1 md:basis-1/2 xl:basis-1/4"
                 >
                   <div className="px-5">
                     <ProductCard product={product} />

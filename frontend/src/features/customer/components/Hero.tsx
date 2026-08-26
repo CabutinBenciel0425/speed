@@ -24,7 +24,7 @@ function Hero() {
             delivered fast to your door.
           </p>
 
-          <PressButton className="h-8 w-fit rounded-xl bg-primary px-2 text-background lg:h-12 lg:px-4">
+          <PressButton className="h-8 w-fit rounded-xl bg-primary px-2 text-white lg:h-12 lg:px-4">
             <span className="lg:text-md text-xs font-normal xl:text-lg">
               Order now
             </span>

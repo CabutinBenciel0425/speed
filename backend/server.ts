@@ -23,6 +23,7 @@ import paymentRouter from "./routes/payment.route.js";
 import { paymongoWebhook } from "./controller/payment.controller.js";
 import notificationRouter from "./routes/notification.route.js";
 import cors from "cors";
+import searchRouter from "./routes/search.route.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -61,6 +62,7 @@ app.use("/api/v1/merchant", merchantRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/payment", paymentRouter);
 app.use("/api/v1/notification", notificationRouter);
+app.use("/api/v1/search", searchRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
