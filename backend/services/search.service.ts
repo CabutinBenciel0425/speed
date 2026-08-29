@@ -19,13 +19,37 @@ export const searchDropdownPublicService = async (query: string) => {
 
   const [merchants, products] = await Promise.all([
     merchantQuery
-      .select("merchantName logo averageRating ratingCount")
+      .select("_id merchantName logo averageRating ratingCount description")
       .limit(5)
       .lean(),
     productQuery
-      .select("name price image merchantName merchant")
+      .select("_id name price image merchantName merchant ingredients")
       .limit(5)
       .lean(),
+  ]);
+
+  return { merchants, products };
+};
+
+export const searchPagePublicService = async (query: string) => {
+  if (!query || query.trim().length === 0) {
+    return { merchants: [], products: [] };
+  }
+  const merchantQuery = Merchant.find<IMerchant>({
+    merchantName: { $regex: query, $options: "i" },
+  });
+
+  const productQuery = Product.find<IProduct>({
+    $or: [
+      { name: { $regex: query, $options: "i" } },
+      { description: { $regex: query, $options: "i" } },
+      { merchantName: { $regex: query, $options: "i" } },
+    ],
+  });
+
+  const [merchants, products] = await Promise.all([
+    merchantQuery.lean(),
+    productQuery.lean(),
   ]);
 
   return { merchants, products };

@@ -74,3 +74,12 @@ export interface Merchant extends Document {
   ratingCount: number
   averageRating: number
 }
+
+export type SelectedMerchant = {
+  _id: string
+  description: string
+  merchantName: string
+  logo: string
+  averageRating: number
+  ratingCount: number
+}

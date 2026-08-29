@@ -51,3 +51,13 @@ export type TopProductTag = {
   _id: string
   count: number
 }
+
+export type SelectedProductWithMerchant = {
+  _id: string
+  name: string
+  price: number
+  image: string
+  merchantName: string
+  merchant: string
+  ingredients: string[]
+}

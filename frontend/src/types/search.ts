@@ -1,7 +1,7 @@
-import type { Merchant } from "@/features/customer/types/merchant"
-import type { Product } from "@/features/customer/types/products"
+import type { SelectedMerchant } from "@/features/customer/types/merchant"
+import type { SelectedProductWithMerchant } from "@/features/customer/types/products"
 
 export type SearchResults = {
-  merchants: Merchant[]
-  products: Product[]
+  merchants: SelectedMerchant[]
+  products: SelectedProductWithMerchant[]
 }
