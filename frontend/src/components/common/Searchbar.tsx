@@ -4,10 +4,21 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group"
 import { useAuth } from "@/hooks/useAuth"
+import { useDebounce } from "@/hooks/useDebounce"
+import { useSearchPublic } from "@/hooks/useSearchPublic"
 import { SearchIcon } from "lucide-react"
+import { useState } from "react"
 
 function Searchbar() {
   const { isAuthenticated } = useAuth()
+  const [query, setQuery] = useState("")
+  const debouncedQuery = useDebounce(query, 500)
+  const { merchants, products } = useSearchPublic(debouncedQuery)
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value)
+  }
+
+  console.log(merchants, products)
 
   return (
     <InputGroup
@@ -17,6 +28,8 @@ function Searchbar() {
         placeholder="Search for food or restaurant"
         type="search"
         className="lg:text-md flex-1 bg-transparent py-1 text-xs outline-none md:text-sm"
+        value={query}
+        onChange={handleChange}
       />
       <InputGroupAddon align="inline-end" className="flex items-center">
         <SearchIcon className="h-5 w-5 text-muted-foreground" />

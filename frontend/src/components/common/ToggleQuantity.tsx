@@ -24,7 +24,9 @@ function ToggleQuantity({
       >
         <Minus />
       </Button>
-      <span className="text-xl font-bold lg:text-2xl">{quantity}</span>
+      <span className="flex w-4 items-center justify-center text-xl font-bold lg:text-2xl">
+        {quantity}
+      </span>
       <Button
         variant={"outline"}
         size="icon"

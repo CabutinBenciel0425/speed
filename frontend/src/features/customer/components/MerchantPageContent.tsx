@@ -43,7 +43,7 @@ function MerchantPageContent({
               {description}
             </p>
             <div className="flex flex-row items-center justify-start gap-2">
-              <PiStarFill className="-mt-0.5 size-7 fill-amber-500 lg:size-9" />
+              <PiStarFill className="-mt-0.5 size-4 fill-amber-500 md:size-6 xl:size-9" />
               <span className="text-sm lg:text-lg">
                 {averageRating.toFixed(1)}
               </span>
@@ -63,7 +63,7 @@ function MerchantPageContent({
           <LikeButton
             isFavorite={isFavorite}
             setIsFavorite={onFavorite}
-            size="10"
+            baseSize={8}
           />
         </div>
       </div>
