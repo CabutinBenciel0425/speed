@@ -53,3 +53,13 @@ export type ToggleQuantityProps = {
   quantity: number
   onQuantityChange: Dispatch<SetStateAction<number>>
 }
+
+export type SearchFilterProps = {
+  selectedCategory: string
+  priceRange: [number, number]
+  selectedPrepTimes: string[]
+  onHandlePriceRange: (value: number | readonly number[]) => void
+  onHandleCategoryChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onHandlePrepTimeChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onHandleResetFilter: () => void
+}

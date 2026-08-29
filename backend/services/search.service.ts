@@ -6,7 +6,10 @@ export const searchDropdownPublicService = async (query: string) => {
     return { merchants: [], products: [] };
   }
   const merchantQuery = Merchant.find<IMerchant>({
-    merchantName: { $regex: query, $options: "i" },
+    $or: [
+      { merchantName: { $regex: query, $options: "i" } },
+      { description: { $regex: query, $options: "i" } },
+    ],
   });
 
   const productQuery = Product.find<IProduct>({

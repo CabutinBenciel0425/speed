@@ -9,10 +9,11 @@ import { useSearchPublic } from "@/hooks/useSearchPublic"
 import { SearchIcon } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import SearchDropdown from "./SearchDropdown"
-import { useLocation } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 
 function Searchbar() {
   const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
   const [query, setQuery] = useState("")
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const debouncedQuery = useDebounce(query, 500)
@@ -43,10 +44,15 @@ function Searchbar() {
         setIsDropdownOpen(false)
         inputRef.current?.blur()
       }
+
+      if (e.key === "Enter") {
+        setIsDropdownOpen(false)
+        navigate("/search")
+      }
     }
     document.addEventListener("keydown", handleKeyDown)
     return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [])
+  }, [navigate])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

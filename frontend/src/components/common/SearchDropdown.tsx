@@ -1,6 +1,7 @@
 import type { SelectedMerchant } from "@/features/customer/types/merchant"
 import type { SelectedProductWithMerchant } from "@/features/customer/types/products"
 import { NavLink } from "react-router-dom"
+import { Spinner } from "../ui/spinner"
 
 function SearchDropdown({
   products,
@@ -15,15 +16,15 @@ function SearchDropdown({
 }) {
   return (
     <div
-      className={`absolute top-8 left-0 z-99 h-100 w-full overflow-y-auto rounded-md border border-primary bg-background px-2 py-4 md:top-10 ${isDropdownOpen ? "block" : "hidden"} `}
+      className={`absolute top-8 left-0 z-99 h-fit max-h-100 w-full overflow-y-auto rounded-md border border-primary bg-background px-2 pt-4 md:top-10 ${isDropdownOpen ? "block" : "hidden"} `}
     >
       {isLoading && (
-        <div className="p-4 text-center text-muted-foreground">
-          Searching...
+        <div className="flex items-center justify-center p-4 text-muted-foreground">
+          <Spinner className="size-4" />
         </div>
       )}
 
-      {products.length === 0 && merchants.length === 0 && (
+      {products.length === 0 && merchants.length === 0 && !isLoading && (
         <div className="p-4 text-center text-muted-foreground">
           No data found
         </div>
@@ -45,16 +46,22 @@ function SearchDropdown({
                     className="h-20 w-20"
                   />
                 </div>
-                <div className="flex w-full flex-col items-start justify-center">
-                  <span className="text-sm text-muted-foreground">
-                    {product.merchantName}
-                  </span>
-                  <div className="space-between flex w-full flex-row gap-5">
-                    <h3 className="text-md font-semibold">{product.name}</h3>
-                    <span className="text-md font-semibold">
+                <div className="flex w-full flex-row items-center justify-start">
+                  <div className="w-2/5">
+                    <span className="text-sm text-muted-foreground">
+                      {product.merchantName}
+                    </span>
+                    <h3 className="text-md flex-nowrap font-semibold">
+                      {product.name}
+                    </h3>
+                  </div>
+                  <div className="w-1/5">
+                    <span className="text-md w-1/3 font-semibold">
                       ₱{product.price}
                     </span>
-                    <span className="mt-0.5 text-sm text-muted-foreground">
+                  </div>
+                  <div className="w-2/5">
+                    <span className="mt-0.5 text-sm text-muted-foreground/40">
                       {product.ingredients.join(", ")}
                     </span>
                   </div>
