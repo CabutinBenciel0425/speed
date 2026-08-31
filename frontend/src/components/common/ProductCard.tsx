@@ -47,7 +47,10 @@ function ProductCard({ product }: { product: Product }) {
 
         <CardHeader className="flex flex-col gap-3">
           <CardTitle>
-            <NavLink to={`/merchant/${product?.merchant}/${product?._id}`}>
+            <NavLink
+              to={`/merchant/${product?.merchant}/${product?._id}`}
+              style={{ textDecoration: "none" }}
+            >
               {product.name}
             </NavLink>
           </CardTitle>

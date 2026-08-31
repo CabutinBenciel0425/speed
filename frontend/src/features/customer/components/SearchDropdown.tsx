@@ -1,7 +1,7 @@
 import type { SelectedMerchant } from "@/features/customer/types/merchant"
 import type { SelectedProductWithMerchant } from "@/features/customer/types/products"
 import { NavLink } from "react-router-dom"
-import { Spinner } from "../ui/spinner"
+import { Spinner } from "../../../components/ui/spinner"
 
 function SearchDropdown({
   products,
@@ -29,52 +29,10 @@ function SearchDropdown({
           No data found
         </div>
       )}
-      {products.length > 0 && (
-        <ul>
-          <h1 className="text-lg font-semibold">Products</h1>
-          {products.map((product) => (
-            <NavLink to={`/merchant/${product.merchant}/${product._id}`}>
-              <li
-                key={product.name}
-                value={product.name}
-                className="flex w-full flex-row items-center justify-start gap-5 border-b border-b-muted-foreground/10 hover:bg-muted-foreground/10"
-              >
-                <div>
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="h-20 w-20"
-                  />
-                </div>
-                <div className="flex w-full flex-row items-center justify-start">
-                  <div className="w-2/5">
-                    <span className="text-sm text-muted-foreground">
-                      {product.merchantName}
-                    </span>
-                    <h3 className="text-md flex-nowrap font-semibold">
-                      {product.name}
-                    </h3>
-                  </div>
-                  <div className="w-1/5">
-                    <span className="text-md w-1/3 font-semibold">
-                      ₱{product.price}
-                    </span>
-                  </div>
-                  <div className="w-2/5">
-                    <span className="mt-0.5 text-sm text-muted-foreground/40">
-                      {product.ingredients.join(", ")}
-                    </span>
-                  </div>
-                </div>
-              </li>
-            </NavLink>
-          ))}
-        </ul>
-      )}
 
       {merchants.length > 0 && (
         <ul>
-          <h1 className="mt-5 mb-2 text-lg font-semibold">Merchants</h1>
+          <h1 className="mb-2 text-lg font-semibold">Merchants</h1>
           {merchants.map((merchant) => (
             <NavLink to={`/merchant/${merchant._id}`}>
               <li
@@ -100,6 +58,49 @@ function SearchDropdown({
               </li>
             </NavLink>
           ))}
+
+          {products.length > 0 && (
+            <ul>
+              <h1 className="mt-5 text-lg font-semibold">Products</h1>
+              {products.map((product) => (
+                <NavLink to={`/merchant/${product.merchant}/${product._id}`}>
+                  <li
+                    key={product.name}
+                    value={product.name}
+                    className="flex w-full flex-row items-center justify-start gap-5 border-b border-b-muted-foreground/10 hover:bg-muted-foreground/10"
+                  >
+                    <div>
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="h-20 w-20"
+                      />
+                    </div>
+                    <div className="flex w-full flex-row items-center justify-start">
+                      <div className="w-2/5">
+                        <span className="text-sm text-muted-foreground">
+                          {product.merchantName}
+                        </span>
+                        <h3 className="text-md flex-nowrap font-semibold">
+                          {product.name}
+                        </h3>
+                      </div>
+                      <div className="w-1/5">
+                        <span className="text-md w-1/3 font-semibold">
+                          ₱{product.price}
+                        </span>
+                      </div>
+                      <div className="w-2/5">
+                        <span className="mt-0.5 text-sm text-muted-foreground/40">
+                          {product.ingredients.join(", ")}
+                        </span>
+                      </div>
+                    </div>
+                  </li>
+                </NavLink>
+              ))}
+            </ul>
+          )}
         </ul>
       )}
     </div>

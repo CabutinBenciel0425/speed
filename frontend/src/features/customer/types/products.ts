@@ -16,6 +16,8 @@ export interface Product {
   isAvailable: boolean
   isFeatured: boolean
   totalSold: number
+  merchantName: string
+  merchantLogo: string
 }
 
 export type Pagination = {

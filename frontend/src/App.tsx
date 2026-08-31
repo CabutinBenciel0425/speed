@@ -12,7 +12,9 @@ import MerchantPage from "./features/customer/pages/MerchantPage"
 import EmailVerificationPage from "./features/customer/pages/EmailVerificationPage"
 import InputCodePage from "./features/customer/pages/InputCodePage"
 import ProductPage from "./features/customer/pages/ProductPage"
-import SearchPage from "./components/common/SearchPage"
+import SearchPage from "./features/customer/pages/SearchPage"
+import SearchProductsAll from "./features/customer/components/SearchProductsAll"
+import SearchMerchantsAll from "./features/customer/components/SearchMerchantsAll"
 
 export function App() {
   const { isAuthenticated, isVerified } = useAuth()
@@ -61,6 +63,8 @@ export function App() {
             element={<ProductPage />}
           />
           <Route path="/search" element={<SearchPage />} />
+          <Route path="/search/products" element={<SearchProductsAll />} />
+          <Route path="/search/merchants" element={<SearchMerchantsAll />} />
         </Route>
       </Routes>
     </div>

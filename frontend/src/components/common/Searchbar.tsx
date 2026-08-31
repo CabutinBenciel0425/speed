@@ -5,10 +5,10 @@ import {
 } from "@/components/ui/input-group"
 import { useAuth } from "@/hooks/useAuth"
 import { useDebounce } from "@/hooks/useDebounce"
-import { useSearchPublic } from "@/hooks/useSearchPublic"
+import { useSearchDropdownPublic } from "@/hooks/useSearchDropdownPublic"
 import { SearchIcon } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
-import SearchDropdown from "./SearchDropdown"
+import SearchDropdown from "../../features/customer/components/SearchDropdown"
 import { useLocation, useNavigate } from "react-router-dom"
 
 function Searchbar() {
@@ -17,7 +17,8 @@ function Searchbar() {
   const [query, setQuery] = useState("")
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const debouncedQuery = useDebounce(query, 500)
-  const { merchants, products, isLoading } = useSearchPublic(debouncedQuery)
+  const { merchants, products, isLoading } =
+    useSearchDropdownPublic(debouncedQuery)
   const inputRef = useRef<HTMLInputElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const { pathname } = useLocation()
@@ -47,12 +48,13 @@ function Searchbar() {
 
       if (e.key === "Enter") {
         setIsDropdownOpen(false)
-        navigate("/search")
+
+        navigate(`/search?query=${encodeURIComponent(debouncedQuery)}`)
       }
     }
     document.addEventListener("keydown", handleKeyDown)
     return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [navigate])
+  }, [navigate, debouncedQuery])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

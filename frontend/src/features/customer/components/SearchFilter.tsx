@@ -1,13 +1,13 @@
 import { accordionItems } from "@/features/customer/utils/constants"
-import type { SearchFilterProps } from "../types/PropTypes"
+import type { SearchFilterProps } from "../../../components/types/PropTypes"
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "../ui/accordion"
-import { Button } from "../ui/button"
-import { Slider } from "../ui/slider"
+} from "../../../components/ui/accordion"
+import { Button } from "../../../components/ui/button"
+import { Slider } from "../../../components/ui/slider"
 
 function SearchFilter({
   selectedCategory,
@@ -24,7 +24,7 @@ function SearchFilter({
   return (
     <Accordion
       multiple
-      className="max-w-3xs rounded-md bg-muted-foreground/10 p-4"
+      className="min-w-3xs rounded-md bg-muted-foreground/10 p-4"
       defaultValue={["categories", "price-range", "prep-time"]}
     >
       {/* Categories */}
