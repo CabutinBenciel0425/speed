@@ -12,9 +12,32 @@ export type SearchDropdownResults = {
   products: SelectedProductWithMerchant[]
 }
 
-export type SearchPageResults = {
-  merchants: Merchant[]
+export type SearchProductsResults = {
   products: Product[]
+  pagination: Pagination
+}
+
+export type SearchMerchantsResults = {
+  merchants: Merchant[]
+  pagination: Pagination
+}
+
+export type SearchPageResultsType = {
+  products: SearchProductsResults
+  merchants: SearchMerchantsResults
+}
+
+export type SearchPageResultsProps = {
+  products?: SearchProductsResults
+  merchants?: SearchMerchantsResults
   isLoading: boolean
   isError: boolean
+  query: string
+}
+
+export type Pagination = {
+  total: number
+  page: number
+  limit: number
+  pages: number
 }

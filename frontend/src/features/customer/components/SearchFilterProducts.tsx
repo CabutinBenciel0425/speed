@@ -9,7 +9,7 @@ import {
 import { Button } from "../../../components/ui/button"
 import { Slider } from "../../../components/ui/slider"
 
-function SearchFilter({
+function SearchFilterProducts({
   selectedCategory,
   priceRange,
   selectedPrepTimes,
@@ -112,4 +112,4 @@ function SearchFilter({
   )
 }
 
-export default SearchFilter
+export default SearchFilterProducts

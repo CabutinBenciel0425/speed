@@ -25,7 +25,7 @@ function ProductCard({ product }: { product: Product }) {
       transition={{ duration: 0.8 }}
       className="h-full w-full"
     >
-      <Card className="relative mx-auto w-full max-w-2xs pt-0">
+      <Card className="relative mx-auto w-full max-w-2xs min-w-45 pt-0">
         <div className="absolute inset-0 z-30 aspect-video bg-black/15" />
 
         <img
@@ -50,17 +50,20 @@ function ProductCard({ product }: { product: Product }) {
             <NavLink
               to={`/merchant/${product?.merchant}/${product?._id}`}
               style={{ textDecoration: "none" }}
+              className={"lg:text-md text-sm font-semibold"}
             >
               {product.name}
             </NavLink>
           </CardTitle>
 
-          <CardDescription className="lg:text-md line-clamp-1 text-xs md:line-clamp-2 lg:line-clamp-1">
+          <CardDescription className="lg:text-md line-clamp-1 text-xs md:line-clamp-2 md:text-sm lg:line-clamp-1">
             {product.description}
           </CardDescription>
           <CardDescription className="flex flex-row gap-2">
             <Clock className="lg:text-md mt-0.5 size-4 text-xs" />
-            <span>{product.preparationTime} mins</span>
+            <span className="text-xs lg:text-sm">
+              {product.preparationTime} mins
+            </span>
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-row items-center justify-between">

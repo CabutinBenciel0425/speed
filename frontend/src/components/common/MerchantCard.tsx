@@ -26,7 +26,7 @@ function MerchantCard({ merchant }: { merchant: Merchant }) {
         to={`/merchant/${merchant._id}`}
         style={{ textDecoration: "none" }}
       >
-        <Card className="relative mx-auto w-full max-w-sm pt-0">
+        <Card className="relative mx-auto w-full max-w-sm min-w-45 pt-0">
           <div className="absolute inset-0 z-30 aspect-video bg-black/35" />
           <img
             src={merchant.banner}
@@ -36,7 +36,7 @@ function MerchantCard({ merchant }: { merchant: Merchant }) {
           <img
             src={merchant.logo}
             alt="merchant logo"
-            className="absolute -top-1 -left-1 z-50 size-15 min-h-20 min-w-20 rounded-full 2xl:h-30 2xl:w-30"
+            className="absolute -top-1 -left-1 z-50 size-20 rounded-full 2xl:h-30 2xl:w-30"
           />
           <CardHeader>
             <CardAction>
@@ -44,7 +44,9 @@ function MerchantCard({ merchant }: { merchant: Merchant }) {
                 {merchant.averageRating} <Star fill="#fdc500" />
               </Badge>
             </CardAction>
-            <CardTitle>{merchant.merchantName}</CardTitle>
+            <CardTitle className={"lg:text-md text-sm font-semibold"}>
+              {merchant.merchantName}
+            </CardTitle>
             <CardDescription className="line-clamp-1">
               {merchant.description}
             </CardDescription>

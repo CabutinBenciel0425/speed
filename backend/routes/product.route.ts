@@ -25,6 +25,7 @@ const productRouter = Router();
 //public routes
 productRouter.get("/featured", getFeaturedProducts);
 productRouter.get("/:productId/details", getProduct);
+productRouter.get("/", getProducts);
 productRouter.get("/:productId/random", getRandom);
 
 //merchant routes
@@ -66,8 +67,6 @@ productRouter.delete(
   merchantOnly,
   deleteProduct,
 );
-
-productRouter.get("/products", protectRoute, merchantOnly, getProducts);
 
 //customer routes
 productRouter.patch(

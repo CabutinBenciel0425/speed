@@ -1,4 +1,4 @@
-import type { SearchPageResults } from "@/types/search"
+import type { SearchPageResultsProps } from "@/types/search"
 import {
   Accordion,
   AccordionContent,
@@ -17,7 +17,10 @@ function SearchPageResults({
   merchants,
   isLoading,
   isError,
-}: SearchPageResults) {
+  query,
+}: SearchPageResultsProps) {
+  console.log("SearchPageResults", query)
+
   if (isLoading) {
     return (
       <div className="flex w-full items-center justify-center py-20">
@@ -37,25 +40,25 @@ function SearchPageResults({
     )
   }
 
-  const hasMerchants = merchants && merchants.length > 0
-  const hasProducts = products && products.length > 0
+  const hasMerchants = merchants && merchants.merchants.length > 0
+  const hasProducts = products && products.products.length > 0
 
-  // if (!hasMerchants && !hasProducts) {
-  //   return (
-  //     <div className="flex w-full flex-col items-center justify-center gap-4 py-20">
-  //       <div className="rounded-full bg-muted/50 p-6">
-  //         <LiaBoxOpenSolid className="size-12 text-muted-foreground/50" />
-  //       </div>
-  //       <p className="text-lg text-muted-foreground">No results found</p>
-  //       <p className="text-sm text-muted-foreground/60">
-  //         Try adjusting your search or filters
-  //       </p>
-  //     </div>
-  //   )
-  // }
+  if (!hasMerchants && !hasProducts) {
+    return (
+      <div className="flex w-full flex-col items-center justify-center gap-4 py-20">
+        <div className="rounded-full bg-muted/50 p-6">
+          <LiaBoxOpenSolid className="size-12 text-muted-foreground/50" />
+        </div>
+        <p className="text-lg text-muted-foreground">No results found</p>
+        <p className="text-sm text-muted-foreground/60">
+          Try adjusting your search or filters
+        </p>
+      </div>
+    )
+  }
 
   return (
-    <div className="flex w-full flex-col gap-6">
+    <div className="flex w-full flex-col gap-6 px-30">
       {hasMerchants && (
         <Accordion
           multiple
@@ -71,7 +74,7 @@ function SearchPageResults({
                 </div>
                 <span className="text-base font-semibold">Merchants</span>
                 <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">
-                  {merchants.length}
+                  {merchants.pagination.total}
                 </span>
               </div>
               <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform duration-200" />
@@ -79,20 +82,19 @@ function SearchPageResults({
 
             <AccordionContent className="pt-4">
               <div className="grid grid-cols-1 gap-4 px-8 py-5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-                {merchants.slice(0, 4).map((merchant) => (
+                {merchants.merchants.map((merchant) => (
                   <MerchantCard key={merchant._id} merchant={merchant} />
                 ))}
               </div>
 
-              {merchants.length > 4 && (
+              {merchants.pagination.total > 4 && (
                 <div className="mt-4 flex justify-center">
                   <NavLink
-                    to="/search/merchants"
-                    state={{ merchants }}
+                    to={`/search/merchants?search=${query}`}
                     className="text-sm font-medium text-primary transition-colors hover:text-primary/80"
                     style={{ textDecoration: "none" }}
                   >
-                    View all {merchants.length} merchants →
+                    View all {merchants.pagination.total} merchants →
                   </NavLink>
                 </div>
               )}
@@ -111,7 +113,7 @@ function SearchPageResults({
                 </div>
                 <span className="text-base font-semibold">Products</span>
                 <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">
-                  {products.length}
+                  {products.pagination.total}
                 </span>
               </div>
               <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform duration-200" />
@@ -119,20 +121,19 @@ function SearchPageResults({
 
             <AccordionContent className="pt-4">
               <div className="grid grid-cols-1 gap-4 px-8 py-5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-                {products.slice(0, 4).map((product) => (
+                {products.products.map((product) => (
                   <ProductCard key={product._id} product={product} />
                 ))}
               </div>
 
-              {products.length > 4 && (
+              {products.pagination.total > 4 && (
                 <div className="mt-4 flex justify-center">
                   <NavLink
-                    to="/search/products"
+                    to={`/search/products?search=${query}`}
                     className="text-sm font-medium text-primary transition-colors hover:text-primary/80 hover:no-underline"
-                    state={{ products }}
                     style={{ textDecoration: "none" }}
                   >
-                    View all {products.length} products →
+                    View all {products.pagination.total} products →
                   </NavLink>
                 </div>
               )}

@@ -302,8 +302,6 @@ export const getMerchantProductsService = async (
     };
   }
 
-  console.log(queryData.filter);
-
   const docs = await Product.find(filter)
     .populate("merchant")
     .sort(sort)

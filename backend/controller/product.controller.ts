@@ -5,6 +5,7 @@ import { NotFoundError, UnauthorizedError } from "../utils/errors.js";
 import {
   createNewProduct,
   getProductFavoritesService,
+  getProductsService,
   toggleProductFavoriteService,
   updateProductDetails,
 } from "../services/product.service.js";
@@ -143,45 +144,7 @@ export const deleteProduct = asyncHandler(
 );
 
 export const getProducts = asyncHandler(async (req: Request, res: Response) => {
-  const queryData = buildQuery(req.query);
-
-  const allowedSorts = [
-    "price",
-    "-price",
-    "createdAt",
-    "-createdAt",
-    "name",
-    "-name",
-  ];
-
-  const sort = allowedSorts.includes(queryData.sort)
-    ? queryData.sort
-    : "-createdAt";
-
-  if (queryData.search) {
-    queryData.filter.$or = [
-      {
-        name: {
-          $regex: queryData.search,
-          $options: "i",
-        },
-      },
-      {
-        description: {
-          $regex: queryData.search,
-          $options: "i",
-        },
-      },
-    ];
-  }
-
-  const docs = await Product.find(queryData.filter)
-    .sort(sort)
-    .select(queryData.select)
-    .skip(queryData.skip)
-    .limit(queryData.limit);
-
-  const total = await Product.countDocuments(queryData.filter);
+  const { docs, total, queryData } = await getProductsService(req.query);
 
   res.status(200).json({
     success: true,

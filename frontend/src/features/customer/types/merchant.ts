@@ -1,3 +1,5 @@
+import type { Pagination } from "./products"
+
 export interface Merchant extends Document {
   _id: string
   owner: string
@@ -82,4 +84,10 @@ export type SelectedMerchant = {
   logo: string
   averageRating: number
   ratingCount: number
+}
+
+export type FetchMerchantResponse = {
+  success: boolean
+  data: Merchant[]
+  pagination: Pagination
 }

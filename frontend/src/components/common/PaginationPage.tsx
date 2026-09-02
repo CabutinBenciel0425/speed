@@ -1,6 +1,7 @@
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -17,13 +18,15 @@ export function PaginationPage({
     return null
   }
 
-  const handlePrevious = () => {
+  const handlePrevious = (e: React.MouseEvent) => {
+    e.preventDefault()
     if (currentPage > 1) {
       onPageChange(currentPage - 1)
     }
   }
 
-  const handleNext = () => {
+  const handleNext = (e: React.MouseEvent) => {
+    e.preventDefault()
     if (currentPage < totalPages) {
       onPageChange(currentPage + 1)
     }
@@ -35,7 +38,7 @@ export function PaginationPage({
         <PaginationItem>
           <PaginationPrevious
             href="#"
-            onClick={handlePrevious}
+            onClick={(e) => handlePrevious(e)}
             className={
               currentPage === 1 ? "pointer-events-none opacity-50" : ""
             }
@@ -55,11 +58,14 @@ export function PaginationPage({
             </PaginationItem>
           )
         })}
+        <PaginationItem>
+          <PaginationEllipsis />
+        </PaginationItem>
 
         <PaginationItem>
           <PaginationNext
             href="#"
-            onClick={handleNext}
+            onClick={(e) => handleNext(e)}
             className={
               currentPage === totalPages ? "pointer-events-none opacity-50" : ""
             }

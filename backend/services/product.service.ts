@@ -9,6 +9,7 @@ import type {
   UpdateProductInput,
 } from "../schemas/product.schema.js";
 import { ApiError } from "../utils/apiError.js";
+import { buildQuery } from "../utils/buildQuery.js";
 import { ConflictError, NotFoundError } from "../utils/errors.js";
 import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";
 import { imageUpload } from "../utils/imageUpload.js";
@@ -191,4 +192,48 @@ export const getProductFavoritesService = async (user: IUser) => {
   }
 
   return favorites;
+};
+
+export const getProductsService = async (query: any) => {
+  const queryData = buildQuery(query);
+
+  const allowedSorts = [
+    "price",
+    "-price",
+    "createdAt",
+    "-createdAt",
+    "name",
+    "-name",
+  ];
+
+  const sort = allowedSorts.includes(queryData.sort)
+    ? queryData.sort
+    : "-createdAt";
+
+  if (queryData.search) {
+    queryData.filter.$or = [
+      {
+        name: {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+      {
+        description: {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+    ];
+  }
+
+  const docs = await Product.find(queryData.filter)
+    .sort(sort)
+    .select(queryData.select)
+    .skip(queryData.skip)
+    .limit(queryData.limit);
+
+  const total = await Product.countDocuments(queryData.filter);
+
+  return { docs, total, queryData };
 };

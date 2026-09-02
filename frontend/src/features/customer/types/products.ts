@@ -63,3 +63,9 @@ export type SelectedProductWithMerchant = {
   merchant: string
   ingredients: string[]
 }
+
+export type FetchProductResponse = {
+  success: boolean
+  data: Product[]
+  pagination: Pagination
+}

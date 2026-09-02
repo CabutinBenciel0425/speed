@@ -4,7 +4,8 @@ import type { Category } from "../types/category"
 import type { ApiResponse } from "@/types/types"
 
 const fetchCategories = async (): Promise<Category[]> => {
-  const { data } = await axios.get<ApiResponse<Category[]>>("/category")
+  const { data } =
+    await axios.get<ApiResponse<Category[]>>("/category?limit=50")
 
   return data.data
 }

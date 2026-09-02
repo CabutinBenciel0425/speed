@@ -1,7 +1,5 @@
 import { useSearchParams } from "react-router-dom"
 import BreadcrumbLinkComponent from "../../../components/common/BreadcrumbLink"
-import { useState } from "react"
-import SearchFilter from "../components/SearchFilter"
 import { useSearchPageResults } from "@/hooks/useSearchPageResults"
 import SearchPageResults from "../components/SearchPageResults"
 
@@ -9,37 +7,11 @@ function SearchPage() {
   const [searchParams] = useSearchParams()
   const query = searchParams.get("query") || ""
   const { data, isLoading, isError } = useSearchPageResults(query || "")
-
-  const [selectedCategory, setSelectedCategory] = useState("All")
-  const [priceRange, setPriceRange] = useState<[number, number]>([5, 250])
-  const [selectedPrepTimes, setSelectedPrepTimes] = useState<string[]>([])
-
-  const handlePriceRangeChange = (value: number | readonly number[]) => {
-    const nextValue = Array.isArray(value) ? value : [value, value]
-    setPriceRange(nextValue as [number, number])
-  }
-
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedCategory(e.target.value)
-  }
-
-  const handlePrepTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setSelectedPrepTimes((prev) =>
-      prev.includes(value)
-        ? prev.filter((item) => item !== value)
-        : [...prev, value]
-    )
-  }
-
-  const handleResetFilters = () => {
-    setSelectedCategory("All")
-    setPriceRange([5, 250])
-    setSelectedPrepTimes([])
-  }
-
-  console.log(data)
-
+  const { products, merchants } = data || {}
+  const totalResults =
+    products && merchants
+      ? products?.pagination.total + merchants?.pagination?.total
+      : 0
   return (
     <div className="flex h-full flex-col gap-5 px-5 py-4 lg:px-10">
       <div className="mt-5">
@@ -52,35 +24,21 @@ function SearchPage() {
         </h1>
 
         <h4 className="text-md font-normal text-muted-foreground/50">
-          10 results found
+          {totalResults} results found
         </h4>
 
-        <div className="flex w-full flex-row gap-10">
-          <aside className="hidden lg:flex">
-            <form>
-              <SearchFilter
-                selectedCategory={selectedCategory}
-                priceRange={priceRange}
-                selectedPrepTimes={selectedPrepTimes}
-                onHandlePriceRange={handlePriceRangeChange}
-                onHandleCategoryChange={handleCategoryChange}
-                onHandlePrepTimeChange={handlePrepTimeChange}
-                onHandleResetFilter={handleResetFilters}
-              />
-            </form>
-          </aside>
-
-          <main className="flex w-full">
-            <SearchPageResults
-              products={data?.products || []}
-              merchants={data?.merchants || []}
-              isLoading={isLoading}
-              isError={isError}
-            />
-          </main>
-        </div>
+        <main className="flex w-full">
+          <SearchPageResults
+            products={products}
+            merchants={merchants}
+            isLoading={isLoading}
+            isError={isError}
+            query={query}
+          />
+        </main>
       </div>
     </div>
+    // </div>
   )
 }
 
