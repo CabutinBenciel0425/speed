@@ -12,9 +12,10 @@ const fetchProductSearchResults = async (
   timeRange: {
     min: number
     max: number
-  } | null
+  } | null,
+  sortParams: string
 ) => {
-  let url = `/product?search=${encodeURIComponent(query)}&limit=${ITEMS_PER_PAGE}&page=${page}`
+  let url = `/product?search=${encodeURIComponent(query)}&limit=${ITEMS_PER_PAGE}&page=${page}&sort=${sortParams}`
 
   if (
     selectedCategory &&
@@ -37,6 +38,7 @@ const fetchProductSearchResults = async (
       url += `&preparationTime.lte=${timeRange.max}`
     }
   }
+
   const { data } = await axios.get<FetchProductResponse>(url)
   return data
 }
@@ -49,7 +51,8 @@ export const useSearchProductResults = (
   timeRange: {
     min: number
     max: number
-  } | null
+  } | null,
+  sortParams: string
 ) => {
   const { data, isLoading, isError } = useQuery({
     queryKey: [
@@ -59,6 +62,7 @@ export const useSearchProductResults = (
       selectedCategory,
       price,
       timeRange,
+      sortParams,
     ],
     queryFn: () =>
       fetchProductSearchResults(
@@ -66,7 +70,8 @@ export const useSearchProductResults = (
         page,
         selectedCategory,
         price,
-        timeRange
+        timeRange,
+        sortParams
       ),
     enabled: !!query.trim(),
     staleTime: 5 * 60 * 1000,

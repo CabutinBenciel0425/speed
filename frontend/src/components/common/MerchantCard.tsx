@@ -7,10 +7,10 @@ import {
   CardTitle,
 } from "../ui/card"
 import { Badge } from "../ui/badge"
-import { Star } from "lucide-react"
 import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
 import type { Merchant } from "@/features/customer/types/merchant"
+import { AiFillStar } from "react-icons/ai"
 
 function MerchantCard({ merchant }: { merchant: Merchant }) {
   const ref = useRef(null)
@@ -41,7 +41,8 @@ function MerchantCard({ merchant }: { merchant: Merchant }) {
           <CardHeader>
             <CardAction>
               <Badge variant="secondary">
-                {merchant.averageRating} <Star fill="#fdc500" />
+                {merchant.averageRating}{" "}
+                <AiFillStar className="text-lg text-yellow-500" />
               </Badge>
             </CardAction>
             <CardTitle className={"lg:text-md text-sm font-semibold"}>

@@ -4,17 +4,26 @@ import type { FetchMerchantResponse } from "../types/merchant"
 
 const ITEMS_PER_PAGE = 8
 
-const fetchMerchantSearchResults = async (query: string, page: number) => {
+const fetchMerchantSearchResults = async (
+  query: string,
+  page: number,
+  sort: string
+) => {
   const { data } = await axios.get<FetchMerchantResponse>(
-    `/merchant?search=${query}&limit=${ITEMS_PER_PAGE}&page=${page}`
+    `/merchant?search=${query}&limit=${ITEMS_PER_PAGE}&page=${page}&sort=${sort}`
   )
+  console.log(sort)
   return data
 }
 
-export const useSearchMerchantResults = (query: string, page: number) => {
+export const useSearchMerchantResults = (
+  query: string,
+  page: number,
+  sort: string
+) => {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["searchMerchants", query, page],
-    queryFn: () => fetchMerchantSearchResults(query, page),
+    queryKey: ["searchMerchants", query, page, sort],
+    queryFn: () => fetchMerchantSearchResults(query, page, sort),
     enabled: !!query.trim(),
     staleTime: 5 * 60 * 1000,
   })

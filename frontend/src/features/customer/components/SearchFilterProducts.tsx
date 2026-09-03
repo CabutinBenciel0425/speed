@@ -19,9 +19,6 @@ function SearchFilterProducts({
   onHandlePrepTimeChange,
   onHandleResetFilter,
 }: SearchFilterProps) {
-  console.log("SELECTEDCATEGORY", selectedCategory)
-  console.log("SELECTEDPRICERANGE", priceRange)
-  console.log("SELECTEDPREPTIMES", selectedPrepTimes)
   const handlePriceRangeDecreaseButtonMin = () => {
     const currentMin = priceRange[0]
     if (currentMin <= 0) return
@@ -54,11 +51,11 @@ function SearchFilterProducts({
   return (
     <Accordion
       multiple
-      className="min-w-3xs rounded-md bg-muted-foreground/10 p-4"
+      className="min-w-3xs rounded-md bg-muted-foreground/10 px-4"
       defaultValue={["categories", "price-range", "prep-time"]}
     >
       {/* Categories */}
-      <AccordionItem key="categories" value={"categories"}>
+      <AccordionItem key="categories" value={"categories"} className={"py-4"}>
         <AccordionTrigger className={"text-md font-semibold"}>
           Categories
         </AccordionTrigger>
@@ -93,7 +90,11 @@ function SearchFilterProducts({
       </AccordionItem>
 
       {/* Price Range */}
-      <AccordionItem key={"price-range"} value={"price-range"}>
+      <AccordionItem
+        key={"price-range"}
+        value={"price-range"}
+        className={"py-4"}
+      >
         <AccordionTrigger className={"text-md font-semibold"}>
           Price Range
         </AccordionTrigger>
@@ -151,7 +152,11 @@ function SearchFilterProducts({
       </AccordionItem>
 
       {/* Preparation Time */}
-      <AccordionItem key={"prep-time"} value={"prep-time"} className={"mb-5"}>
+      <AccordionItem
+        key={"prep-time"}
+        value={"prep-time"}
+        className={"mb-5 py-4"}
+      >
         <AccordionTrigger className={"text-md font-semibold"}>
           Preparation Time
         </AccordionTrigger>
@@ -214,7 +219,7 @@ function SearchFilterProducts({
       </AccordionItem>
       <Button
         type="reset"
-        className={"w-full border border-muted-foreground/10"}
+        className={"mb-5 w-full border border-muted-foreground/10"}
         variant={"ghost"}
         onClick={onHandleResetFilter}
       >
