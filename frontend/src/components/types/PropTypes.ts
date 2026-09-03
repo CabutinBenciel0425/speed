@@ -1,3 +1,4 @@
+import type { Category } from "@/features/customer/types/category"
 import type { TopProductTag } from "@/features/customer/types/products"
 import type { Dispatch, SetStateAction } from "react"
 import type { FieldError } from "react-hook-form"
@@ -55,6 +56,7 @@ export type ToggleQuantityProps = {
 }
 
 export type SearchFilterProps = {
+  categories: Category[]
   selectedCategory: string
   priceRange: [number, number]
   selectedPrepTimes: string[]

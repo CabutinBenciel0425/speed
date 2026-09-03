@@ -24,6 +24,7 @@ import { paymongoWebhook } from "./controller/payment.controller.js";
 import notificationRouter from "./routes/notification.route.js";
 import cors from "cors";
 import searchRouter from "./routes/search.route.js";
+import qs from "qs";
 
 const app = express();
 const server = http.createServer(app);
@@ -50,6 +51,9 @@ app.post(
 );
 app.use(express.json({ limit: "5mb" }));
 app.use(cookieParser());
+app.set("query parser", (str: string) => {
+  return qs.parse(str, { allowDots: true });
+});
 
 app.use("/api/v1/auth", userRoute);
 app.use("/api/v1/category", categoryRouter);

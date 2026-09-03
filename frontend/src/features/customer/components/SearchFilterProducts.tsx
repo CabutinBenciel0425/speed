@@ -1,4 +1,3 @@
-import { accordionItems } from "@/features/customer/utils/constants"
 import type { SearchFilterProps } from "../../../components/types/PropTypes"
 import {
   Accordion,
@@ -7,10 +6,12 @@ import {
   AccordionTrigger,
 } from "../../../components/ui/accordion"
 import { Button } from "../../../components/ui/button"
-import { Slider } from "../../../components/ui/slider"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import { Input } from "@/components/ui/input"
 
 function SearchFilterProducts({
   selectedCategory,
+  categories,
   priceRange,
   selectedPrepTimes,
   onHandlePriceRange,
@@ -18,8 +19,37 @@ function SearchFilterProducts({
   onHandlePrepTimeChange,
   onHandleResetFilter,
 }: SearchFilterProps) {
-  const categoriesContent = accordionItems[0].content
-  const prepTimeContent = accordionItems[2].content
+  console.log("SELECTEDCATEGORY", selectedCategory)
+  console.log("SELECTEDPRICERANGE", priceRange)
+  console.log("SELECTEDPREPTIMES", selectedPrepTimes)
+  const handlePriceRangeDecreaseButtonMin = () => {
+    const currentMin = priceRange[0]
+    if (currentMin <= 0) return
+    const newMin = currentMin - 5
+    if (newMin > priceRange[1]) return
+    onHandlePriceRange([newMin, priceRange[1]])
+  }
+
+  const handlePriceRangeIncreaseButtonMin = () => {
+    const currentMin = priceRange[0]
+    if (currentMin >= priceRange[1]) return
+    const newMin = Math.min(currentMin + 5, priceRange[1]) // Clamp to max
+    onHandlePriceRange([newMin, priceRange[1]])
+  }
+
+  const handlePriceRangeDecreaseButtonMax = () => {
+    const currentMax = priceRange[1]
+    if (currentMax <= priceRange[0]) return
+    const newMax = Math.max(currentMax - 5, priceRange[0]) // Clamp to min
+    onHandlePriceRange([priceRange[0], newMax])
+  }
+
+  const handlePriceRangeIncreaseButtonMax = () => {
+    const currentMax = priceRange[1]
+    if (currentMax >= 500) return
+    const newMax = Math.min(currentMax + 5, 500)
+    onHandlePriceRange([priceRange[0], newMax])
+  }
 
   return (
     <Accordion
@@ -28,84 +58,166 @@ function SearchFilterProducts({
       defaultValue={["categories", "price-range", "prep-time"]}
     >
       {/* Categories */}
-      <AccordionItem
-        key={accordionItems[0].value}
-        value={accordionItems[0].value}
-      >
+      <AccordionItem key="categories" value={"categories"}>
         <AccordionTrigger className={"text-md font-semibold"}>
-          {accordionItems[0].trigger}
+          Categories
         </AccordionTrigger>
-        {Array.isArray(categoriesContent) &&
-          categoriesContent.map((item) => (
-            <AccordionContent key={item} className={"mt-2.5"}>
-              <label className="flex max-h-2 flex-row items-center justify-start gap-2">
-                <input
-                  type="radio"
-                  name="category"
-                  value={item}
-                  checked={selectedCategory === item}
-                  onChange={onHandleCategoryChange}
-                />
-                <span>{item}</span>
-              </label>
-            </AccordionContent>
-          ))}
+        <AccordionContent key={"all"} className={"mt-2.5"}>
+          <label className="flex max-h-2 flex-row items-center justify-start gap-2">
+            <input
+              className="text-center"
+              type="radio"
+              name="category"
+              value={"All"}
+              checked={selectedCategory === "All"}
+              onChange={onHandleCategoryChange}
+            />
+            <span>All</span>
+          </label>
+        </AccordionContent>
+        {categories.map((category) => (
+          <AccordionContent key={category._id} className={"mt-2.5"}>
+            <label className="flex max-h-2 flex-row items-center justify-start gap-2">
+              <input
+                className="text-center"
+                type="radio"
+                name="category"
+                value={category._id}
+                checked={selectedCategory === category._id}
+                onChange={onHandleCategoryChange}
+              />
+              <span>{category.name}</span>
+            </label>
+          </AccordionContent>
+        ))}
       </AccordionItem>
 
       {/* Price Range */}
-      <AccordionItem
-        key={accordionItems[1].value}
-        value={accordionItems[1].value}
-      >
+      <AccordionItem key={"price-range"} value={"price-range"}>
         <AccordionTrigger className={"text-md font-semibold"}>
-          {accordionItems[1].trigger}
+          Price Range
         </AccordionTrigger>
         <AccordionContent className={"w-full py-2"}>
-          <Slider
-            value={priceRange}
-            max={500}
-            step={5}
-            className="mx-auto mb-3 w-full max-w-xs"
-            onValueChange={onHandlePriceRange}
-          />
-          <div className="flex w-full flex-row items-center justify-between">
-            <span className="text-sm font-semibold text-primary">
-              ₱{priceRange[0]}
-            </span>
-            <span className="text-sm font-semibold text-primary">
-              ₱{priceRange[1] >= 500 ? "500+" : priceRange[1]}
-            </span>
+          {/*Minimum Price*/}
+          <div className="flex flex-row items-center justify-start">
+            <span>Minimum Price</span>
+            <Button
+              variant={"ghost"}
+              onClick={handlePriceRangeDecreaseButtonMin}
+            >
+              <ChevronLeft className="size-5" />
+            </Button>
+            <Input
+              value={priceRange[0]}
+              className="w-15 border-none text-center text-sm font-semibold"
+              type="number"
+              max="500"
+              step="5"
+              min="0"
+            />
+            <Button
+              variant={"ghost"}
+              onClick={handlePriceRangeIncreaseButtonMin}
+            >
+              <ChevronRight className="size-5" />
+            </Button>
+          </div>
+
+          {/*Maximum Price*/}
+          <div className="flex flex-row items-center justify-start">
+            <span>Maximum Price</span>
+            <Button
+              variant={"ghost"}
+              onClick={handlePriceRangeDecreaseButtonMax}
+            >
+              <ChevronLeft className="size-5" />
+            </Button>
+            <Input
+              value={priceRange[1]}
+              className="w-15 border-none text-center text-sm font-semibold"
+              type="number"
+              max="500"
+              step="5"
+              min="0"
+            />
+            <Button
+              variant={"ghost"}
+              onClick={handlePriceRangeIncreaseButtonMax}
+            >
+              <ChevronRight className="size-5" />
+            </Button>
           </div>
         </AccordionContent>
       </AccordionItem>
 
       {/* Preparation Time */}
-      <AccordionItem
-        key={accordionItems[2].value}
-        value={accordionItems[2].value}
-        className={"mb-5"}
-      >
+      <AccordionItem key={"prep-time"} value={"prep-time"} className={"mb-5"}>
         <AccordionTrigger className={"text-md font-semibold"}>
-          {accordionItems[2].trigger}
+          Preparation Time
         </AccordionTrigger>
-        {Array.isArray(prepTimeContent) &&
-          prepTimeContent.map((item) => (
-            <AccordionContent key={item} className={"mt-2.5"}>
-              <label className="flex max-h-2 flex-row items-center justify-start gap-2">
-                <input
-                  type="checkbox"
-                  name="prep-time"
-                  value={item}
-                  checked={selectedPrepTimes.includes(item)}
-                  onChange={onHandlePrepTimeChange}
-                />
-                <span>{item}</span>
-              </label>
-            </AccordionContent>
-          ))}
-      </AccordionItem>
 
-      <Button type="button" onClick={onHandleResetFilter}>
+        {/*0-15 mins*/}
+        <AccordionContent key={"0-15"} className={"mt-2.5"}>
+          <label className="flex max-h-2 flex-row items-center justify-start gap-2">
+            <input
+              type="checkbox"
+              name="prep-time"
+              value={"0-15"}
+              checked={selectedPrepTimes.includes("0-15")}
+              onChange={onHandlePrepTimeChange}
+            />
+            <span>Up to 15 mins</span>
+          </label>
+        </AccordionContent>
+
+        {/*15-30 mins*/}
+        <AccordionContent key={"15-30"} className={"mt-2.5"}>
+          <label className="flex max-h-2 flex-row items-center justify-start gap-2">
+            <input
+              type="checkbox"
+              name="prep-time"
+              value={"15-30"}
+              checked={selectedPrepTimes.includes("15-30")}
+              onChange={onHandlePrepTimeChange}
+            />
+            <span>15 - 30 mins</span>
+          </label>
+        </AccordionContent>
+
+        {/*30-45 mins*/}
+        <AccordionContent key={"30-45"} className={"mt-2.5"}>
+          <label className="flex max-h-2 flex-row items-center justify-start gap-2">
+            <input
+              type="checkbox"
+              name="prep-time"
+              value={"30-45"}
+              checked={selectedPrepTimes.includes("30-45")}
+              onChange={onHandlePrepTimeChange}
+            />
+            <span>30 - 45 mins</span>
+          </label>
+        </AccordionContent>
+
+        {/*45+ mins*/}
+        <AccordionContent key={"45+"} className={"mt-2.5"}>
+          <label className="flex max-h-2 flex-row items-center justify-start gap-2">
+            <input
+              type="checkbox"
+              name="prep-time"
+              value={"45+"}
+              checked={selectedPrepTimes.includes("45+")}
+              onChange={onHandlePrepTimeChange}
+            />
+            <span>45+ mins</span>
+          </label>
+        </AccordionContent>
+      </AccordionItem>
+      <Button
+        type="reset"
+        className={"w-full border border-muted-foreground/10"}
+        variant={"ghost"}
+        onClick={onHandleResetFilter}
+      >
         Clear Filters
       </Button>
     </Accordion>

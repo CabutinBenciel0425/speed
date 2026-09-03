@@ -9,3 +9,14 @@ export interface Category extends Document {
   createdAt?: string
   updatedAt?: string
 }
+
+export type CategoryList =
+  | "Chicken"
+  | "Burgers"
+  | "Rice Meals"
+  | "Pizzas"
+  | "Pastas"
+  | "Drinks"
+  | "Desserts"
+  | "Soups"
+  | "Others / Sides & Snacks"

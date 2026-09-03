@@ -19,8 +19,6 @@ function SearchPageResults({
   isError,
   query,
 }: SearchPageResultsProps) {
-  console.log("SearchPageResults", query)
-
   if (isLoading) {
     return (
       <div className="flex w-full items-center justify-center py-20">

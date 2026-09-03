@@ -38,6 +38,7 @@ export function ProfileButton() {
       />
       <DropdownMenuContent align="end">
         <DropdownMenuGroup>
+          <DropdownMenuSeparator />
           <DropdownMenuItem className={"block md:hidden"}>
             <NavLink to="/cart" className={"flex flex-row gap-2"}>
               <ShoppingCart className="size-5" />
@@ -63,8 +64,10 @@ export function ProfileButton() {
             </NavLink>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <BellIcon />
-            Notifications
+            <NavLink to="/notifications" className={"flex flex-row gap-2"}>
+              <BellIcon />
+              Notifications
+            </NavLink>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />

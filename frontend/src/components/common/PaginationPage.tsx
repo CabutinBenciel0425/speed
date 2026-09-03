@@ -37,7 +37,6 @@ export function PaginationPage({
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
-            href="#"
             onClick={(e) => handlePrevious(e)}
             className={
               currentPage === 1 ? "pointer-events-none opacity-50" : ""
@@ -64,7 +63,6 @@ export function PaginationPage({
 
         <PaginationItem>
           <PaginationNext
-            href="#"
             onClick={(e) => handleNext(e)}
             className={
               currentPage === totalPages ? "pointer-events-none opacity-50" : ""

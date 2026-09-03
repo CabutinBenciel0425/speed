@@ -10,6 +10,7 @@ import Sort from "@/components/common/Sort"
 import SkeletonCategoryHeader from "@/components/common/Skeleton/SkeletonCategoryHeader"
 import SkeletonPagination from "@/components/common/Skeleton/SkeletonPagination"
 import BreadcrumbLinkComponent from "@/components/common/BreadcrumbLink"
+import { useMemo } from "react"
 
 function CategoryProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -23,7 +24,16 @@ function CategoryProductsPage() {
     tagsParams,
     sortParams
   )
-  const { tags } = useProductTopTags(categoryId || "")
+  const { tags: topTags } = useProductTopTags(categoryId || "")
+
+  const allTags = useMemo(() => {
+    if (!tagsParams || tagsParams === "all") return topTags
+
+    const exists = topTags.some((tag) => tag._id === tagsParams)
+    if (exists) return topTags
+
+    return [{ _id: tagsParams, count: 0 }, ...topTags]
+  }, [topTags, tagsParams])
 
   const totalPages = productsByCategory?.pagination?.pages || 1
   const category = productsByCategory?.data?.category
@@ -102,7 +112,7 @@ function CategoryProductsPage() {
         </p>
         <div className="flex w-full items-center justify-between">
           <Filter
-            tags={tags}
+            tags={allTags}
             value={tagsParams || "all"}
             onFilterChange={handleFilterChange}
           />
