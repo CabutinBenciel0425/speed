@@ -74,6 +74,7 @@ export interface IMerchant extends Document {
   totalRevenue: number;
   ratingCount: number;
   averageRating: number;
+  isOpen: boolean;
 }
 
 export const merchantSchema = new Schema<IMerchant>(
@@ -466,6 +467,9 @@ export const merchantSchema = new Schema<IMerchant>(
       default: 0,
       min: 0,
       max: 5,
+    },
+    isOpen: {
+      type: Boolean,
     },
   },
   { timestamps: true },

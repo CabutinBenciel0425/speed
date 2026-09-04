@@ -13,24 +13,41 @@ import { useAuth } from "@/hooks/useAuth"
 import { MapPin } from "lucide-react"
 import { AiFillStar } from "react-icons/ai"
 
-function SearchFilterMerchants() {
+function SearchFilterMerchants({
+  open,
+  onHandleToggleOpen,
+}: {
+  open: boolean
+  onHandleToggleOpen: (value: boolean) => void
+}) {
   const { defaultAddress } = useAddress()
   const { isAuthenticated } = useAuth()
+
+  console.log(defaultAddress)
   return (
     <Accordion
       multiple
       className="min-w-3xs rounded-md bg-muted-foreground/10 px-4"
-      defaultValue={["open-now", "price-range", "prep-time"]}
+      defaultValue={["open-now"]}
     >
       {/*Open now*/}
-      <AccordionItem className={"w-full py-4"} key={"open-now"}>
+      <AccordionItem
+        className={"w-full py-4"}
+        key={"open-now"}
+        value={"open-now"}
+      >
         <AccordionTrigger className={"text-md font-semibold"}>
           Availability
         </AccordionTrigger>
         <AccordionContent key={"open-now"} className={"mt-2.5"}>
           <label className="flex max-h-2 flex-row items-center justify-between gap-2">
             <Label htmlFor="open-now">Open Now</Label>
-            <Switch id="open-now" defaultChecked />
+            <Switch
+              id="open-now"
+              checked={open}
+              defaultChecked
+              onCheckedChange={onHandleToggleOpen}
+            />
           </label>
         </AccordionContent>
       </AccordionItem>
@@ -44,7 +61,7 @@ function SearchFilterMerchants() {
           Rating
         </AccordionTrigger>
         <RadioGroup>
-          <AccordionContent key={"rating"} className={"mt-2.5"}>
+          <AccordionContent key={"rating_0-3"} className={"mt-2.5"}>
             <div className="flex items-center gap-3">
               <RadioGroupItem value="0-3" id="0-3" />
               <Label htmlFor="0-3">
@@ -54,7 +71,7 @@ function SearchFilterMerchants() {
             </div>
           </AccordionContent>
 
-          <AccordionContent key={"rating"} className={"mt-2.5"}>
+          <AccordionContent key={"rating_3.1-4.0"} className={"mt-2.5"}>
             <div className="flex items-center gap-3">
               <RadioGroupItem value="3.1-4.0" id="3.1-4.0" />
               <Label htmlFor="3.1-4.0">
@@ -64,7 +81,7 @@ function SearchFilterMerchants() {
             </div>
           </AccordionContent>
 
-          <AccordionContent key={"rating"} className={"mt-2.5"}>
+          <AccordionContent key={"rating_4.1-4.5"} className={"mt-2.5"}>
             <div className="flex items-center gap-3">
               <RadioGroupItem value="4.1-4.5" id="4.1-4.5" />
               <Label htmlFor="4.1-4.5">
@@ -74,7 +91,7 @@ function SearchFilterMerchants() {
             </div>
           </AccordionContent>
 
-          <AccordionContent key={"rating"} className={"mt-2.5"}>
+          <AccordionContent key={"rating_4.6-5.0"} className={"mt-2.5"}>
             <div className="flex items-center gap-3">
               <RadioGroupItem value="4.6-5.0" id="4.6-5.0" />
               <Label htmlFor="4.6-5.0">
@@ -93,7 +110,7 @@ function SearchFilterMerchants() {
             Location
           </AccordionTrigger>
           <RadioGroup>
-            <AccordionContent key={"location"} className={"mt-2.5"}>
+            <AccordionContent key={"location_0-5"} className={"mt-2.5"}>
               <div className="flex items-center gap-3">
                 <RadioGroupItem value="0-5" id="0-5" />
                 <Label htmlFor="0-5">
@@ -102,7 +119,7 @@ function SearchFilterMerchants() {
               </div>
             </AccordionContent>
 
-            <AccordionContent key={"location"} className={"mt-2.5"}>
+            <AccordionContent key={"location_5.1-8.0"} className={"mt-2.5"}>
               <div className="flex items-center gap-3">
                 <RadioGroupItem value="5.1-8.0" id="5.1-8.0" />
                 <Label htmlFor="0-5">
@@ -111,7 +128,7 @@ function SearchFilterMerchants() {
               </div>
             </AccordionContent>
 
-            <AccordionContent key={"location"} className={"mt-2.5"}>
+            <AccordionContent key={"location_8.1-10.0"} className={"mt-2.5"}>
               <div className="flex items-center gap-3">
                 <RadioGroupItem value="8.1-10.0" id="8.1-10.0" />
                 <Label htmlFor="8.1-10.0">
@@ -120,7 +137,7 @@ function SearchFilterMerchants() {
               </div>
             </AccordionContent>
 
-            <AccordionContent key={"location"} className={"mt-2.5"}>
+            <AccordionContent key={"location_10.1-20.0"} className={"mt-2.5"}>
               <div className="flex items-center gap-3">
                 <RadioGroupItem value="10.1-20.0" id="10.1-20.0" />
                 <Label htmlFor="10.1-20.0">
@@ -129,7 +146,7 @@ function SearchFilterMerchants() {
               </div>
             </AccordionContent>
 
-            <AccordionContent key={"location"} className={"mt-2.5"}>
+            <AccordionContent key={"location_20.1+"} className={"mt-2.5"}>
               <div className="flex items-center gap-3">
                 <RadioGroupItem value="20.1+" id="20.1+" />
                 <Label htmlFor="20.1+">

@@ -247,8 +247,11 @@ export const getMerchantsService = async (payload: any) => {
     ];
   }
 
+  if (payload.open === "true") {
+    queryData.filter.isOpen = true;
+  }
+
   const docs = await Merchant.find(queryData.filter)
-    .select("-password")
     .sort(sort)
     .select(queryData.select)
     .skip(queryData.skip)
@@ -265,6 +268,7 @@ export const getMerchantsService = async (payload: any) => {
     operatingHours: doc.operatingHours,
     ratingCount: doc.ratingCount,
     averageRating: doc.averageRating,
+    isOpen: doc.isOpen,
   }));
 
   const total = await Merchant.countDocuments(queryData.filter);

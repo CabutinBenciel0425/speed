@@ -22,7 +22,7 @@ function SearchFilterProducts({
   const handlePriceRangeDecreaseButtonMin = () => {
     const currentMin = priceRange[0]
     if (currentMin <= 0) return
-    const newMin = currentMin - 5
+    const newMin = currentMin - 100
     if (newMin > priceRange[1]) return
     onHandlePriceRange([newMin, priceRange[1]])
   }
@@ -30,21 +30,21 @@ function SearchFilterProducts({
   const handlePriceRangeIncreaseButtonMin = () => {
     const currentMin = priceRange[0]
     if (currentMin >= priceRange[1]) return
-    const newMin = Math.min(currentMin + 5, priceRange[1]) // Clamp to max
+    const newMin = Math.min(currentMin + 100, priceRange[1]) // Clamp to max
     onHandlePriceRange([newMin, priceRange[1]])
   }
 
   const handlePriceRangeDecreaseButtonMax = () => {
     const currentMax = priceRange[1]
     if (currentMax <= priceRange[0]) return
-    const newMax = Math.max(currentMax - 5, priceRange[0]) // Clamp to min
+    const newMax = Math.max(currentMax - 100, priceRange[0]) // Clamp to min
     onHandlePriceRange([priceRange[0], newMax])
   }
 
   const handlePriceRangeIncreaseButtonMax = () => {
     const currentMax = priceRange[1]
-    if (currentMax >= 500) return
-    const newMax = Math.min(currentMax + 5, 500)
+    if (currentMax >= 1000) return
+    const newMax = Math.min(currentMax + 100, 1000)
     onHandlePriceRange([priceRange[0], newMax])
   }
 
@@ -59,19 +59,7 @@ function SearchFilterProducts({
         <AccordionTrigger className={"text-md font-semibold"}>
           Categories
         </AccordionTrigger>
-        <AccordionContent key={"all"} className={"mt-2.5"}>
-          <label className="flex max-h-2 flex-row items-center justify-start gap-2">
-            <input
-              className="text-center"
-              type="radio"
-              name="category"
-              value={"All"}
-              checked={selectedCategory === "All"}
-              onChange={onHandleCategoryChange}
-            />
-            <span>All</span>
-          </label>
-        </AccordionContent>
+
         {categories.map((category) => (
           <AccordionContent key={category._id} className={"mt-2.5"}>
             <label className="flex max-h-2 flex-row items-center justify-start gap-2">

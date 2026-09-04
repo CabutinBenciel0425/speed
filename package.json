@@ -5,7 +5,9 @@
   "main": "backend/server.ts",
   "scripts": {
     "dev": "nodemon --ext ts,json --legacy-watch --exec tsx backend/server.ts",
-    "migrate": "tsx backend/scripts/migrate-product-merchant.ts"
+    "migrate": "tsx backend/scripts/migrate-product-merchant.ts",
+    "job:merchant-status": "tsx backend/jobs/merchant-status.job.ts",
+    "job:cleanup-merchant-fields": "tsx backend/scripts/cleanup-merchant-fields.ts"
   },
   "keywords": [],
   "author": "",
@@ -26,6 +28,7 @@
     "mongoose": "^9.7.4",
     "morgan": "^1.11.0",
     "multer": "^2.2.0",
+    "node-cron": "^4.6.0",
     "nodemailer": "^9.0.3",
     "nodemon": "^3.1.14",
     "qs": "^6.16.0",

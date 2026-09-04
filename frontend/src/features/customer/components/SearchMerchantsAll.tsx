@@ -17,15 +17,31 @@ import {
 function SearchMerchantsAll() {
   const [searchParams, setSearchParams] = useSearchParams()
   const sortParams = searchParams.get("sort") ?? "-averageRating"
+  const open = searchParams.get("open") !== "false"
   const page = Number(searchParams.get("page")) || 1
   const query = String(searchParams.get("search")) || ""
   const { data, isLoading, isError } = useSearchMerchantResults(
     query,
     page,
-    sortParams
+    sortParams,
+    open
   )
 
   const totalPages: number = data?.pagination?.pages || 1
+
+  const handleToggleOpen = (open: boolean) => {
+    const params = new URLSearchParams(searchParams)
+
+    params.set("open", String(open))
+    params.set("page", "1")
+
+    setSearchParams(params)
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    })
+  }
 
   const handlePageChange = (page: number) => {
     const params = new URLSearchParams(searchParams)
@@ -90,16 +106,7 @@ function SearchMerchantsAll() {
     return <Navigate to="/" replace />
   }
 
-  if (!data?.data || data.data.length === 0) {
-    return (
-      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4">
-        <p className="text-lg text-muted-foreground">No merchants found</p>
-        <p className="text-sm text-muted-foreground/60">
-          Try adjusting your search
-        </p>
-      </div>
-    )
-  }
+  console.log(open)
   return (
     <div className="flex flex-col gap-5 p-6">
       <BreadcrumbLinkComponent currentPage={"Merchants"} pages={pages} />
@@ -109,7 +116,7 @@ function SearchMerchantsAll() {
 
       <main className="flex w-full flex-col gap-2">
         <div className="mb-5 flex w-full items-end justify-end">
-          <Sort value={sortParams}>
+          <Sort value={sortParams} margin={0}>
             <DropdownMenuLabel>Sort products by</DropdownMenuLabel>
             <DropdownMenuRadioGroup
               value={sortParams}
@@ -138,14 +145,8 @@ function SearchMerchantsAll() {
           <aside className="hidden lg:flex">
             <form>
               <SearchFilterMerchants
-              // selectedCategory={selectedCategory}
-              // categories={categories || []}
-              // priceRange={priceRange}
-              // selectedPrepTimes={selectedPrepTimes}
-              // onHandlePriceRange={handlePriceRangeChange}
-              // onHandleCategoryChange={handleCategoryChange}
-              // onHandlePrepTimeChange={handlePrepTimeChange}
-              // onHandleResetFilter={handleResetFilters}
+                onHandleToggleOpen={handleToggleOpen}
+                open={open}
               />
             </form>
           </aside>
@@ -171,7 +172,7 @@ function SearchMerchantsAll() {
                 </div>
               </>
             ) : (
-              <div className="mt-40 flex flex-col items-center justify-center gap-4">
+              <div className="mt-20 flex flex-col items-center justify-center gap-4">
                 <ArchiveX className="size-15 text-muted-foreground" />
                 <div className="flex flex-col items-center justify-center">
                   <p className="text-lg text-muted-foreground">

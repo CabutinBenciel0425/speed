@@ -4,6 +4,7 @@ import { errorMiddleware } from "./middlewares/error.middleware.js";
 import { notFoundMiddleware } from "./middlewares/notFound.middleware.js";
 import { connectDB } from "./lib/db.js";
 import { createDefaultAdmin } from "./scripts/seed-admin.js";
+import { startScheduler } from "./jobs/scheduler.js";
 import { Server } from "socket.io";
 
 import morgan from "morgan";
@@ -31,8 +32,8 @@ const server = http.createServer(app);
 
 app.use(
   cors({
-    origin: CLIENT_URL || "http://localhost:5173", // same as Socket.IO origin
-    credentials: true, // if you use cookies
+    origin: CLIENT_URL || "http://localhost:5173",
+    credentials: true,
   }),
 );
 
@@ -74,6 +75,7 @@ app.use(errorMiddleware);
 const startServer = async () => {
   await connectDB();
   await createDefaultAdmin();
+  startScheduler();
 
   server.listen(PORT || 3000, () => {
     console.log(`Server running in port ${PORT}`);

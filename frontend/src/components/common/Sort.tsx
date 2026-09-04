@@ -10,12 +10,14 @@ import { formatSortTitle } from "@/utils/formatSortTitle"
 function Sort({
   children,
   value,
+  margin = 15,
 }: {
   children: React.ReactNode
   value: string
+  margin?: number
 }) {
   return (
-    <div className="mr-15">
+    <div className={`mr-${margin}`}>
       <DropdownMenu>
         <DropdownMenuTrigger
           render={

@@ -10,7 +10,7 @@ import SkeletonNavbar from "./Skeleton/SkeletonNavbar"
 import EmailVerifyTab from "./EmailVerifyTab"
 
 function Navbar() {
-  const { isAuthenticated, isLoading, isVerified } = useAuth()
+  const { user, isAuthenticated, isLoading, isVerified } = useAuth()
 
   if (isLoading) {
     return <SkeletonNavbar />
@@ -57,7 +57,7 @@ function Navbar() {
           )}
         </div>
       </header>
-      {!isVerified && <EmailVerifyTab />}
+      {user && !isVerified && <EmailVerifyTab />}
     </>
   )
 }

@@ -23,9 +23,9 @@ function SearchProductsAll() {
   const [searchParams, setSearchParams] = useSearchParams()
   const sortParams = searchParams.get("sort") ?? "-price"
   const { categories } = useCategories()
-  const selectedCategory = searchParams.get("category") || "All"
-  const minPrice = Number(searchParams.get("minPrice")) || 5
-  const maxPrice = Number(searchParams.get("maxPrice")) || 500
+  const selectedCategory = searchParams.get("category") || ""
+  const minPrice = Number(searchParams.get("minPrice")) || 0
+  const maxPrice = Number(searchParams.get("maxPrice")) || 1000
   const [priceRange, setPriceRange] = useState<[number, number]>([
     minPrice,
     maxPrice,
@@ -80,7 +80,7 @@ function SearchProductsAll() {
 
     params.set("page", "1")
 
-    if (newCategory === "All" || newCategory === "") {
+    if (newCategory === "") {
       params.delete("category")
     } else {
       params.set("category", newCategory)

@@ -11,7 +11,13 @@ const migrate = async () => {
     console.log("Connected to DB");
 
     const products = await Product.find().populate<{
-      merchant: { merchantName: string; logo: string };
+      merchant: {
+        merchantName: string;
+        logo: string;
+        address: {
+          location: { type: string; coordinates: number[] };
+        };
+      };
     }>("merchant");
 
     let updatedCount = 0;
@@ -22,10 +28,12 @@ const migrate = async () => {
         merchant &&
         typeof merchant === "object" &&
         "merchantName" in merchant &&
-        "logo" in merchant
+        "logo" in merchant &&
+        "address" in merchant
       ) {
         product.merchantName = merchant.merchantName;
         product.merchantLogo = merchant.logo || "";
+        product.merchantLocation = merchant.address.location;
         await product.save();
         updatedCount++;
       }

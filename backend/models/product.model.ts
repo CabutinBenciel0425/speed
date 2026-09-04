@@ -5,6 +5,10 @@ export interface IProduct extends Document {
   merchant: Types.ObjectId;
   merchantName: string;
   merchantLogo: string;
+  merchantLocation: {
+    type: string;
+    coordinates: number[];
+  };
   category: Types.ObjectId;
   name: string;
   slug: string;
@@ -33,6 +37,37 @@ const productSchema = new Schema<IProduct>(
     merchantLogo: {
       type: String,
       required: true,
+    },
+    merchantLocation: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number],
+        required: true,
+        index: "2dsphere",
+        validate: {
+          validator: function (v: number[] | undefined): v is number[] {
+            if (!v) return false;
+            if (v.length !== 2) return false;
+
+            const lng = v[0];
+            const lat = v[1];
+
+            return (
+              typeof lng === "number" &&
+              typeof lat === "number" &&
+              lng >= -180 &&
+              lng <= 180 &&
+              lat >= -90 &&
+              lat <= 90
+            );
+          },
+          message: "Coordinates must be [longitude latitude] with valid ranges",
+        },
+      },
     },
     category: {
       type: mongoose.Types.ObjectId,
