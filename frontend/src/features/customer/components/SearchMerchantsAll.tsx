@@ -13,6 +13,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu"
+import { getRatingRange } from "../utils/getRatingRange"
 
 function SearchMerchantsAll() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -20,11 +21,15 @@ function SearchMerchantsAll() {
   const open = searchParams.get("open") !== "false"
   const page = Number(searchParams.get("page")) || 1
   const query = String(searchParams.get("search")) || ""
+  const ratingKey = searchParams.get("rating") || "0-5"
+  const [minRating, maxRating] = getRatingRange(ratingKey)
   const { data, isLoading, isError } = useSearchMerchantResults(
     query,
     page,
     sortParams,
-    open
+    open,
+    minRating,
+    maxRating
   )
 
   const totalPages: number = data?.pagination?.pages || 1
@@ -56,13 +61,6 @@ function SearchMerchantsAll() {
     })
   }
 
-  const pages = [
-    {
-      link: `/search?query=${query}`,
-      pageName: "Search",
-    },
-  ]
-
   const handleSortChange = (sort: string) => {
     const params = new URLSearchParams(searchParams)
 
@@ -81,6 +79,23 @@ function SearchMerchantsAll() {
       behavior: "smooth",
     })
   }
+
+  const handleRatingChange = (value: string) => {
+    const params = new URLSearchParams(searchParams)
+    params.set("page", "1")
+    params.set("rating", value)
+
+    setSearchParams(params)
+
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  const pages = [
+    {
+      link: `/search?query=${query}`,
+      pageName: "Search",
+    },
+  ]
 
   if (isLoading) {
     return (
@@ -106,7 +121,6 @@ function SearchMerchantsAll() {
     return <Navigate to="/" replace />
   }
 
-  console.log(open)
   return (
     <div className="flex flex-col gap-5 p-6">
       <BreadcrumbLinkComponent currentPage={"Merchants"} pages={pages} />
@@ -146,6 +160,8 @@ function SearchMerchantsAll() {
             <form>
               <SearchFilterMerchants
                 onHandleToggleOpen={handleToggleOpen}
+                onHandleRatingChange={handleRatingChange}
+                ratingKey={ratingKey}
                 open={open}
               />
             </form>

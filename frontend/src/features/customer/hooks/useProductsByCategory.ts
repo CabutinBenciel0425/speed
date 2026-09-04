@@ -9,7 +9,6 @@ const fetchProductsByCategories = async (
   sort: string = "-price",
   limit: number
 ): Promise<CategoryByProducts> => {
-  console.log(tags)
   const urlToUse =
     tags !== null && tags !== ""
       ? `/category/${categoryId}?tags=${tags}&sort=${sort}&page=${page}&limit=${limit}`

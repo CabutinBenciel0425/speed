@@ -9,7 +9,6 @@ function SearchPage() {
   const { data, isLoading, isError } = useSearchPageResults(query || "")
   const { products, merchants } = data || {}
 
-  console.log(data)
   const totalResults =
     products && merchants
       ? products?.pagination.total + merchants?.pagination?.total

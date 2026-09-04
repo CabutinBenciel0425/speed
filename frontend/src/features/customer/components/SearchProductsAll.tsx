@@ -37,7 +37,7 @@ function SearchProductsAll() {
   const timeRange = useMemo(() => {
     return getTimeRangeFromSelected(selectedPrepTimes)
   }, [selectedPrepTimes])
-  console.log(timeRange)
+
   const { data, isLoading, isError } = useSearchProductResults(
     query,
     page,
@@ -61,12 +61,6 @@ function SearchProductsAll() {
       behavior: "smooth",
     })
   }
-  const pages = [
-    {
-      link: `/search?query=${query}`,
-      pageName: "Search",
-    },
-  ]
 
   const handlePriceRangeChange = (value: number | readonly number[]) => {
     const nextValue = Array.isArray(value) ? value : [value, value]
@@ -137,6 +131,13 @@ function SearchProductsAll() {
       behavior: "smooth",
     })
   }
+
+  const pages = [
+    {
+      link: `/search?query=${query}`,
+      pageName: "Search",
+    },
+  ]
 
   if (isLoading) {
     return (

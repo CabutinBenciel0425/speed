@@ -6,6 +6,7 @@ export interface Merchant extends Document {
   merchantName: string
   description?: string
   phoneNumber: string
+  isOpen: boolean
   logo: string
   banner: string
   address: {

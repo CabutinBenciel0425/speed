@@ -11,10 +11,12 @@ import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
 import type { Merchant } from "@/features/customer/types/merchant"
 import { AiFillStar } from "react-icons/ai"
+import { Dot } from "lucide-react"
 
 function MerchantCard({ merchant }: { merchant: Merchant }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true })
+
   return (
     <motion.div
       ref={ref}
@@ -45,8 +47,22 @@ function MerchantCard({ merchant }: { merchant: Merchant }) {
                 <AiFillStar className="text-lg text-yellow-500" />
               </Badge>
             </CardAction>
-            <CardTitle className={"lg:text-md text-sm font-semibold"}>
-              {merchant.merchantName}
+            <CardTitle
+              className={
+                "lg:text-md flex flex-row items-start justify-start gap-2 text-sm font-semibold"
+              }
+            >
+              <span>
+                <Dot
+                  className={`-mt-4.5 -ml-6 size-15 ${merchant.isOpen ? "text-green-500" : "text-red-500"}`}
+                />
+              </span>
+              <span className="-ml-4.5">{merchant.merchantName}</span>
+              <span
+                className={`text-xs ${merchant.isOpen ? "text-green-500" : "text-red-500"} mt-1`}
+              >
+                - {merchant.isOpen ? "Open" : "Closed"}
+              </span>
             </CardTitle>
             <CardDescription className="line-clamp-1">
               {merchant.description}

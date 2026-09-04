@@ -14,21 +14,24 @@ import { MapPin } from "lucide-react"
 import { AiFillStar } from "react-icons/ai"
 
 function SearchFilterMerchants({
+  ratingKey,
   open,
   onHandleToggleOpen,
+  onHandleRatingChange,
 }: {
+  ratingKey: string
   open: boolean
   onHandleToggleOpen: (value: boolean) => void
+  onHandleRatingChange: (value: string) => void
 }) {
   const { defaultAddress } = useAddress()
   const { isAuthenticated } = useAuth()
 
-  console.log(defaultAddress)
   return (
     <Accordion
       multiple
       className="min-w-3xs rounded-md bg-muted-foreground/10 px-4"
-      defaultValue={["open-now"]}
+      defaultValue={["open-now", `${ratingKey !== "0-5" ? "rating" : ""}`]}
     >
       {/*Open now*/}
       <AccordionItem
@@ -60,7 +63,7 @@ function SearchFilterMerchants({
         <AccordionTrigger className={"text-md font-semibold"}>
           Rating
         </AccordionTrigger>
-        <RadioGroup>
+        <RadioGroup onValueChange={onHandleRatingChange} value={ratingKey}>
           <AccordionContent key={"rating_0-3"} className={"mt-2.5"}>
             <div className="flex items-center gap-3">
               <RadioGroupItem value="0-3" id="0-3" />
