@@ -1,4 +1,5 @@
 interface OperatingHours {
+  isOpen: boolean
   openHour: number
   openMinute: number
   closeHour: number
@@ -27,6 +28,10 @@ export const formatTime = (hour: number, minute: number): string => {
 }
 
 export const formatOperatingHours = (hours: OperatingHours): string => {
+  if (!hours.isOpen) {
+    return "Closed"
+  }
+
   const open = formatTime(hours.openHour, hours.openMinute)
   const close = formatTime(hours.closeHour, hours.closeMinute)
   return `${open} – ${close}`

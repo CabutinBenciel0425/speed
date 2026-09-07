@@ -66,13 +66,11 @@ userRoute.get("/profile", protectRoute, myProfile);
 userRoute.post("/refresh", recreateAccessToken);
 userRoute.patch(
   "/forgot-password",
-  protectRoute,
   validate(forgotPasswordSchema),
   forgotPassword,
 );
 userRoute.patch(
   "/reset-password",
-  protectRoute,
   validate(resetPasswordSchema),
   resetPassword,
 );

@@ -28,10 +28,9 @@ function Searchbar() {
   }
 
   useEffect(() => {
-    const hasResults = products.length > 0 || merchants.length > 0
     const hasQuery = query.trim().length > 0
 
-    if (hasQuery && (hasResults || isLoading)) {
+    if (hasQuery) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsDropdownOpen(true)
     } else {

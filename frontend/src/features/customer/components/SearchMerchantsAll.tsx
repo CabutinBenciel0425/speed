@@ -14,22 +14,32 @@ import {
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu"
 import { getRatingRange } from "../utils/getRatingRange"
+import { useAddress } from "@/hooks/useAddress"
 
 function SearchMerchantsAll() {
+  const { defaultAddress } = useAddress()
   const [searchParams, setSearchParams] = useSearchParams()
   const sortParams = searchParams.get("sort") ?? "-averageRating"
-  const open = searchParams.get("open") !== "false"
+  const open = searchParams.get("open") === "true"
   const page = Number(searchParams.get("page")) || 1
   const query = String(searchParams.get("search")) || ""
   const ratingKey = searchParams.get("rating") || "0-5"
+  const maxDist = Number(searchParams.get("maxDist")) || 0
   const [minRating, maxRating] = getRatingRange(ratingKey)
+  const userCoordinates = defaultAddress?.location?.coordinates
+  console.log(userCoordinates)
+  const lng = userCoordinates?.[0] ?? undefined
+  const lat = userCoordinates?.[1] ?? undefined
   const { data, isLoading, isError } = useSearchMerchantResults(
     query,
     page,
     sortParams,
     open,
     minRating,
-    maxRating
+    maxRating,
+    maxDist,
+    lat,
+    lng
   )
 
   const totalPages: number = data?.pagination?.pages || 1
@@ -37,7 +47,11 @@ function SearchMerchantsAll() {
   const handleToggleOpen = (open: boolean) => {
     const params = new URLSearchParams(searchParams)
 
-    params.set("open", String(open))
+    if (open) {
+      params.set("open", "true")
+    } else {
+      params.delete("open")
+    }
     params.set("page", "1")
 
     setSearchParams(params)
@@ -84,6 +98,21 @@ function SearchMerchantsAll() {
     const params = new URLSearchParams(searchParams)
     params.set("page", "1")
     params.set("rating", value)
+
+    setSearchParams(params)
+
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  const handleDistanceChange = (value: string) => {
+    const params = new URLSearchParams(searchParams)
+
+    params.set("page", "1")
+    if (value !== "50+") {
+      params.set("maxDist", value)
+    } else {
+      params.delete("maxDist")
+    }
 
     setSearchParams(params)
 
@@ -161,6 +190,8 @@ function SearchMerchantsAll() {
               <SearchFilterMerchants
                 onHandleToggleOpen={handleToggleOpen}
                 onHandleRatingChange={handleRatingChange}
+                onHandleDistanceChange={handleDistanceChange}
+                maxDist={maxDist}
                 ratingKey={ratingKey}
                 open={open}
               />

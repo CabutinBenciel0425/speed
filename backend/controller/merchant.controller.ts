@@ -17,6 +17,8 @@ import {
 import type { merchantUpdateInput } from "../schemas/merchant.schema.js";
 import MerchantFavorite from "../models/merchantFavorite.model.js";
 import Order from "../models/order.model.js";
+import { userInfo } from "node:os";
+import Address from "../models/address.model.js";
 
 export const getOrders = asyncHandler(async (req: Request, res: Response) => {
   const merchantId = req.params.merchantId;
@@ -97,8 +99,26 @@ export const readyOrder = asyncHandler(async (req: Request, res: Response) => {
 
 export const getMerchants = asyncHandler(
   async (req: Request, res: Response) => {
+    const lat = Number(req.query.lat);
+    const lng = Number(req.query.lng);
+
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid coordinates: latitude must be between -90 and 90, longitude between -180 and 180",
+      });
+    }
+
+    let coordinates = null;
+
+    if (!isNaN(lat) && !isNaN(lng)) {
+      coordinates = { lng, lat };
+    }
+
     const { limitedDocs, total, queryData } = await getMerchantsService(
       req.query,
+      coordinates,
     );
 
     res.status(200).json({
@@ -140,6 +160,7 @@ export const getMerchantDetails = asyncHandler(
         operatingHours: merchant.operatingHours,
         ratingCount: merchant.ratingCount,
         averageRating: merchant.averageRating,
+        isOpen: merchant.isOpen,
       },
     });
   },

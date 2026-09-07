@@ -16,16 +16,21 @@ import { AiFillStar } from "react-icons/ai"
 function SearchFilterMerchants({
   ratingKey,
   open,
+  maxDist,
   onHandleToggleOpen,
   onHandleRatingChange,
+  onHandleDistanceChange,
 }: {
   ratingKey: string
   open: boolean
+  maxDist: number
   onHandleToggleOpen: (value: boolean) => void
   onHandleRatingChange: (value: string) => void
+  onHandleDistanceChange: (value: string) => void
 }) {
   const { defaultAddress } = useAddress()
   const { isAuthenticated } = useAuth()
+  const selectedDistance = maxDist === 0 ? "50+" : String(maxDist)
 
   return (
     <Accordion
@@ -48,7 +53,6 @@ function SearchFilterMerchants({
             <Switch
               id="open-now"
               checked={open}
-              defaultChecked
               onCheckedChange={onHandleToggleOpen}
             />
           </label>
@@ -112,48 +116,51 @@ function SearchFilterMerchants({
           <AccordionTrigger className={"text-md font-semibold"}>
             Location
           </AccordionTrigger>
-          <RadioGroup>
-            <AccordionContent key={"location_0-5"} className={"mt-2.5"}>
+          <RadioGroup
+            onValueChange={onHandleDistanceChange}
+            value={selectedDistance}
+          >
+            <AccordionContent key={"location_5"} className={"mt-2.5"}>
               <div className="flex items-center gap-3">
-                <RadioGroupItem value="0-5" id="0-5" />
-                <Label htmlFor="0-5">
-                  0 - 5.0 Kms <MapPin className="size-5" />
+                <RadioGroupItem value="5" id="5" />
+                <Label htmlFor="5">
+                  5.0 Kms <MapPin className="size-5" />
                 </Label>
               </div>
             </AccordionContent>
 
-            <AccordionContent key={"location_5.1-8.0"} className={"mt-2.5"}>
+            <AccordionContent key={"location_10"} className={"mt-2.5"}>
               <div className="flex items-center gap-3">
-                <RadioGroupItem value="5.1-8.0" id="5.1-8.0" />
-                <Label htmlFor="0-5">
-                  5.1 - 8.0 Kms <MapPin className="size-5" />
+                <RadioGroupItem value="10" id="10" />
+                <Label htmlFor="10">
+                  10.0 Kms <MapPin className="size-5" />
                 </Label>
               </div>
             </AccordionContent>
 
-            <AccordionContent key={"location_8.1-10.0"} className={"mt-2.5"}>
+            <AccordionContent key={"location_25"} className={"mt-2.5"}>
               <div className="flex items-center gap-3">
-                <RadioGroupItem value="8.1-10.0" id="8.1-10.0" />
-                <Label htmlFor="8.1-10.0">
-                  8.1 - 10.0 Kms <MapPin className="size-5" />
+                <RadioGroupItem value="25" id="25" />
+                <Label htmlFor="25">
+                  25.0 Kms <MapPin className="size-5" />
                 </Label>
               </div>
             </AccordionContent>
 
-            <AccordionContent key={"location_10.1-20.0"} className={"mt-2.5"}>
+            <AccordionContent key={"location_50"} className={"mt-2.5"}>
               <div className="flex items-center gap-3">
-                <RadioGroupItem value="10.1-20.0" id="10.1-20.0" />
-                <Label htmlFor="10.1-20.0">
-                  10.1 - 20.0 Kms <MapPin className="size-5" />
+                <RadioGroupItem value="50" id="50" />
+                <Label htmlFor="50">
+                  50.0 Kms <MapPin className="size-5" />
                 </Label>
               </div>
             </AccordionContent>
 
-            <AccordionContent key={"location_20.1+"} className={"mt-2.5"}>
+            <AccordionContent key={"location_50+"} className={"mt-2.5"}>
               <div className="flex items-center gap-3">
-                <RadioGroupItem value="20.1+" id="20.1+" />
-                <Label htmlFor="20.1+">
-                  20.1+ Kms <MapPin className="size-5" />
+                <RadioGroupItem value="50+" id="50+" />
+                <Label htmlFor="50+">
+                  50+ Kms <MapPin className="size-5" />
                 </Label>
               </div>
             </AccordionContent>

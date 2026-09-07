@@ -28,7 +28,7 @@ function MerchantCard({ merchant }: { merchant: Merchant }) {
         to={`/merchant/${merchant._id}`}
         style={{ textDecoration: "none" }}
       >
-        <Card className="relative mx-auto w-full max-w-sm min-w-45 pt-0">
+        <Card className="relative mx-auto w-full max-w-sm min-w-50 pt-0">
           <div className="absolute inset-0 z-30 aspect-video bg-black/35" />
           <img
             src={merchant.banner}
@@ -54,14 +54,16 @@ function MerchantCard({ merchant }: { merchant: Merchant }) {
             >
               <span>
                 <Dot
-                  className={`-mt-4.5 -ml-6 size-15 ${merchant.isOpen ? "text-green-500" : "text-red-500"}`}
+                  className={`-mt-5 -ml-6 size-15 ${merchant.isOpen ? "text-green-500" : "text-red-700"}`}
                 />
               </span>
-              <span className="-ml-4.5">{merchant.merchantName}</span>
-              <span
-                className={`text-xs ${merchant.isOpen ? "text-green-500" : "text-red-500"} mt-1`}
-              >
-                - {merchant.isOpen ? "Open" : "Closed"}
+              <span className="-ml-6">{merchant.merchantName}</span>
+              <span>
+                <Badge
+                  className={`block ${merchant.isOpen ? "bg-green-500" : "bg-red-700"} text-white md:hidden xl:block`}
+                >
+                  {merchant.isOpen ? "Open" : "Closed"}
+                </Badge>
               </span>
             </CardTitle>
             <CardDescription className="line-clamp-1">

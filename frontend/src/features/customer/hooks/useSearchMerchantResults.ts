@@ -10,10 +10,13 @@ const fetchMerchantSearchResults = async (
   sort: string,
   open: boolean,
   minRating: number,
-  maxRating: number
+  maxRating: number,
+  maxDist: number,
+  lat?: number,
+  lng?: number
 ) => {
   const { data } = await axios.get<FetchMerchantResponse>(
-    `/merchant?search=${query}&limit=${ITEMS_PER_PAGE}&page=${page}&sort=${sort}&open=${open}&averageRating.gte=${minRating}&averageRating.lte=${maxRating}`
+    `/merchant?search=${query}&limit=${ITEMS_PER_PAGE}&page=${page}&sort=${sort}&open=${open}&averageRating.gte=${minRating}&averageRating.lte=${maxRating}&maxDist=${maxDist}&lat=${lat}&lng=${lng}`
   )
   return data
 }
@@ -24,7 +27,10 @@ export const useSearchMerchantResults = (
   sort: string,
   open: boolean,
   minRating: number,
-  maxRating: number
+  maxRating: number,
+  maxDist: number,
+  lat?: number,
+  lng?: number
 ) => {
   const { data, isLoading, isError } = useQuery({
     queryKey: [
@@ -35,9 +41,22 @@ export const useSearchMerchantResults = (
       open,
       minRating,
       maxRating,
+      maxDist,
+      lat,
+      lng,
     ],
     queryFn: () =>
-      fetchMerchantSearchResults(query, page, sort, open, minRating, maxRating),
+      fetchMerchantSearchResults(
+        query,
+        page,
+        sort,
+        open,
+        minRating,
+        maxRating,
+        maxDist,
+        lat,
+        lng
+      ),
     enabled: !!query.trim(),
     staleTime: 5 * 60 * 1000,
   })

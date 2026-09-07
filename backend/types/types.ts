@@ -38,3 +38,8 @@ export type UpdateDriverInputWithImage = DriverUpdateInput & {
 };
 
 export type AddressType = "Home" | "Work" | "Other" | undefined;
+
+export type UserCoordinatesObj = {
+  lng: number | undefined;
+  lat: number | undefined;
+} | null;

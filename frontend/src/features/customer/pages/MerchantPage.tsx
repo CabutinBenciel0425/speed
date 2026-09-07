@@ -7,7 +7,7 @@ import MerchantPageContent from "../components/MerchantPageContent"
 import { useProductsByMerchant } from "../hooks/useProductsByMerchant"
 import MerchantPageProducts from "../components/MerchantPageProducts"
 import MerchantPageSkeleton from "@/components/common/Skeleton/MerchantPageSkeleton"
-import { formatOperatingHours, isMerchantOpen } from "@/utils/timeUtils"
+import { formatOperatingHours } from "@/utils/timeUtils"
 
 function MerchantPage() {
   const { merchantId } = useParams()
@@ -38,7 +38,10 @@ function MerchantPage() {
     operatingHours,
     averageRating,
     ratingCount,
+    isOpen,
   } = merchant
+
+  console.log(isOpen)
 
   const today = new Date()
   const days = [
@@ -52,7 +55,6 @@ function MerchantPage() {
   ] as const
   const currentDay = days[today.getDay()]
   const todayHours = operatingHours?.[currentDay]
-  const isOpen = isMerchantOpen(todayHours)
   const operatingHoursToday = formatOperatingHours(todayHours)
 
   const handleFavorite = () => {

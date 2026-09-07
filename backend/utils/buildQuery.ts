@@ -10,6 +10,9 @@ export const buildQuery = (passedQuery: any) => {
   delete filterObj.fields;
   delete filterObj.search;
   delete filterObj.open;
+  delete filterObj.maxDist;
+  delete filterObj.lat;
+  delete filterObj.lng;
 
   let queryStr = JSON.stringify(filterObj);
 

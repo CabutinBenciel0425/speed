@@ -31,7 +31,7 @@ export const cancelOrderService = async (user: IUser, orderId: string) => {
     throw new NotFoundError("Driver");
   }
 
-  if (driver.activeOrder !== order._id) {
+  if (driver?.activeOrder?.toString() !== order._id.toString()) {
     throw new ConflictError(
       "Driver's active order is not equal to the provided order's id",
     );

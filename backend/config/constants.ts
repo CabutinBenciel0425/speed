@@ -9,3 +9,4 @@ export const MINIMUM_DISTANCE_WITH_ADDITIONAL = 2; //km
 export const PRICE_PER_MINIMUM_DISTANCE = 5;
 export const MINIMUM_DISTANCE = 4; //km
 export const ADDITIONAL_PREPARATION_TIME_PER_PIECE = 2;
+export const EARTH_RADIUS = 6378.1;

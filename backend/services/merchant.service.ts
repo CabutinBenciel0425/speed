@@ -13,6 +13,8 @@ import { imageUpload } from "../utils/imageUpload.js";
 import MerchantFavorite from "../models/merchantFavorite.model.js";
 import { ApiError } from "../utils/apiError.js";
 import Product from "../models/product.model.js";
+import type { UserCoordinatesObj } from "../types/types.js";
+import { EARTH_RADIUS } from "../config/constants.js";
 
 export const merchantRejectOrder = async (
   orderId: string,
@@ -212,7 +214,10 @@ const validateMerchantOrder = async (orderId: string, merchantId: string) => {
   return true;
 };
 
-export const getMerchantsService = async (payload: any) => {
+export const getMerchantsService = async (
+  payload: any,
+  coordinates: UserCoordinatesObj,
+) => {
   const queryData = buildQuery(payload);
 
   const allowedSorts = [
@@ -224,11 +229,13 @@ export const getMerchantsService = async (payload: any) => {
     "-ratingCount",
     "averageRating",
     "-averageRating",
+    "isOpen",
+    "-isOpen",
   ];
 
   const sort = allowedSorts.includes(queryData.sort)
     ? queryData.sort
-    : "-merchantName";
+    : "-isOpen";
 
   if (queryData.search) {
     queryData.filter.$or = [
@@ -249,6 +256,17 @@ export const getMerchantsService = async (payload: any) => {
 
   if (payload.open === "true") {
     queryData.filter.isOpen = true;
+  }
+
+  const maxDist = Number(payload.maxDist);
+  if (coordinates && maxDist > 0 && maxDist < 50) {
+    const radiusInRadians = maxDist / EARTH_RADIUS;
+
+    queryData.filter["address.location"] = {
+      $geoWithin: {
+        $centerSphere: [[coordinates.lng, coordinates.lat], radiusInRadians],
+      },
+    };
   }
 
   const docs = await Merchant.find(queryData.filter)
