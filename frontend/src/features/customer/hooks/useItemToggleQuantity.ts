@@ -36,7 +36,7 @@ export const useItemToggleQuantity = ({
       toast.success("Item quantity updated")
     },
     onError: () => {
-      toast.error("Something went wrong, please try again.")
+      toast.error("Something went wrong. Please try again.")
     },
   })
 }

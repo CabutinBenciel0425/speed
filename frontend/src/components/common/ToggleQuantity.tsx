@@ -3,11 +3,12 @@ import { Button } from "../ui/button"
 import type { ToggleQuantityProps } from "../types/PropTypes"
 
 function ToggleQuantity({
+  minQuantity = 1,
   quantity = 1,
   onQuantityChange,
 }: ToggleQuantityProps) {
   const handleSubtractQuantity = () => {
-    if (quantity === 1) return
+    if (minQuantity !== 0 && quantity === 1) return
     onQuantityChange(quantity - 1)
   }
 

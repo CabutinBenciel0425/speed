@@ -51,7 +51,12 @@ export type CartItemWithoutId = {
 }
 
 export type CartResult = {
-  success: true
+  success: boolean
   message: string
   data: Cart
+}
+
+export type CartResultNoData = {
+  success: boolean
+  message: string
 }

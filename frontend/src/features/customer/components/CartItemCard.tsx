@@ -6,10 +6,22 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useItemToggleQuantity } from "../hooks/useItemToggleQuantity"
+import { Spinner } from "@/components/ui/spinner"
+import DeleteModal from "@/components/common/DeleteModal"
 
-function CartItemCard({ item }: { item: CartItemWithId }) {
+function CartItemCard({
+  item,
+  onHandleDelete,
+  isDeleting,
+}: {
+  item: CartItemWithId
+  onHandleDelete: (value: string) => void
+  isDeleting: boolean
+}) {
   const [quantity, setQuantity] = useState(item.quantity)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const productId = item.product._id
+
   const { mutate } = useItemToggleQuantity({
     productId,
     quantity,
@@ -18,6 +30,10 @@ function CartItemCard({ item }: { item: CartItemWithId }) {
   const handleQuantityChange = (newQuantity: number) => {
     setQuantity(newQuantity)
     mutate({ productId: item.product._id, quantity: newQuantity })
+  }
+
+  const handleConfirmDelete = () => {
+    onHandleDelete(productId)
   }
 
   const product = item.product
@@ -64,6 +80,7 @@ function CartItemCard({ item }: { item: CartItemWithId }) {
         <div className="flex w-full flex-row">
           <div className="flex w-1/3 items-center justify-center">
             <ToggleQuantity
+              minQuantity={0}
               quantity={quantity}
               onQuantityChange={handleQuantityChange}
             />
@@ -74,8 +91,13 @@ function CartItemCard({ item }: { item: CartItemWithId }) {
             </p>
           </div>
           <div className="flex w-1/3 items-center justify-end">
-            <Button size="icon-lg" variant={"destructive"}>
-              <Trash2 color="#D70040" />
+            <Button
+              size="icon-lg"
+              variant={"destructive"}
+              onClick={() => setIsModalOpen(true)}
+              disabled={isDeleting}
+            >
+              {isDeleting ? <Spinner /> : <Trash2 color="#D70040" />}
             </Button>
           </div>
         </div>
@@ -90,6 +112,11 @@ function CartItemCard({ item }: { item: CartItemWithId }) {
           </Button>
         </div>
       </div>
+      <DeleteModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   )
 }

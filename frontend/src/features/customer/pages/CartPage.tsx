@@ -4,15 +4,36 @@ import OrderSummary from "../components/OrderSummary"
 import { useCart } from "../hooks/useCart"
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
+import { useDeleteItemCart } from "../hooks/useDeleteItemCart"
+import { BsCartX } from "react-icons/bs"
+import { NavLink } from "react-router-dom"
+import { useClearCart } from "../hooks/useClearCart"
+import DeleteModal from "@/components/common/DeleteModal"
 
 function CartPage() {
   const { cart } = useCart()
+  const { mutate: deleteItem } = useDeleteItemCart()
+  const [deletingProduct, setDeletingProduct] = useState<string | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const { mutate: clearCart } = useClearCart()
 
   const [orderNote, setOrderNote] = useState<string>(cart?.customerNote || "")
   const totalEstimatedDeliveryTime =
     cart?.estimatedDeliveryTime && cart?.estimatedPreparationTime
       ? cart?.estimatedDeliveryTime + cart?.estimatedPreparationTime
       : 0
+
+  const handleDelete = (productId: string) => {
+    setDeletingProduct(productId)
+    deleteItem(productId, {
+      onSettled: () => setDeletingProduct(null),
+    })
+  }
+
+  const handleClearCart = () => {
+    clearCart()
+  }
+  const cartItems = cart?.items
   return (
     <div className="relative flex w-full flex-col items-center justify-center px-10 py-5">
       <div className="ml-80 flex w-full flex-col items-start justify-center">
@@ -21,33 +42,59 @@ function CartPage() {
           Good food is always a good idea
         </h3>
       </div>
-      <div className="relative flex w-375 flex-row items-start justify-center gap-5">
-        <div className="flex w-7/10 flex-col items-center justify-center gap-3 px-5 py-8">
-          {cart?.items?.map((item) => (
-            <CartItemCard item={item} />
-          ))}
-          <div className="mt-2 ml-2 flex w-full items-center justify-start">
-            <Button
-              variant={"ghost"}
-              className={"text-md flex flex-row gap-2 text-muted-foreground/50"}
-            >
-              <Trash2 /> <span>Clear Cart</span>
-            </Button>
+      {cartItems && cartItems.length > 0 ? (
+        <div className="relative flex w-375 flex-row items-start justify-center gap-5">
+          <div className="flex w-7/10 flex-col items-center justify-center gap-3 px-5 py-8">
+            {cart?.items?.map((item) => (
+              <CartItemCard
+                item={item}
+                onHandleDelete={handleDelete}
+                isDeleting={deletingProduct === item.product._id}
+              />
+            ))}
+            <div className="mt-2 ml-2 flex w-full items-center justify-start">
+              <Button
+                variant={"ghost"}
+                className={
+                  "text-md flex flex-row gap-2 text-muted-foreground/50"
+                }
+                onClick={() => setIsModalOpen(true)}
+              >
+                <Trash2 /> <span>Clear Cart</span>
+              </Button>
+            </div>
+          </div>
+          <div className="sticky top-0 w-3/10 px-3 py-5">
+            <OrderSummary
+              subtotal={cart?.pricing.subtotal}
+              deliveryFee={cart?.pricing.deliveryFee}
+              totalItems={cart?.items.length}
+              total={cart?.pricing.total}
+              deliveryTime={totalEstimatedDeliveryTime}
+              customerNote={orderNote}
+              onChangeCustomerNote={setOrderNote}
+              isMerchantOpen={cart?.merchant.isOpen}
+            />
           </div>
         </div>
-        <div className="sticky top-0 w-3/10 px-3 py-5">
-          <OrderSummary
-            subtotal={cart?.pricing.subtotal}
-            deliveryFee={cart?.pricing.deliveryFee}
-            totalItems={cart?.items.length}
-            total={cart?.pricing.total}
-            deliveryTime={totalEstimatedDeliveryTime}
-            customerNote={orderNote}
-            onChangeCustomerNote={setOrderNote}
-            isMerchantOpen={cart?.merchant.isOpen}
-          />
+      ) : (
+        <div className="mt-20 flex w-full flex-col items-center justify-center gap-3">
+          <BsCartX className="size-20 text-muted-foreground/50" />
+          <p className="text-md text-muted-foreground/50">
+            You have no items in your cart.
+          </p>
+          <NavLink to="/">Go back in Homepage</NavLink>
         </div>
-      </div>
+      )}
+
+      <DeleteModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        onConfirm={handleClearCart}
+        title="Clear Cart"
+        description="Are you sure you want to clear your cart? This action cannot be undone and the data will be permanently removed"
+        icon={<BsCartX size={20} />}
+      />
     </div>
   )
 }

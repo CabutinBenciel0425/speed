@@ -105,13 +105,6 @@ export const deleteItem = asyncHandler(async (req: Request, res: Response) => {
 
   const cart = await deleteItemInCart(user._id.toString(), productId);
 
-  if (!cart) {
-    return res.status(200).json({
-      success: true,
-      message: "Your cart is now empty",
-    });
-  }
-
   res.status(200).json({
     success: true,
     message: "Item deleted successfully",

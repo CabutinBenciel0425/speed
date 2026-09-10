@@ -275,7 +275,7 @@ export const deleteItemInCart = async (userId: string, productId: string) => {
   await cart.save();
 
   const recalculatedCart = await recalculateCart(userId);
-  await recalculatedCart.populate("items.product");
+  await recalculatedCart.populate(["items.product", "merchant"]);
 
   return recalculatedCart;
 };

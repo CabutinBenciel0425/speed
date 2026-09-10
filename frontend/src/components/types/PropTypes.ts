@@ -50,6 +50,7 @@ export type LikeButtonProps = {
 }
 
 export type ToggleQuantityProps = {
+  minQuantity?: number
   quantity: number
   onQuantityChange: (newQuantity: number) => void
 }
