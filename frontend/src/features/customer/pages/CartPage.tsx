@@ -7,6 +7,7 @@ import { Trash2 } from "lucide-react"
 
 function CartPage() {
   const { cart } = useCart()
+
   const [orderNote, setOrderNote] = useState<string>(cart?.customerNote || "")
   const totalEstimatedDeliveryTime =
     cart?.estimatedDeliveryTime && cart?.estimatedPreparationTime

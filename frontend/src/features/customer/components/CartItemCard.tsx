@@ -5,9 +5,21 @@ import ToggleQuantity from "@/components/common/ToggleQuantity"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useItemToggleQuantity } from "../hooks/useItemToggleQuantity"
 
 function CartItemCard({ item }: { item: CartItemWithId }) {
   const [quantity, setQuantity] = useState(item.quantity)
+  const productId = item.product._id
+  const { mutate } = useItemToggleQuantity({
+    productId,
+    quantity,
+  })
+
+  const handleQuantityChange = (newQuantity: number) => {
+    setQuantity(newQuantity)
+    mutate({ productId: item.product._id, quantity: newQuantity })
+  }
+
   const product = item.product
 
   return (
@@ -53,7 +65,7 @@ function CartItemCard({ item }: { item: CartItemWithId }) {
           <div className="flex w-1/3 items-center justify-center">
             <ToggleQuantity
               quantity={quantity}
-              onQuantityChange={setQuantity}
+              onQuantityChange={handleQuantityChange}
             />
           </div>
           <div className="flex w-1/3 items-center justify-center">

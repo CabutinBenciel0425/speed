@@ -238,7 +238,7 @@ export const toggleQuantityItem = async (
   await cart.save();
 
   const recalculatedCart = await recalculateCart(userId);
-  await recalculatedCart.populate("items.product");
+  await recalculatedCart.populate(["items.product", "merchant"]);
 
   return recalculatedCart;
 };

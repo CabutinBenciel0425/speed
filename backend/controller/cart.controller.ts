@@ -75,6 +75,8 @@ export const toggleQuantity = asyncHandler(
     const { quantity, productId } = req.body;
     const user = req.user;
 
+    console.log(quantity, productId);
+
     if (!user) {
       throw new NotFoundError("User");
     }
@@ -84,13 +86,6 @@ export const toggleQuantity = asyncHandler(
       productId,
       quantity,
     );
-
-    if (!cart) {
-      return res.status(200).json({
-        success: true,
-        message: "Your cart is now empty",
-      });
-    }
 
     res.status(200).json({
       success: true,

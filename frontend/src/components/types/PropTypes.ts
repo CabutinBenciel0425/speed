@@ -1,6 +1,5 @@
 import type { Category } from "@/features/customer/types/category"
 import type { TopProductTag } from "@/features/customer/types/products"
-import type { Dispatch, SetStateAction } from "react"
 import type { FieldError } from "react-hook-form"
 
 export type FieldStateType = {
@@ -52,7 +51,7 @@ export type LikeButtonProps = {
 
 export type ToggleQuantityProps = {
   quantity: number
-  onQuantityChange: Dispatch<SetStateAction<number>>
+  onQuantityChange: (newQuantity: number) => void
 }
 
 export type SearchFilterProps = {
