@@ -99,9 +99,7 @@ export const addItemToCart = async (
   }
 
   if (cart?.merchant.toString() !== product.merchant?.toString()) {
-    throw new ConflictError(
-      `Your cart contains items from another restaurant ${cart?.merchant} = cart.merchant | ${product.merchant} = product.merchant`,
-    );
+    throw new ConflictError(`Your cart contains items from another restaurant`);
   }
 
   const existingItem = cart?.items.find(
@@ -166,8 +164,7 @@ export const addItemToCart = async (
   }
 
   const recalculatedCart = await recalculateCart(user._id.toString());
-  await recalculatedCart.populate("items.product");
-
+  await recalculatedCart.populate(["items.product", "merchant"]);
   return recalculatedCart;
 };
 

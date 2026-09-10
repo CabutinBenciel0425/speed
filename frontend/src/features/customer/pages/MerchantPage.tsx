@@ -41,8 +41,6 @@ function MerchantPage() {
     isOpen,
   } = merchant
 
-  console.log(isOpen)
-
   const today = new Date()
   const days = [
     "Sunday",

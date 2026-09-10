@@ -27,7 +27,6 @@ function SearchMerchantsAll() {
   const maxDist = Number(searchParams.get("maxDist")) || 0
   const [minRating, maxRating] = getRatingRange(ratingKey)
   const userCoordinates = defaultAddress?.location?.coordinates
-  console.log(userCoordinates)
   const lng = userCoordinates?.[0] ?? undefined
   const lat = userCoordinates?.[1] ?? undefined
   const { data, isLoading, isError } = useSearchMerchantResults(

@@ -1,8 +1,16 @@
+import type { Merchant } from "./merchant"
+import type { Product } from "./products"
+
 export type Cart = {
   id: string
   customer: string
-  merchant: string
-  items: CartItem[]
+  merchant: Merchant
+  items: {
+    id: string
+    product: Product
+    quantity: number
+    notes?: string
+  }[]
   deliveryAddress: {
     address: string
     street: string
@@ -29,7 +37,14 @@ export type Cart = {
   estimatedDeliveryTime: number
 }
 
-export type CartItem = {
+export type CartItemWithId = {
+  id: string
+  product: Product
+  quantity: number
+  notes?: string
+}
+
+export type CartItemWithoutId = {
   product: string
   quantity: number
   notes?: string

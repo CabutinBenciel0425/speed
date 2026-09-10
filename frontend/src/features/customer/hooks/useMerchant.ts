@@ -8,7 +8,6 @@ const fetchMerchant = async (merchantId: string): Promise<Merchant | null> => {
   const { data } = await axios.get<ApiResponse<Merchant>>(
     `/merchant/${merchantId}/details`
   )
-  console.log(data)
   return data.data
 }
 

@@ -6,8 +6,6 @@ import type { CartResult } from "../types/cart"
 
 const fetchCart = async (): Promise<CartResult> => {
   const { data } = await axios.get("/cart")
-
-  console.log(data)
   return data
 }
 

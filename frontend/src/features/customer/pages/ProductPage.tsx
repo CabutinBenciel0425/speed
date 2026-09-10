@@ -10,8 +10,10 @@ import ToggleQuantity from "@/components/common/ToggleQuantity"
 import RandomProducts from "../components/RandomProducts"
 import { Badge } from "@/components/ui/badge"
 import ProductPageSkeleton from "@/components/common/Skeleton/ProductPageSkeleton"
+import { useAuth } from "@/hooks/useAuth"
 
 function ProductPage() {
+  const { isAuthenticated } = useAuth()
   const [isFavorite, setIsFavorite] = useState(false)
   const [quantity, setQuantity] = useState(1)
   const { productId } = useParams()
@@ -53,13 +55,15 @@ function ProductPage() {
             alt={product.name}
             className="h-full w-full object-contain p-4"
           />
-          <div className="absolute top-4 right-4">
-            <LikeButton
-              isFavorite={isFavorite}
-              setIsFavorite={setIsFavorite}
-              baseSize={9}
-            />
-          </div>
+          {isAuthenticated && (
+            <div className="absolute top-4 right-4">
+              <LikeButton
+                isFavorite={isFavorite}
+                setIsFavorite={setIsFavorite}
+                baseSize={9}
+              />
+            </div>
+          )}
           {product.isAvailable ? (
             <Badge className="absolute bottom-4 left-4 bg-green-500 hover:bg-green-600">
               Available
@@ -154,19 +158,21 @@ function ProductPage() {
           <Separator />
 
           {/* Add to Cart Section */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <span className="text-sm font-medium">Quantity</span>
-              <ToggleQuantity
-                quantity={quantity}
-                onQuantityChange={setQuantity}
-              />
+          {isAuthenticated && (
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-medium">Quantity</span>
+                <ToggleQuantity
+                  quantity={quantity}
+                  onQuantityChange={setQuantity}
+                />
+              </div>
+              <PressButton className="flex-1 gap-2 rounded-lg bg-primary px-6 py-3 text-white shadow-lg transition hover:bg-primary/90 sm:flex-none">
+                <ShoppingCart className="size-5" />
+                Add to Cart
+              </PressButton>
             </div>
-            <PressButton className="flex-1 gap-2 rounded-lg bg-primary px-6 py-3 text-white shadow-lg transition hover:bg-primary/90 sm:flex-none">
-              <ShoppingCart className="size-5" />
-              Add to Cart
-            </PressButton>
-          </div>
+          )}
 
           {/* Delivery Info */}
 

@@ -14,10 +14,12 @@ import LikeButton from "./LikeButton"
 import PressButton from "./PressButton"
 import { useAddToCart } from "@/features/customer/hooks/useAddToCart"
 import { Spinner } from "../ui/spinner"
+import { useAuth } from "@/hooks/useAuth"
 
 function ProductCard({ product }: { product: Product }) {
+  const { isAuthenticated } = useAuth()
   const { mutate, isPending } = useAddToCart({
-    product: product._id,
+    product,
     quantity: 1,
     notes: "",
   })
@@ -26,11 +28,7 @@ function ProductCard({ product }: { product: Product }) {
   const isInView = useInView(ref, { once: true })
 
   const handleAddToCart = () => {
-    mutate({
-      product: product._id,
-      quantity: 1,
-      notes: "",
-    })
+    mutate({ product, quantity: 1, notes: "" })
   }
   return (
     <motion.div
@@ -52,13 +50,15 @@ function ProductCard({ product }: { product: Product }) {
           className="z-20 aspect-video w-full object-contain"
         />
 
-        <div className="absolute top-3 right-3 z-40">
-          <LikeButton
-            isFavorite={isFavorite}
-            setIsFavorite={setIsFavorite}
-            baseSize={6}
-          />
-        </div>
+        {isAuthenticated && (
+          <div className="absolute top-3 right-3 z-40">
+            <LikeButton
+              isFavorite={isFavorite}
+              setIsFavorite={setIsFavorite}
+              baseSize={6}
+            />
+          </div>
+        )}
 
         <CardHeader className="flex flex-col gap-3">
           <CardTitle>
@@ -86,12 +86,15 @@ function ProductCard({ product }: { product: Product }) {
             ₱{product?.price}
           </span>
         </CardContent>
-        <PressButton
-          className="absolute right-3 bottom-3 h-7 w-7 rounded-full bg-primary font-bold text-white shadow-lg md:right-4 md:bottom-4 lg:right-5 lg:bottom-5 lg:h-9 lg:w-9"
-          onClick={handleAddToCart}
-        >
-          {isPending ? <Spinner /> : <Plus />}
-        </PressButton>
+        {isAuthenticated && (
+          <PressButton
+            className="absolute right-3 bottom-3 h-7 w-7 rounded-full bg-primary font-bold text-white shadow-lg md:right-4 md:bottom-4 lg:right-5 lg:bottom-5 lg:h-9 lg:w-9"
+            onClick={handleAddToCart}
+            disabled={!isAuthenticated}
+          >
+            {isPending ? <Spinner /> : <Plus />}
+          </PressButton>
+        )}
       </Card>
     </motion.div>
   )

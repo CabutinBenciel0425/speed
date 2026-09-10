@@ -17,7 +17,10 @@ export const getCart = asyncHandler(async (req: Request, res: Response) => {
     throw new NotFoundError("User");
   }
 
-  const cart = await Cart.findOne({ customer: user._id });
+  const cart = await Cart.findOne({ customer: user._id }).populate([
+    "items.product",
+    "merchant",
+  ]);
 
   if (!cart) {
     return res.status(200).json({

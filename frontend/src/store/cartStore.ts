@@ -1,5 +1,6 @@
 // frontend/src/store/cartStore.ts
-import type { Cart, CartItem } from "@/features/customer/types/cart"
+import type { Cart } from "@/features/customer/types/cart"
+import type { Product } from "@/features/customer/types/products"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
@@ -9,7 +10,17 @@ interface CartStore {
   itemCount: number
   totalPrice: number
   setCart: (cart: Cart) => void
-  addItem: (item: CartItem) => void
+  addItem: ({
+    id,
+    product,
+    quantity,
+    notes,
+  }: {
+    id: string
+    product: Product
+    quantity: number
+    notes?: string
+  }) => void
   removeItem: (productId: string) => void
   updateQuantity: (productId: string, quantity: number) => void
   clearCart: () => void
@@ -31,21 +42,37 @@ export const useCartStore = create<CartStore>()(
           totalPrice: cart?.pricing?.total || 0,
         }),
 
-      addItem: (item) => {
+      addItem: ({
+        id,
+        product,
+        quantity,
+        notes = "",
+      }: {
+        id: string
+        product: Product
+        quantity: number
+        notes?: string
+      }) => {
         const { cart } = get()
         if (!cart) return
 
-        const existingItem = cart.items.find((i) => i.product === item.product)
+        const existingItem = cart.items.find((i) => i.product._id === id)
 
         let newItems
         if (existingItem) {
           newItems = cart.items.map((i) =>
-            i.product === item.product
-              ? { ...i, quantity: i.quantity + item.quantity }
-              : i
+            i.product._id === id ? { ...i, quantity: i.quantity + quantity } : i
           )
         } else {
-          newItems = [...cart.items, item]
+          newItems = [
+            ...cart.items,
+            {
+              id: crypto.randomUUID(),
+              product,
+              quantity,
+              notes,
+            },
+          ]
         }
 
         const updatedCart = {
@@ -59,7 +86,7 @@ export const useCartStore = create<CartStore>()(
         const { cart } = get()
         if (!cart) return
 
-        const newItems = cart.items.filter((i) => i.product !== productId)
+        const newItems = cart.items.filter((i) => i.product._id !== productId)
         set({
           cart: { ...cart, items: newItems },
         })
@@ -75,7 +102,7 @@ export const useCartStore = create<CartStore>()(
         }
 
         const newItems = cart.items.map((i) =>
-          i.product === productId ? { ...i, quantity } : i
+          i.product._id === productId ? { ...i, quantity } : i
         )
         set({
           cart: { ...cart, items: newItems },

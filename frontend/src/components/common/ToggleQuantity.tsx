@@ -19,7 +19,7 @@ function ToggleQuantity({
       <Button
         variant={"outline"}
         size="icon"
-        className={"border-none md:p-3"}
+        className={"md:p-3"}
         onClick={handleSubtractQuantity}
       >
         <Minus />
@@ -30,7 +30,7 @@ function ToggleQuantity({
       <Button
         variant={"outline"}
         size="icon"
-        className={"border-none md:p-3"}
+        className={"md:p-3"}
         onClick={handleAddQuantity}
       >
         <Plus />

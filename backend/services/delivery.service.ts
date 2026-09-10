@@ -14,8 +14,6 @@ export const computeDistance = async (
     coordinates: [merchantCoordinates, customerCoordinates],
   });
 
-  (console.log(merchantCoordinates), console.log(customerCoordinates));
-
   const summary = response.data.routes[0].summary;
 
   return {
