@@ -53,6 +53,7 @@ export type ToggleQuantityProps = {
   minQuantity?: number
   quantity: number
   onQuantityChange: (newQuantity: number) => void
+  isPending?: boolean
 }
 
 export type SearchFilterProps = {

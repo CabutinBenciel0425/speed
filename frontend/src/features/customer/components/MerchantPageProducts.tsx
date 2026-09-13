@@ -30,7 +30,7 @@ function MerchantPageProducts({
         )}
 
         {productsByMerchant.map((product) => (
-          <ProductCard product={product} />
+          <ProductCard product={product} key={product._id} />
         ))}
       </div>
     </div>

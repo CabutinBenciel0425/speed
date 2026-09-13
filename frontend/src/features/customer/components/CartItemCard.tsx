@@ -18,17 +18,18 @@ function CartItemCard({
   onHandleDelete: (value: string) => void
   isDeleting: boolean
 }) {
-  const [quantity, setQuantity] = useState(item.quantity)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const productId = item.product._id
+  const quantity = item.quantity
 
-  const { mutate } = useItemToggleQuantity({
-    productId,
-    quantity,
-  })
+  const { mutate, isPending } = useItemToggleQuantity()
 
   const handleQuantityChange = (newQuantity: number) => {
-    setQuantity(newQuantity)
+    if (newQuantity === 0) {
+      setIsModalOpen(true)
+      return
+    }
+
     mutate({ productId: item.product._id, quantity: newQuantity })
   }
 
@@ -80,9 +81,9 @@ function CartItemCard({
         <div className="flex w-full flex-row">
           <div className="flex w-1/3 items-center justify-center">
             <ToggleQuantity
-              minQuantity={0}
               quantity={quantity}
               onQuantityChange={handleQuantityChange}
+              isPending={isPending}
             />
           </div>
           <div className="flex w-1/3 items-center justify-center">

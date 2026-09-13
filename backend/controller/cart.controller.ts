@@ -75,8 +75,6 @@ export const toggleQuantity = asyncHandler(
     const { quantity, productId } = req.body;
     const user = req.user;
 
-    console.log(quantity, productId);
-
     if (!user) {
       throw new NotFoundError("User");
     }

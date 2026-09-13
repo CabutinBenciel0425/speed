@@ -26,7 +26,7 @@ const productRouter = Router();
 productRouter.get("/featured", getFeaturedProducts);
 productRouter.get("/:productId/details", getProduct);
 productRouter.get("/", getProducts);
-productRouter.get("/:productId/random", getRandom);
+productRouter.post("/random", getRandom);
 
 //merchant routes
 productRouter.post(

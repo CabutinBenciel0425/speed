@@ -1,7 +1,11 @@
-import type { QueryFilter } from "mongoose";
+import mongoose from "mongoose";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import type { Request, Response } from "express";
-import { NotFoundError, UnauthorizedError } from "../utils/errors.js";
+import {
+  ConflictError,
+  NotFoundError,
+  UnauthorizedError,
+} from "../utils/errors.js";
 import {
   createNewProduct,
   getProductFavoritesService,
@@ -17,7 +21,6 @@ import Product from "../models/product.model.js";
 import { DEFAULT_PRODUCT_IMAGE } from "../config/constants.js";
 import cloudinary from "../config/cloudinary.js";
 import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";
-import { buildQuery } from "../utils/buildQuery.js";
 
 export const addProduct = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
@@ -173,16 +176,17 @@ export const getProduct = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getRandom = asyncHandler(async (req: Request, res: Response) => {
-  const productId = req.params.productId as string;
+  const ids: string[] = req.body.productIds;
   const limit = Number(req.query.limit) || 5;
-  const product = await Product.findById(productId);
 
-  if (!product) {
-    throw new NotFoundError("Product");
+  if (!Array.isArray(ids)) {
+    throw new ConflictError("productIds must be an array");
   }
 
+  const excludeIds = ids.map((id: string) => new mongoose.Types.ObjectId(id));
+
   const randomProducts = await Product.aggregate([
-    { $match: { _id: { $ne: productId } } },
+    { $match: { _id: { $nin: excludeIds } } },
     { $sample: { size: limit } },
   ]);
 

@@ -9,6 +9,7 @@ import { BsCartX } from "react-icons/bs"
 import { NavLink } from "react-router-dom"
 import { useClearCart } from "../hooks/useClearCart"
 import DeleteModal from "@/components/common/DeleteModal"
+import RandomProducts from "../components/RandomProducts"
 
 function CartPage() {
   const { cart } = useCart()
@@ -33,7 +34,10 @@ function CartPage() {
   const handleClearCart = () => {
     clearCart()
   }
+
   const cartItems = cart?.items
+  const cartProductIds = cartItems?.map((item) => item.product._id) || []
+
   return (
     <div className="relative flex w-full flex-col items-center justify-center px-10 py-5">
       <div className="ml-80 flex w-full flex-col items-start justify-center">
@@ -50,6 +54,7 @@ function CartPage() {
                 item={item}
                 onHandleDelete={handleDelete}
                 isDeleting={deletingProduct === item.product._id}
+                key={item.product._id}
               />
             ))}
             <div className="mt-2 ml-2 flex w-full items-center justify-start">
@@ -86,6 +91,13 @@ function CartPage() {
           <NavLink to="/">Go back in Homepage</NavLink>
         </div>
       )}
+
+      <section className="mt-10">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-bold lg:text-2xl">You might also like</h2>
+        </div>
+        <RandomProducts productIds={cartProductIds} limit={5} />
+      </section>
 
       <DeleteModal
         open={isModalOpen}

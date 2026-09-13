@@ -3,12 +3,15 @@ import ProductCard from "@/components/common/ProductCard"
 import { SkeletonProductCard } from "@/components/common/Skeleton/SkeletonProductCard"
 
 interface RandomProductsProps {
-  productId: string
+  productIds?: string[]
   limit?: number
 }
 
-function RandomProducts({ productId, limit = 4 }: RandomProductsProps) {
-  const { randomProducts, isLoading } = useRandomProducts(productId, limit)
+function RandomProducts({ productIds = [], limit = 4 }: RandomProductsProps) {
+  const { data: randomProducts = [], isLoading } = useRandomProducts(
+    productIds,
+    limit
+  )
 
   if (isLoading) {
     return (
@@ -20,7 +23,7 @@ function RandomProducts({ productId, limit = 4 }: RandomProductsProps) {
     )
   }
 
-  if (!randomProducts || randomProducts.length === 0) {
+  if (randomProducts.length === 0) {
     return (
       <p className="text-center text-muted-foreground">
         No other products available

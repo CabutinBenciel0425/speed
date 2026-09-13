@@ -1,14 +1,14 @@
 import { Minus, Plus } from "lucide-react"
 import { Button } from "../ui/button"
 import type { ToggleQuantityProps } from "../types/PropTypes"
+import { Spinner } from "../ui/spinner"
 
 function ToggleQuantity({
-  minQuantity = 1,
   quantity = 1,
   onQuantityChange,
+  isPending = false,
 }: ToggleQuantityProps) {
   const handleSubtractQuantity = () => {
-    if (minQuantity !== 0 && quantity === 1) return
     onQuantityChange(quantity - 1)
   }
 
@@ -22,8 +22,9 @@ function ToggleQuantity({
         size="icon"
         className={"md:p-3"}
         onClick={handleSubtractQuantity}
+        disabled={isPending}
       >
-        <Minus />
+        {isPending ? <Spinner /> : <Minus />}
       </Button>
       <span className="flex w-4 items-center justify-center text-xl font-bold lg:text-2xl">
         {quantity}
@@ -33,8 +34,9 @@ function ToggleQuantity({
         size="icon"
         className={"md:p-3"}
         onClick={handleAddQuantity}
+        disabled={isPending}
       >
-        <Plus />
+        {isPending ? <Spinner /> : <Plus />}
       </Button>
     </div>
   )

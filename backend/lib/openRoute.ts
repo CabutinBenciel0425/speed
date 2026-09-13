@@ -6,8 +6,7 @@ if (!OPENROUTE_API_KEY) {
 }
 
 const openRoute = axios.create({
-  baseURL: "https://api.openrouteservice.org",
-  withCredentials: true,
+  baseURL: "https://api.heigit.org/openrouteservice",
   headers: {
     Authorization: OPENROUTE_API_KEY,
     "Content-Type": "application/json",

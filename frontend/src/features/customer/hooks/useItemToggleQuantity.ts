@@ -1,7 +1,7 @@
 import axios from "@/lib/axios"
-import type { CartResult } from "../types/cart"
+import type { Cart } from "../types/cart"
 import { useCartStore } from "@/store/cartStore"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 export const itemToggleQuantity = async ({
@@ -10,7 +10,7 @@ export const itemToggleQuantity = async ({
 }: {
   quantity: number
   productId: string
-}): Promise<CartResult> => {
+}): Promise<Cart> => {
   const { data } = await axios.post("/cart/toggle-quantity", {
     quantity,
     productId,
@@ -18,21 +18,16 @@ export const itemToggleQuantity = async ({
   return data.data
 }
 
-export const useItemToggleQuantity = ({
-  quantity,
-  productId,
-}: {
-  quantity: number
-  productId: string
-}) => {
-  const { updateQuantity } = useCartStore()
-  const queryClient = useQueryClient()
-  console.log("MUTATION FN", quantity, productId)
+export const useItemToggleQuantity = () => {
+  const { updateQuantity, setCart } = useCartStore()
   return useMutation({
     mutationFn: itemToggleQuantity,
-    onSuccess: () => {
-      updateQuantity(productId, quantity)
-      queryClient.invalidateQueries({ queryKey: ["cart"] })
+    onMutate: (variables) => {
+      updateQuantity(variables.productId, variables.quantity)
+    },
+    onSuccess: (data) => {
+      setCart(data)
+
       toast.success("Item quantity updated")
     },
     onError: () => {
