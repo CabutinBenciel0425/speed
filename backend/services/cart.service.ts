@@ -186,7 +186,7 @@ export const changeNote = async (
     throw new Error("Product in the cart");
   }
 
-  item.notes = note;
+  item.note = note;
 
   await cart.save();
 

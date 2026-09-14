@@ -9,7 +9,7 @@ export type Cart = {
     id: string
     product: Product
     quantity: number
-    notes?: string
+    note?: string
   }[]
   deliveryAddress: {
     address: string
@@ -41,13 +41,13 @@ export type CartItemWithId = {
   id: string
   product: Product
   quantity: number
-  notes?: string
+  note?: string
 }
 
 export type CartItemWithoutId = {
   product: string
   quantity: number
-  notes?: string
+  note?: string
 }
 
 export type CartResult = {

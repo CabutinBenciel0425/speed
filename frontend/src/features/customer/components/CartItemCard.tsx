@@ -2,12 +2,13 @@ import { ChevronRight, Trash2 } from "lucide-react"
 import type { CartItemWithId } from "../types/cart"
 import { NavLink } from "react-router-dom"
 import ToggleQuantity from "@/components/common/ToggleQuantity"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useItemToggleQuantity } from "../hooks/useItemToggleQuantity"
 import { Spinner } from "@/components/ui/spinner"
 import DeleteModal from "@/components/common/DeleteModal"
+import { useAddProductNote } from "../hooks/useAddProductNote"
 
 function CartItemCard({
   item,
@@ -19,10 +20,13 @@ function CartItemCard({
   isDeleting: boolean
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [note, setNote] = useState(item.note || "")
   const productId = item.product._id
   const quantity = item.quantity
 
-  const { mutate, isPending } = useItemToggleQuantity()
+  const { mutate: toggleQuantity, isPending: isLoadingQuantity } =
+    useItemToggleQuantity()
+  const { mutate: addNote, isPending: isSavingNote } = useAddProductNote()
 
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity === 0) {
@@ -30,7 +34,13 @@ function CartItemCard({
       return
     }
 
-    mutate({ productId: item.product._id, quantity: newQuantity })
+    toggleQuantity({ productId: item.product._id, quantity: newQuantity })
+  }
+
+  const handleSaveNote = () => {
+    const cleanNote = note.trim()
+    if (cleanNote.length < 0) return
+    addNote({ productId: productId, note: cleanNote })
   }
 
   const handleConfirmDelete = () => {
@@ -38,6 +48,11 @@ function CartItemCard({
   }
 
   const product = item.product
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setNote(item.note || "")
+  }, [item.note])
 
   return (
     <div className="flex h-50 min-w-80 flex-row items-center justify-between gap-2 rounded-md border border-muted-foreground/10 bg-background/20 px-5 shadow-xs lg:gap-5 xl:min-w-237.5 2xl:gap-10">
@@ -83,7 +98,7 @@ function CartItemCard({
             <ToggleQuantity
               quantity={quantity}
               onQuantityChange={handleQuantityChange}
-              isPending={isPending}
+              isPending={isLoadingQuantity}
             />
           </div>
           <div className="flex w-1/3 items-center justify-center">
@@ -106,10 +121,17 @@ function CartItemCard({
           <Input
             className="resize-none text-sm"
             placeholder="Type your notes for this product here..."
-            value={item.notes}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            disabled={isSavingNote}
           />
-          <Button className={""} variant={"secondary"}>
-            Save
+          <Button
+            className={""}
+            variant={"secondary"}
+            onClick={handleSaveNote}
+            disabled={isSavingNote}
+          >
+            {isSavingNote ? "Saving" : "Save"}
           </Button>
         </div>
       </div>

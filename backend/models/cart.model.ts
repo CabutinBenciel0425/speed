@@ -7,7 +7,7 @@ export interface ICart extends Document {
     {
       product: Types.ObjectId;
       quantity: number;
-      notes: string;
+      note: string;
     },
   ];
   deliveryAddress: {
@@ -58,7 +58,7 @@ const cartSchema = new Schema<ICart>({
         type: Number,
         default: 1,
       },
-      notes: {
+      note: {
         type: String,
       },
     },
