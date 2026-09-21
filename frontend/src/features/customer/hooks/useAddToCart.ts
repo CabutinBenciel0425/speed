@@ -4,6 +4,7 @@ import type { CartResult } from "../types/cart"
 import { toast } from "sonner"
 import { useCartStore } from "@/store/cartStore"
 import type { Product } from "../types/products"
+import type { AxiosError } from "axios"
 
 export const addToCart = async ({
   product,
@@ -46,8 +47,11 @@ export const useAddToCart = ({
 
       queryClient.invalidateQueries({ queryKey: ["cart"] })
     },
-    onError: (error) => {
-      toast.error(error.message)
+    onError: (error: AxiosError<{ message: string }>) => {
+      const message =
+        error.response?.data?.message ||
+        "Something went wrong. Please try again."
+      toast.error(message)
     },
   })
 }

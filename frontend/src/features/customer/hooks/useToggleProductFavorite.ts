@@ -37,7 +37,7 @@ export const useToggleProductFavorite = () => {
 
     onSuccess: (data, productId) => {
       queryClient.setQueryData(
-        ["isMerchantFavorite", productId],
+        ["isProductFavorite", productId],
         data.isFavorite
       )
       toast.success(
