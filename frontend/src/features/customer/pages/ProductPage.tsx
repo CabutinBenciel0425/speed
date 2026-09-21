@@ -11,13 +11,23 @@ import RandomProducts from "../components/RandomProducts"
 import { Badge } from "@/components/ui/badge"
 import ProductPageSkeleton from "@/components/common/Skeleton/ProductPageSkeleton"
 import { useAuth } from "@/hooks/useAuth"
+import { useToggleProductFavorite } from "../hooks/useToggleProductFavorite"
+import { useProductFavorite } from "../hooks/useProductFavorite"
 
 function ProductPage() {
   const { isAuthenticated } = useAuth()
-  const [isFavorite, setIsFavorite] = useState(false)
+
   const [quantity, setQuantity] = useState(1)
   const { productId } = useParams()
   const { product, isLoading } = useProduct(productId || "")
+  const { mutate: toggleProductFavorite } = useToggleProductFavorite()
+  const { isProductFavorite } = useProductFavorite(productId || "")
+
+  const handleFavorite = () => {
+    if (productId) {
+      toggleProductFavorite(productId)
+    }
+  }
 
   if (isLoading) {
     return <ProductPageSkeleton />
@@ -58,8 +68,8 @@ function ProductPage() {
           {isAuthenticated && (
             <div className="absolute top-4 right-4">
               <LikeButton
-                isFavorite={isFavorite}
-                setIsFavorite={setIsFavorite}
+                isFavorite={!!isProductFavorite}
+                onToggle={handleFavorite}
                 baseSize={9}
               />
             </div>

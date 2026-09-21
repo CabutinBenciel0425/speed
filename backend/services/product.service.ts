@@ -142,15 +142,17 @@ export const toggleProductFavoriteService = async (
 
   const favoriteExist = await ProductFavorite.findOne({
     user: user._id,
-    merchant: product._id,
+    product: product._id,
   });
 
   if (favoriteExist) {
+    console.log("DELETING", favoriteExist);
     await ProductFavorite.findByIdAndDelete(favoriteExist._id);
+
     return { isFavorite: false };
   }
 
-  await ProductFavorite.create({
+  const newProduct = await ProductFavorite.create({
     user: user._id,
     product: product._id,
   });

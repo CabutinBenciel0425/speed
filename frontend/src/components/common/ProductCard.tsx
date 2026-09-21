@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "../ui/card"
 import { NavLink } from "react-router-dom"
-import { useRef, useState } from "react"
+import { useRef } from "react"
 import { motion, useInView } from "framer-motion"
 import type { Product } from "@/features/customer/types/products"
 import LikeButton from "./LikeButton"
@@ -15,6 +15,8 @@ import PressButton from "./PressButton"
 import { useAddToCart } from "@/features/customer/hooks/useAddToCart"
 import { Spinner } from "../ui/spinner"
 import { useAuth } from "@/hooks/useAuth"
+import { useToggleProductFavorite } from "@/features/customer/hooks/useToggleProductFavorite"
+import { useProductFavorite } from "@/features/customer/hooks/useProductFavorite"
 
 function ProductCard({ product }: { product: Product }) {
   const { isAuthenticated } = useAuth()
@@ -23,9 +25,16 @@ function ProductCard({ product }: { product: Product }) {
     quantity: 1,
     notes: "",
   })
-  const [isFavorite, setIsFavorite] = useState(false)
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true })
+  const { mutate: toggleProductFavorite } = useToggleProductFavorite()
+  const { isProductFavorite } = useProductFavorite(product._id || "")
+
+  const handleFavorite = () => {
+    if (product._id) {
+      toggleProductFavorite(product._id)
+    }
+  }
 
   const handleAddToCart = () => {
     mutate({ product, quantity: 1, notes: "" })
@@ -53,8 +62,8 @@ function ProductCard({ product }: { product: Product }) {
         {isAuthenticated && (
           <div className="absolute top-3 right-3 z-40">
             <LikeButton
-              isFavorite={isFavorite}
-              setIsFavorite={setIsFavorite}
+              isFavorite={!!isProductFavorite}
+              onToggle={handleFavorite}
               baseSize={6}
             />
           </div>

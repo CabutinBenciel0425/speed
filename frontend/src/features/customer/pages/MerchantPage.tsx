@@ -12,7 +12,7 @@ import { useMerchantFavorite } from "../hooks/useMerchantFavorite"
 function MerchantPage() {
   const { merchantId } = useParams()
   const { isMerchantFavorite } = useMerchantFavorite(merchantId || "")
-  const { mutate: toggleFavorite } = useToggleMerchantFavorite()
+  const { mutate: toggleMerchantFavorite } = useToggleMerchantFavorite()
   const { merchant, isLoading, error } = useMerchant(merchantId || "")
   const { productsByMerchant, isLoadingProducts, errorProducts } =
     useProductsByMerchant(merchantId || "")
@@ -58,13 +58,8 @@ function MerchantPage() {
   const operatingHoursToday = formatOperatingHours(todayHours)
 
   const handleFavorite = () => {
-    // if (!isAuthenticated) {
-    //   toast.error(
-    //     "You need to login first before adding this merchant as favorite"
-    //   )
-    // }
     if (merchantId) {
-      toggleFavorite(merchantId)
+      toggleMerchantFavorite(merchantId)
     }
   }
 

@@ -2,11 +2,11 @@ import axios from "@/lib/axios"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
-type ToggleResult = { success: boolean; isFavorite: boolean }
+type MerchantFavoriteToggleResult = { success: boolean; isFavorite: boolean }
 
 const toggleMerchantFavorite = async (
   merchantId: string
-): Promise<ToggleResult> => {
+): Promise<MerchantFavoriteToggleResult> => {
   const { data } = await axios.post(`merchant/favorites/${merchantId}/status`)
 
   return data

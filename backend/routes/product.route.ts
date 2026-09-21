@@ -70,13 +70,13 @@ productRouter.delete(
 );
 
 //customer routes
-productRouter.patch(
+productRouter.post(
   "/favorites/:productId/status",
   protectRoute,
   toggleProductFavorite,
 );
 
-productRouter.patch(
+productRouter.get(
   "/favorites/:productId",
   protectRoute,
   getProductFavoriteStatus,
