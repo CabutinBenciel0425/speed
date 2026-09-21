@@ -18,7 +18,6 @@ function CartPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const { mutate: clearCart } = useClearCart()
 
-  const [orderNote, setOrderNote] = useState<string>(cart?.customerNote || "")
   const totalEstimatedDeliveryTime =
     cart?.estimatedDeliveryTime && cart?.estimatedPreparationTime
       ? cart?.estimatedDeliveryTime + cart?.estimatedPreparationTime
@@ -37,6 +36,11 @@ function CartPage() {
 
   const cartItems = cart?.items
   const cartProductIds = cartItems?.map((item) => item.product._id) || []
+  const merchantId =
+    typeof cartItems?.[0]?.product?.merchant === "string"
+      ? cartItems[0].product.merchant
+      : cartItems?.[0]?.product?.merchant?._id
+  console.log(cartItems)
 
   return (
     <div className="relative flex w-full flex-col items-center justify-center px-10 py-5">
@@ -76,9 +80,9 @@ function CartPage() {
               totalItems={cart?.items.length}
               total={cart?.pricing.total}
               deliveryTime={totalEstimatedDeliveryTime}
-              customerNote={orderNote}
-              onChangeCustomerNote={setOrderNote}
+              customerNote={cart.customerNote}
               isMerchantOpen={cart?.merchant.isOpen}
+              cartId={cart._id}
             />
           </div>
         </div>
@@ -92,12 +96,20 @@ function CartPage() {
         </div>
       )}
 
-      <section className="mt-10">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold lg:text-2xl">You might also like</h2>
-        </div>
-        <RandomProducts productIds={cartProductIds} limit={5} />
-      </section>
+      {cartItems && cartItems.length > 0 && (
+        <section className="mt-10">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-bold lg:text-2xl">
+              You might also like
+            </h2>
+          </div>
+          <RandomProducts
+            productIds={cartProductIds}
+            limit={5}
+            merchantId={merchantId}
+          />
+        </section>
+      )}
 
       <DeleteModal
         open={isModalOpen}

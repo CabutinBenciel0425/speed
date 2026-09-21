@@ -188,7 +188,11 @@ function ProductPage() {
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold lg:text-2xl">You might also like</h2>
         </div>
-        <RandomProducts productIds={productId ? [productId] : []} limit={5} />
+        <RandomProducts
+          productIds={productId ? [productId] : []}
+          limit={5}
+          merchantId={merchantId}
+        />
       </section>
     </div>
   )

@@ -261,14 +261,14 @@ export const toggleMerchantFavorite = asyncHandler(
       throw new NotFoundError("Merchant id");
     }
 
-    const merchantFavorite = await toggleMerchantFavoriteService(
+    const { isFavorite } = await toggleMerchantFavoriteService(
       user,
       merchantId,
     );
 
     res.status(200).json({
       success: true,
-      data: merchantFavorite,
+      isFavorite,
     });
   },
 );
@@ -286,6 +286,54 @@ export const getMerchantFavorites = asyncHandler(
     res.status(200).json({
       success: true,
       data: favorites,
+    });
+  },
+);
+
+// export const getMerchantFavorite = asyncHandler(
+//   async (req: Request, res: Response) => {
+//     const user = req.user;
+//     const merchantId = req.params.merchantId as string;
+
+//     if (!user) {
+//       throw new UnauthorizedError("User not authorized");
+//     }
+
+//     const favorite = await getMerchantFavoriteService(user, merchantId);
+
+//     if (typeof favorite === "string") {
+//       return res.status(200).json({
+//         success: false,
+//         message: "This merchant is not in user's favorite list",
+//       });
+//     }
+
+//     res.status(200).json({
+//       success: true,
+//       data: favorite,
+//     });
+//   },
+// );
+
+export const getMerchantFavoriteStatus = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+    const merchantId = req.params.merchantId as string;
+
+    if (!user) {
+      throw new UnauthorizedError("User not authorized");
+    }
+
+    const merchantFavoriteStatus = await MerchantFavorite.findOne({
+      user: user._id,
+      merchant: merchantId,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        isFavorite: !!merchantFavoriteStatus,
+      },
     });
   },
 );

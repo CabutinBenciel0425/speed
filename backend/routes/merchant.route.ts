@@ -12,6 +12,7 @@ import {
   acceptOrder,
   rejectOrder,
   readyOrder,
+  getMerchantFavoriteStatus,
 } from "../controller/merchant.controller.js";
 import { upload } from "../middlewares/upload.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
@@ -24,12 +25,17 @@ merchantRouter.get("/:merchantId/details", getMerchantDetails);
 merchantRouter.get("/", getMerchants);
 merchantRouter.get("/:merchantId/products", getMerchantProducts);
 
-merchantRouter.patch(
+//customer routes
+merchantRouter.post(
   "/favorites/:merchantId/status",
   protectRoute,
   toggleMerchantFavorite,
 );
-
+merchantRouter.get(
+  "/favorites/:merchantId",
+  protectRoute,
+  getMerchantFavoriteStatus,
+);
 merchantRouter.get("/favorites", protectRoute, getMerchantFavorites);
 
 //merchant routes

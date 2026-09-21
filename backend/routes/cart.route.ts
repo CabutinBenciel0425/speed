@@ -9,13 +9,15 @@ import {
   toggleQuantity,
   clearCart,
   changeItemNote,
+  changeCartNote,
 } from "../controller/cart.controller.js";
 
 const cartRouter = Router();
 
 cartRouter.get("/", protectRoute, getCart);
 cartRouter.post("/", protectRoute, validate(itemSchema), addToCart);
-cartRouter.post("/note", protectRoute, changeItemNote);
+cartRouter.post("/product/note", protectRoute, changeItemNote);
+cartRouter.post("/note", protectRoute, changeCartNote);
 cartRouter.post("/toggle-quantity", protectRoute, toggleQuantity);
 cartRouter.delete("/", protectRoute, deleteItem);
 cartRouter.delete("/clear-cart", protectRoute, clearCart);

@@ -44,8 +44,8 @@ export type BreadcrumbLinkComponent = {
 }
 
 export type LikeButtonProps = {
-  isFavorite: boolean
-  setIsFavorite: (value: boolean) => void
+  isFavorite?: boolean | undefined
+  onToggle: () => void
   baseSize: number
 }
 

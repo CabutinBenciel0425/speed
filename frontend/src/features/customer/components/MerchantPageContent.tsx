@@ -1,4 +1,5 @@
 import LikeButton from "@/components/common/LikeButton"
+import { useAuthStore } from "@/store/authStore"
 import { MapPin } from "lucide-react"
 import { PiStarFill } from "react-icons/pi"
 type MerchantPageContentProps = {
@@ -7,8 +8,8 @@ type MerchantPageContentProps = {
   averageRating: number
   ratingCount: number
   description: string
-  isFavorite: boolean
-  onFavorite: (isFavorite: boolean) => void
+  isFavorite?: boolean | undefined
+  onFavorite: () => void
   address: {
     location: {
       type: string
@@ -31,6 +32,7 @@ function MerchantPageContent({
   onFavorite,
   address,
 }: MerchantPageContentProps) {
+  const { isAuthenticated } = useAuthStore()
   const addressFormatted = `${address.street} ${address.barangay} ${address.city}, ${address.province}`
   return (
     <div className="mx-auto max-w-full px-4 py-6 md:px-6 lg:px-20">
@@ -60,11 +62,13 @@ function MerchantPageContent({
         </div>
 
         <div className="flex gap-2">
-          <LikeButton
-            isFavorite={isFavorite}
-            setIsFavorite={onFavorite}
-            baseSize={8}
-          />
+          {isAuthenticated && (
+            <LikeButton
+              isFavorite={isFavorite}
+              onToggle={onFavorite}
+              baseSize={8}
+            />
+          )}
         </div>
       </div>
     </div>

@@ -11,7 +11,7 @@ const addProductNote = async ({
   note: string
   productId: string
 }): Promise<Cart> => {
-  const { data } = await axios.post("/cart/note", { productId, note })
+  const { data } = await axios.post("/cart/product/note", { productId, note })
 
   return data.data
 }

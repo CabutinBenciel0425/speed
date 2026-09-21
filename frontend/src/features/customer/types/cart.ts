@@ -2,7 +2,7 @@ import type { Merchant } from "./merchant"
 import type { Product } from "./products"
 
 export type Cart = {
-  id: string
+  _id: string
   customer: string
   merchant: Merchant
   items: {

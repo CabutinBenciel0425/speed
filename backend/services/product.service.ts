@@ -142,30 +142,20 @@ export const toggleProductFavoriteService = async (
 
   const favoriteExist = await ProductFavorite.findOne({
     user: user._id,
-    product: product._id,
+    merchant: product._id,
   });
 
   if (favoriteExist) {
-    const result = await deleteProductFavoriteService(
-      user._id.toString(),
-      product._id.toString(),
-    );
-
-    return result;
+    await ProductFavorite.findByIdAndDelete(favoriteExist._id);
+    return { isFavorite: false };
   }
 
-  const productFavorite = new ProductFavorite({
+  await ProductFavorite.create({
     user: user._id,
     product: product._id,
   });
 
-  await productFavorite.save();
-
-  const populated = await ProductFavorite.findById(
-    productFavorite._id,
-  ).populate("user product");
-
-  return populated;
+  return { isFavorite: true };
 };
 
 export const deleteProductFavoriteService = async (

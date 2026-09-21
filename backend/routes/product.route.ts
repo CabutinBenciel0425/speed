@@ -11,7 +11,8 @@ import {
   getProductFavorites,
   getFeaturedProducts,
   getProduct,
-  getRandom,
+  getRandomFromMerchant,
+  getProductFavoriteStatus,
 } from "../controller/product.controller.js";
 import {
   productSchema,
@@ -26,7 +27,7 @@ const productRouter = Router();
 productRouter.get("/featured", getFeaturedProducts);
 productRouter.get("/:productId/details", getProduct);
 productRouter.get("/", getProducts);
-productRouter.post("/random", getRandom);
+productRouter.post("/random-cart", getRandomFromMerchant);
 
 //merchant routes
 productRouter.post(
@@ -73,6 +74,12 @@ productRouter.patch(
   "/favorites/:productId/status",
   protectRoute,
   toggleProductFavorite,
+);
+
+productRouter.patch(
+  "/favorites/:productId",
+  protectRoute,
+  getProductFavoriteStatus,
 );
 
 productRouter.get("/favorites", protectRoute, getProductFavorites);

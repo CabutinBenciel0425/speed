@@ -1,17 +1,20 @@
-import { useRandomProducts } from "../hooks/useRandomProducts"
 import ProductCard from "@/components/common/ProductCard"
 import { SkeletonProductCard } from "@/components/common/Skeleton/SkeletonProductCard"
+import { useRandomProductsFromMerchant } from "../hooks/useRandomProductsFromMerchant"
 
 interface RandomProductsProps {
   productIds?: string[]
   limit?: number
+  merchantId?: string
 }
 
-function RandomProducts({ productIds = [], limit = 4 }: RandomProductsProps) {
-  const { data: randomProducts = [], isLoading } = useRandomProducts(
-    productIds,
-    limit
-  )
+function RandomProducts({
+  productIds = [],
+  limit = 4,
+  merchantId = "",
+}: RandomProductsProps) {
+  const { data: randomProducts = [], isLoading } =
+    useRandomProductsFromMerchant(productIds, limit, merchantId)
 
   if (isLoading) {
     return (

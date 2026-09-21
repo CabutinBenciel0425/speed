@@ -3,6 +3,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { ArrowRight, Clock10, FileText, ShieldCheck } from "lucide-react"
 import type { OrderSummary } from "../types/order"
 import { Button } from "@/components/ui/button"
+import { useAddCartNote } from "../hooks/useAddCartNote"
+import { useEffect, useRef, useState } from "react"
 
 function OrderSummary({
   subtotal,
@@ -11,9 +13,57 @@ function OrderSummary({
   total,
   deliveryTime,
   customerNote,
-  onChangeCustomerNote,
   isMerchantOpen,
+  cartId,
 }: OrderSummary) {
+  const [note, setNote] = useState(customerNote || "")
+  const [noteStatus, setNoteStatus] = useState<"idle" | "saving" | "saved">(
+    "idle"
+  )
+
+  console.log(note, noteStatus)
+
+  const lastSavedNote = useRef(customerNote || "")
+
+  const { mutate: addCustomerNote, isPending: isSavingCustomerNote } =
+    useAddCartNote()
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setNote(customerNote || "")
+    lastSavedNote.current = customerNote || ""
+  }, [customerNote])
+
+  useEffect(() => {
+    if (noteStatus === "saved") {
+      const timer = setTimeout(() => setNoteStatus("idle"), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [noteStatus])
+
+  const handleBlur = () => {
+    const cleanNote = note.trim()
+
+    if (cleanNote === lastSavedNote.current || !cartId) {
+      return
+    }
+
+    setNoteStatus("saving")
+
+    addCustomerNote(
+      { note: cleanNote, cartId },
+      {
+        onSuccess: () => {
+          lastSavedNote.current = cleanNote
+          setNoteStatus("saved")
+        },
+        onError: () => {
+          setNoteStatus("idle")
+        },
+      }
+    )
+  }
+
   return (
     <div className="">
       <h1 className="mb-2 ml-1 text-lg font-semibold">Order Summary</h1>
@@ -75,12 +125,24 @@ function OrderSummary({
               placeholder="Type here..."
               className="line-clamp-5 resize-none"
               maxLength={500}
-              value={customerNote}
-              onChange={(e) => onChangeCustomerNote(e.target.value)}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              onBlur={handleBlur}
+              disabled={isSavingCustomerNote}
             />
-            <p className="flex w-full justify-end text-sm text-muted-foreground/40">
-              0/200
-            </p>
+            <div className="flex w-full flex-row items-center justify-between">
+              <span className="text-sm text-muted-foreground/40">
+                {noteStatus === "saving" || isSavingCustomerNote
+                  ? "Saving..."
+                  : noteStatus === "saved"
+                    ? "Saved"
+                    : ""}
+              </span>
+
+              <span className="text-sm text-muted-foreground/40">
+                {note.length}/500
+              </span>
+            </div>
           </div>
           <div className="flex flex-row items-center justify-start gap-2 rounded-md bg-muted-foreground/10 px-4 py-3">
             <ShieldCheck className="size-8" color="#ff6b00" />

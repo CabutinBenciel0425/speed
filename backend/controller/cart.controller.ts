@@ -1,7 +1,8 @@
 import type { addToCartInput } from "../schemas/cart.schema.js";
 import {
   addItemToCart,
-  changeNote,
+  changeCartNoteService,
+  changeItemNoteService,
   deleteItemInCart,
   toggleQuantityItem,
 } from "../services/cart.service.js";
@@ -61,7 +62,33 @@ export const changeItemNote = asyncHandler(
       throw new NotFoundError("User");
     }
 
-    const updatedCart = await changeNote(user._id.toString(), productId, note);
+    const updatedCart = await changeItemNoteService(
+      user._id.toString(),
+      productId,
+      note,
+    );
+
+    res.status(200).json({
+      success: true,
+      data: updatedCart,
+    });
+  },
+);
+
+export const changeCartNote = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+    const { cartId, note } = req.body;
+
+    if (!user) {
+      throw new NotFoundError("User");
+    }
+
+    const updatedCart = await changeCartNoteService(
+      user._id.toString(),
+      cartId,
+      note,
+    );
 
     res.status(200).json({
       success: true,

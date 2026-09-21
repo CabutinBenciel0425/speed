@@ -3,24 +3,29 @@ import type { Product } from "../types/products"
 import type { ApiResponse } from "@/types/types"
 import { useQuery } from "@tanstack/react-query"
 
-const fetchRandomProducts = async (
+const fetchRandomProductsFromMerchant = async (
   productIds: string[],
-  limit = 5
+  limit = 5,
+  merchantId: string
 ): Promise<Product[]> => {
   const { data } = await axios.post<ApiResponse<Product[]>>(
-    `/product/random?limit=${limit}`,
-    { productIds }
+    `/product/random-cart?limit=${limit}`,
+    { productIds, merchantId }
   )
 
   return data.data
 }
 
-export const useRandomProducts = (productIds: string[], limit = 5) => {
+export const useRandomProductsFromMerchant = (
+  productIds: string[],
+  limit = 5,
+  merchantId: string
+) => {
   const validIds = productIds.filter((id) => id && id.length > 0)
 
   return useQuery({
-    queryKey: ["randomProducts", validIds, limit],
-    queryFn: () => fetchRandomProducts(validIds, limit),
+    queryKey: ["randomProducts", validIds, limit, merchantId],
+    queryFn: () => fetchRandomProductsFromMerchant(validIds, limit, merchantId),
     staleTime: 5 * 60 * 1000,
   })
 }

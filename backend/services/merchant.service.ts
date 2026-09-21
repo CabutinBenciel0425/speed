@@ -459,22 +459,16 @@ export const toggleMerchantFavoriteService = async (
   });
 
   if (favoriteExist) {
-    const result = await deleteMerchantFavoriteService(
-      user._id.toString(),
-      merchant._id.toString(),
-    );
-
-    return result;
+    await MerchantFavorite.findByIdAndDelete(favoriteExist._id);
+    return { isFavorite: false };
   }
 
-  const merchantFavorite = new MerchantFavorite({
+  await MerchantFavorite.create({
     user: user._id,
     merchant: merchant._id,
   });
 
-  await merchantFavorite.save();
-
-  return merchantFavorite;
+  return { isFavorite: true };
 };
 
 export const deleteMerchantFavoriteService = async (
@@ -502,3 +496,25 @@ export const getMerchantFavoritesService = async (user: IUser) => {
 
   return favorites;
 };
+
+// export const getMerchantFavoriteService = async (
+//   user: IUser,
+//   merchantId: string,
+// ) => {
+//   const merchant = await Merchant.findById(merchantId);
+
+//   if (!merchant) {
+//     throw new NotFoundError("Merchant");
+//   }
+
+//   const favorite = await MerchantFavorite.findOne({
+//     user: user._id,
+//     merchant: merchantId,
+//   });
+
+//   if (!favorite) {
+//     return "Merchant is not in user's favorite list";
+//   }
+
+//   return favorite;
+// };

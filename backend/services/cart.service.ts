@@ -168,7 +168,7 @@ export const addItemToCart = async (
   return recalculatedCart;
 };
 
-export const changeNote = async (
+export const changeItemNoteService = async (
   userId: string,
   productId: string,
   note: string,
@@ -187,6 +187,26 @@ export const changeNote = async (
   }
 
   item.note = note;
+
+  await cart.save();
+
+  const recalculatedCart = await recalculateCart(userId);
+  await recalculatedCart.populate("items.product");
+
+  return recalculatedCart;
+};
+
+export const changeCartNoteService = async (
+  userId: string,
+  cartId: string,
+  note: string,
+) => {
+  const cart = await Cart.findOne({ _id: cartId, customer: userId });
+  if (!cart) {
+    throw new NotFoundError("Cart");
+  }
+
+  cart.customerNote = note;
 
   await cart.save();
 

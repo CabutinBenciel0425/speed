@@ -16,11 +16,7 @@ const particles = Array.from({ length: PARTICLE_COUNT }, (_, index) => {
   }
 })
 
-function LikeButton({
-  isFavorite,
-  setIsFavorite,
-  baseSize = 9,
-}: LikeButtonProps) {
+function LikeButton({ isFavorite, onToggle, baseSize = 9 }: LikeButtonProps) {
   const [burstKey, setBurstKey] = useState(0)
   const heartBase = baseSize
   const offset = Math.ceil(baseSize / 2)
@@ -28,14 +24,11 @@ function LikeButton({
   const heartXl = baseSize + offset
 
   const handleLike = () => {
-    if (isFavorite) {
-      setIsFavorite(false)
-      return
+    onToggle()
+
+    if (!isFavorite) {
+      setBurstKey((prev) => prev + 1)
     }
-
-    setIsFavorite(true)
-
-    setBurstKey((prev) => prev + 1)
   }
 
   return (

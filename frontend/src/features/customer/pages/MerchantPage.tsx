@@ -1,20 +1,22 @@
 import { useParams } from "react-router-dom"
 import { useMerchant } from "../hooks/useMerchant"
-import { useState } from "react"
-import { toast } from "sonner"
 import MerchantPageHeader from "../components/MerchantPageHeader"
 import MerchantPageContent from "../components/MerchantPageContent"
 import { useProductsByMerchant } from "../hooks/useProductsByMerchant"
 import MerchantPageProducts from "../components/MerchantPageProducts"
 import MerchantPageSkeleton from "@/components/common/Skeleton/MerchantPageSkeleton"
 import { formatOperatingHours } from "@/utils/timeUtils"
+import { useToggleMerchantFavorite } from "../hooks/useToggleMerchantFavorite"
+import { useMerchantFavorite } from "../hooks/useMerchantFavorite"
 
 function MerchantPage() {
   const { merchantId } = useParams()
+  const { isMerchantFavorite } = useMerchantFavorite(merchantId || "")
+  const { mutate: toggleFavorite } = useToggleMerchantFavorite()
   const { merchant, isLoading, error } = useMerchant(merchantId || "")
   const { productsByMerchant, isLoadingProducts, errorProducts } =
     useProductsByMerchant(merchantId || "")
-  const [isFavorite, setIsFavorite] = useState(false)
+
   const products = productsByMerchant?.data?.products || []
 
   if (isLoading) {
@@ -56,8 +58,14 @@ function MerchantPage() {
   const operatingHoursToday = formatOperatingHours(todayHours)
 
   const handleFavorite = () => {
-    setIsFavorite(!isFavorite)
-    toast.success(isFavorite ? "Removed from favorites" : "Added to favorites")
+    // if (!isAuthenticated) {
+    //   toast.error(
+    //     "You need to login first before adding this merchant as favorite"
+    //   )
+    // }
+    if (merchantId) {
+      toggleFavorite(merchantId)
+    }
   }
 
   return (
@@ -79,7 +87,7 @@ function MerchantPage() {
         averageRating={averageRating}
         ratingCount={ratingCount}
         description={description || ""}
-        isFavorite={isFavorite}
+        isFavorite={!!isMerchantFavorite}
         onFavorite={handleFavorite}
         address={address}
       />

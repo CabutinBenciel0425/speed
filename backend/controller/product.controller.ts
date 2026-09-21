@@ -21,6 +21,8 @@ import Product from "../models/product.model.js";
 import { DEFAULT_PRODUCT_IMAGE } from "../config/constants.js";
 import cloudinary from "../config/cloudinary.js";
 import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";
+import Merchant from "../models/merchant.model.js";
+import ProductFavorite from "../models/productFavorite.model.js";
 
 export const addProduct = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
@@ -175,26 +177,35 @@ export const getProduct = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-export const getRandom = asyncHandler(async (req: Request, res: Response) => {
-  const ids: string[] = req.body.productIds;
-  const limit = Number(req.query.limit) || 5;
+export const getRandomFromMerchant = asyncHandler(
+  async (req: Request, res: Response) => {
+    const ids: string[] = req.body.productIds;
+    const merchantId: string = req.body.merchantId;
+    const limit = Number(req.query.limit) || 5;
 
-  if (!Array.isArray(ids)) {
-    throw new ConflictError("productIds must be an array");
-  }
+    if (!Array.isArray(ids)) {
+      throw new ConflictError("productIds must be an array");
+    }
 
-  const excludeIds = ids.map((id: string) => new mongoose.Types.ObjectId(id));
+    const merchant = await Merchant.findById(merchantId);
 
-  const randomProducts = await Product.aggregate([
-    { $match: { _id: { $nin: excludeIds } } },
-    { $sample: { size: limit } },
-  ]);
+    if (!merchant) {
+      throw new NotFoundError("Merchant");
+    }
 
-  res.status(200).json({
-    success: true,
-    data: randomProducts,
-  });
-});
+    const excludeIds = ids.map((id: string) => new mongoose.Types.ObjectId(id));
+
+    const randomProductsFromMerchant = await Product.aggregate([
+      { $match: { _id: { $nin: excludeIds }, merchant: merchant._id } },
+      { $sample: { size: limit } },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: randomProductsFromMerchant,
+    });
+  },
+);
 
 export const toggleProductFavorite = asyncHandler(
   async (req: Request, res: Response) => {
@@ -209,11 +220,11 @@ export const toggleProductFavorite = asyncHandler(
       throw new NotFoundError("Product id");
     }
 
-    const productFavorite = await toggleProductFavoriteService(user, productId);
+    const { isFavorite } = await toggleProductFavoriteService(user, productId);
 
     res.status(200).json({
       success: true,
-      data: productFavorite,
+      isFavorite,
     });
   },
 );
@@ -244,6 +255,29 @@ export const getFeaturedProducts = asyncHandler(
     res.status(200).json({
       success: true,
       data: featuredProducts,
+    });
+  },
+);
+
+export const getProductFavoriteStatus = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+    const productId = req.params.productId as string;
+
+    if (!user) {
+      throw new UnauthorizedError("User not authorized");
+    }
+
+    const productFavoriteStatus = await ProductFavorite.findOne({
+      user: user._id,
+      product: productId,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        isFavorite: !!productFavoriteStatus,
+      },
     });
   },
 );
