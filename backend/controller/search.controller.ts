@@ -1,8 +1,6 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import type { Request, Response } from "express";
-import { buildQuery } from "../utils/buildQuery.js";
 import { searchDropdownPublicService } from "../services/search.service.js";
-import { getProducts } from "./product.controller.js";
 import { getProductsService } from "../services/product.service.js";
 import { getMerchantsService } from "../services/merchant.service.js";
 

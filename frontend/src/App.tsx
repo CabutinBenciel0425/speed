@@ -16,6 +16,7 @@ import SearchPage from "./features/customer/pages/SearchPage"
 import SearchProductsAll from "./features/customer/components/SearchProductsAll"
 import SearchMerchantsAll from "./features/customer/components/SearchMerchantsAll"
 import CartPage from "./features/customer/pages/CartPage"
+import FavoritesPage from "./features/customer/pages/FavoritesPage"
 
 export function App() {
   const { isAuthenticated, isVerified } = useAuth()
@@ -69,6 +70,10 @@ export function App() {
           <Route
             path="/cart"
             element={isAuthenticated ? <CartPage /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/favorites"
+            element={isAuthenticated ? <FavoritesPage /> : <Navigate to="/" />}
           />
         </Route>
       </Routes>

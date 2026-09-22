@@ -39,7 +39,6 @@ function SearchPage() {
         </main>
       </div>
     </div>
-    // </div>
   )
 }
 

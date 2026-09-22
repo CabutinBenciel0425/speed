@@ -11,7 +11,6 @@ const addCartNote = async ({
   note: string
   cartId: string
 }): Promise<Cart> => {
-  console.log("use hook", note)
   const { data } = await axios.post("/cart/note", { cartId, note })
 
   return data.data

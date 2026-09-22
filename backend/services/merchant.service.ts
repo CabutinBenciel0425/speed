@@ -216,7 +216,7 @@ const validateMerchantOrder = async (orderId: string, merchantId: string) => {
 
 export const getMerchantsService = async (
   payload: any,
-  coordinates: UserCoordinatesObj,
+  coordinates?: UserCoordinatesObj,
 ) => {
   const queryData = buildQuery(payload);
 
@@ -488,8 +488,9 @@ export const deleteMerchantFavoriteService = async (
 };
 
 export const getMerchantFavoritesService = async (user: IUser) => {
-  const favorites = await MerchantFavorite.find({ user: user._id });
-
+  const favorites = await MerchantFavorite.find({ user: user._id }).populate(
+    "merchant",
+  );
   if (favorites.length === 0) {
     return [];
   }

@@ -146,7 +146,6 @@ export const toggleProductFavoriteService = async (
   });
 
   if (favoriteExist) {
-    console.log("DELETING", favoriteExist);
     await ProductFavorite.findByIdAndDelete(favoriteExist._id);
 
     return { isFavorite: false };
@@ -177,7 +176,9 @@ export const deleteProductFavoriteService = async (
 };
 
 export const getProductFavoritesService = async (user: IUser) => {
-  const favorites = await ProductFavorite.find({ user: user._id });
+  const favorites = await ProductFavorite.find({ user: user._id }).populate(
+    "product",
+  );
 
   if (favorites.length === 0) {
     return [];

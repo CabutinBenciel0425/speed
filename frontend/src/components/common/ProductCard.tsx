@@ -47,7 +47,7 @@ function ProductCard({ product }: { product: Product }) {
       transition={{ duration: 0.8 }}
       className="h-full w-full"
     >
-      <Card className="relative mx-auto w-full max-w-2xs min-w-45 pt-0">
+      <Card className="relative mx-auto w-full max-w-2xs min-w-35 pt-0">
         <div className="absolute inset-0 z-30 aspect-video bg-black/15" />
 
         <img
