@@ -40,11 +40,13 @@ export const useToggleProductFavorite = () => {
         ["isProductFavorite", productId],
         data.isFavorite
       )
+
       toast.success(
         data.isFavorite
           ? "Product added to favorites"
           : "Product removed from favorites"
       )
+      queryClient.invalidateQueries({ queryKey: ["productFavoriteList"] })
     },
   })
 }

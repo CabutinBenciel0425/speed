@@ -276,44 +276,47 @@ export const toggleMerchantFavorite = asyncHandler(
 export const getMerchantFavorites = asyncHandler(
   async (req: Request, res: Response) => {
     const user = req.user;
+    const lat = Number(req.query.lat);
+    const lng = Number(req.query.lng);
 
     if (!user) {
       throw new UnauthorizedError("User not authorized");
     }
 
-    const favorites = await getMerchantFavoritesService(user);
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid coordinates: latitude must be between -90 and 90, longitude between -180 and 180",
+      });
+    }
+
+    let coordinates = null;
+
+    if (!isNaN(lat) && !isNaN(lng)) {
+      coordinates = { lng, lat };
+    }
+
+    const { docs, total, queryData } = await getMerchantFavoritesService(
+      req.query,
+      user._id.toString(),
+      coordinates,
+    );
 
     res.status(200).json({
       success: true,
-      data: favorites,
+      data: {
+        merchants: docs,
+        pagination: {
+          total,
+          page: queryData.page,
+          limit: queryData.limit,
+          pages: Math.ceil(total / queryData.limit),
+        },
+      },
     });
   },
 );
-
-// export const getMerchantFavorite = asyncHandler(
-//   async (req: Request, res: Response) => {
-//     const user = req.user;
-//     const merchantId = req.params.merchantId as string;
-
-//     if (!user) {
-//       throw new UnauthorizedError("User not authorized");
-//     }
-
-//     const favorite = await getMerchantFavoriteService(user, merchantId);
-
-//     if (typeof favorite === "string") {
-//       return res.status(200).json({
-//         success: false,
-//         message: "This merchant is not in user's favorite list",
-//       });
-//     }
-
-//     res.status(200).json({
-//       success: true,
-//       data: favorite,
-//     });
-//   },
-// );
 
 export const getMerchantFavoriteStatus = asyncHandler(
   async (req: Request, res: Response) => {

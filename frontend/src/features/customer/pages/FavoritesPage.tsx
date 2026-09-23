@@ -1,13 +1,10 @@
 import BreadcrumbLinkComponent from "@/components/common/BreadcrumbLink"
-
-import { useMerchantFavoriteList } from "../hooks/useMerchantFavoriteList"
-import { useProductFavoriteList } from "../hooks/useProductFavoriteList"
+import { useFavoriteLists } from "../hooks/useFavoriteLists"
+import MerchantAndProductResults from "../components/MerchantAndProductsResults"
 
 function FavoritesPage() {
-  const { merchantFavoriteList } = useMerchantFavoriteList()
-  const { productFavoriteList } = useProductFavoriteList()
-
-  console.log(merchantFavoriteList, productFavoriteList)
+  const { data, isLoading, isError } = useFavoriteLists()
+  const { products, merchants } = data || {}
 
   return (
     <div className="flex h-full flex-col gap-5 px-5 py-4 lg:px-10">
@@ -18,7 +15,14 @@ function FavoritesPage() {
       <div className="ml-4 flex w-full flex-col gap-3">
         <h1 className="text-lg font-semibold">Your Favorites List</h1>
 
-        <main className="flex w-full"></main>
+        <main className="flex w-full">
+          <MerchantAndProductResults
+            products={products}
+            merchants={merchants}
+            isLoading={isLoading}
+            error={isError}
+          />
+        </main>
       </div>
     </div>
   )

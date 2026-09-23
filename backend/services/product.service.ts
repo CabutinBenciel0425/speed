@@ -12,8 +12,9 @@ import { ApiError } from "../utils/apiError.js";
 import { buildQuery } from "../utils/buildQuery.js";
 import { ConflictError, NotFoundError } from "../utils/errors.js";
 import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";
+import { formatSortName } from "../utils/formatSortName.js";
 import { imageUpload } from "../utils/imageUpload.js";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 
 export const createNewProduct = async (
   merchantId: string,
@@ -175,16 +176,87 @@ export const deleteProductFavoriteService = async (
   return "Product successfully removed as favorite";
 };
 
-export const getProductFavoritesService = async (user: IUser) => {
-  const favorites = await ProductFavorite.find({ user: user._id }).populate(
-    "product",
-  );
+export const getProductFavoritesService = async (
+  query: any,
+  userId: string,
+) => {
+  const queryData = buildQuery(query);
 
-  if (favorites.length === 0) {
-    return [];
+  const updatedSort = query.sort ? formatSortName(query.sort, "product") : "";
+
+  const allowedSorts = [
+    "product.price",
+    "-product.price",
+    "product.createdAt",
+    "-product.createdAt",
+    "product.name",
+    "-product.name",
+  ];
+
+  const sort = allowedSorts.includes(updatedSort)
+    ? updatedSort
+    : "-product.createdAt";
+
+  const productMatch: any = {};
+
+  if (queryData.filter.price) {
+    productMatch["product.price"] = queryData.filter.price;
   }
 
-  return favorites;
+  if (queryData.filter.preparationTime) {
+    productMatch["product.preparationTime"] = queryData.filter.preparationTime;
+  }
+
+  if (queryData.filter.category) {
+    productMatch["product.category"] = new mongoose.Types.ObjectId(
+      queryData.filter.category,
+    );
+  }
+
+  console.log("productMatch:", JSON.stringify(productMatch, null, 2));
+  console.log("sort:", sort);
+
+  const userObjectId = new mongoose.Types.ObjectId(userId);
+
+  const docs = await ProductFavorite.aggregate([
+    { $match: { user: userObjectId } },
+    {
+      $lookup: {
+        from: "products",
+        localField: "product",
+        foreignField: "_id",
+        as: "product",
+      },
+    },
+    { $unwind: "$product" },
+    ...(Object.keys(productMatch).length ? [{ $match: productMatch }] : []),
+    {
+      $sort: {
+        [sort.replace("-", "")]: sort.startsWith("-") ? -1 : 1,
+      },
+    },
+    { $skip: queryData.skip },
+    { $limit: queryData.limit },
+  ]);
+
+  const totalAgg = await ProductFavorite.aggregate([
+    { $match: { user: userObjectId } },
+    {
+      $lookup: {
+        from: "products",
+        localField: "product",
+        foreignField: "_id",
+        as: "product",
+      },
+    },
+    { $unwind: "$product" },
+    ...(Object.keys(productMatch).length ? [{ $match: productMatch }] : []),
+    { $count: "total" },
+  ]);
+
+  const total = totalAgg[0]?.total ?? 0;
+  console.log(docs);
+  return { docs, total, queryData };
 };
 
 export const getProductsService = async (query: any) => {
@@ -219,6 +291,8 @@ export const getProductsService = async (query: any) => {
       },
     ];
   }
+
+  console.log(queryData.filter);
 
   const docs = await Product.find(queryData.filter)
     .sort(sort)

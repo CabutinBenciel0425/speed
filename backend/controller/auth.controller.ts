@@ -44,6 +44,8 @@ import type { DriverInput } from "../schemas/driver.schema.js";
 import Merchant, { type IMerchant } from "../models/merchant.model.js";
 import type { IDriver } from "../models/driver.model.js";
 import Driver from "../models/driver.model.js";
+import { getProductFavoritesService } from "../services/product.service.js";
+import { getMerchantFavoritesService } from "../services/merchant.service.js";
 
 export const customerSignup = asyncHandler(
   async (req: Request, res: Response) => {
@@ -349,6 +351,59 @@ export const updateUserDetails = asyncHandler(
       success: true,
       message: "User details successfully updated",
       data: updatedCustomer,
+    });
+  },
+);
+
+export const getFavoriteLists = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+
+    if (!user) {
+      throw new UnauthorizedError("Unauthorized user");
+    }
+    const [
+      {
+        docs: productFavorites,
+        total: totalProductFavorites,
+        queryData: queryDataProductFavorites,
+      },
+      {
+        docs: merchantFavorites,
+        total: totalMerchantFavorites,
+        queryData: queryDataMerchantFavorites,
+      },
+    ] = await Promise.all([
+      getProductFavoritesService(req.query, user._id.toString()),
+      getMerchantFavoritesService(req.query, user._id.toString()),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        products: {
+          products: productFavorites,
+          pagination: {
+            total: totalProductFavorites,
+            page: queryDataProductFavorites.page,
+            limit: queryDataProductFavorites.limit,
+            pages: Math.ceil(
+              totalProductFavorites / queryDataProductFavorites.limit,
+            ),
+          },
+        },
+        merchants: {
+          merchants: merchantFavorites,
+          pagination: {
+            total: totalMerchantFavorites,
+            page: queryDataMerchantFavorites.page,
+            limit: queryDataMerchantFavorites.limit,
+            pages: Math.ceil(
+              totalMerchantFavorites / queryDataMerchantFavorites.limit,
+            ),
+          },
+        },
+      },
     });
   },
 );

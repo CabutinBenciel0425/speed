@@ -15,6 +15,7 @@ import { ApiError } from "../utils/apiError.js";
 import Product from "../models/product.model.js";
 import type { UserCoordinatesObj } from "../types/types.js";
 import { EARTH_RADIUS } from "../config/constants.js";
+import { formatSortName } from "../utils/formatSortName.js";
 
 export const merchantRejectOrder = async (
   orderId: string,
@@ -487,35 +488,98 @@ export const deleteMerchantFavoriteService = async (
   return "Merchant successfully removed as favorite";
 };
 
-export const getMerchantFavoritesService = async (user: IUser) => {
-  const favorites = await MerchantFavorite.find({ user: user._id }).populate(
-    "merchant",
-  );
-  if (favorites.length === 0) {
-    return [];
+export const getMerchantFavoritesService = async (
+  query: any,
+  userId: string,
+  coordinates?: UserCoordinatesObj,
+) => {
+  const queryData = buildQuery(query);
+
+  const updatedSort = query.sort ? formatSortName(query.sort, "merchant") : "";
+
+  const allowedSorts = [
+    "merchant.merchantName",
+    "-merchant.merchantName",
+    "merchant.averageRating",
+    "-merchant.averageRating",
+    "merchant.isOpen",
+    "-merchant.isOpen",
+    "merchant.ratingCount",
+    "-merchant.ratingCount",
+  ];
+
+  const sort = allowedSorts.includes(updatedSort)
+    ? updatedSort
+    : "-merchant.isOpen";
+
+  const merchantMatch: any = {};
+
+  if (
+    queryData.filter.averageRating &&
+    (queryData.filter.averageRating.$gte > 0 ||
+      queryData.filter.averageRating.$lte < 5)
+  ) {
+    merchantMatch["merchant.averageRating"] = queryData.filter.averageRating;
   }
 
-  return favorites;
+  if (query.open === "true") {
+    merchantMatch["merchant.isOpen"] = true;
+  }
+
+  const maxDist = Number(query.maxDist);
+  if (coordinates && maxDist > 0 && maxDist < 50) {
+    const radiusInRadians = maxDist / EARTH_RADIUS;
+
+    merchantMatch["merchant.address.location"] = {
+      $geoWithin: {
+        $centerSphere: [[coordinates.lng, coordinates.lat], radiusInRadians],
+      },
+    };
+  }
+
+  const userObjectId = new mongoose.Types.ObjectId(userId);
+
+  const docs = await MerchantFavorite.aggregate([
+    { $match: { user: userObjectId } },
+
+    {
+      $lookup: {
+        from: "merchants",
+        localField: "merchant",
+        foreignField: "_id",
+        as: "merchant",
+      },
+    },
+    { $unwind: "$merchant" },
+
+    { $match: merchantMatch },
+
+    {
+      $sort: {
+        [sort.replace("-", "")]: sort.startsWith("-") ? -1 : 1,
+      },
+    },
+
+    { $skip: queryData.skip },
+    { $limit: queryData.limit },
+  ]);
+
+  const totalAgg = await MerchantFavorite.aggregate([
+    { $match: { user: userObjectId } },
+    {
+      $lookup: {
+        from: "merchants",
+        localField: "merchant",
+        foreignField: "_id",
+        as: "merchant",
+      },
+    },
+    { $unwind: "$merchant" },
+    { $match: merchantMatch },
+    { $count: "total" },
+  ]);
+
+  const total = totalAgg[0]?.total ?? 0;
+
+  return { docs, total, queryData };
 };
-
-// export const getMerchantFavoriteService = async (
-//   user: IUser,
-//   merchantId: string,
-// ) => {
-//   const merchant = await Merchant.findById(merchantId);
-
-//   if (!merchant) {
-//     throw new NotFoundError("Merchant");
-//   }
-
-//   const favorite = await MerchantFavorite.findOne({
-//     user: user._id,
-//     merchant: merchantId,
-//   });
-
-//   if (!favorite) {
-//     return "Merchant is not in user's favorite list";
-//   }
-
-//   return favorite;
-// };

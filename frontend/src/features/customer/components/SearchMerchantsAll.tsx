@@ -5,8 +5,7 @@ import SkeletonPagination from "@/components/common/Skeleton/SkeletonPagination"
 import { PaginationPage } from "@/components/common/PaginationPage"
 import { useSearchMerchantResults } from "../hooks/useSearchMerchantResults"
 import { SkeletonMerchantCard } from "@/components/common/Skeleton/SkeletonMerchantCard"
-import { ArchiveX } from "lucide-react"
-import SearchFilterMerchants from "./SearchFilterMerchants"
+import { ArchiveX, Search } from "lucide-react"
 import Sort from "@/components/common/Sort"
 import {
   DropdownMenuLabel,
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { getRatingRange } from "../utils/getRatingRange"
 import { useAddress } from "@/hooks/useAddress"
+import FilterMerchants from "./FilterMerchants"
 
 function SearchMerchantsAll() {
   const { defaultAddress } = useAddress()
@@ -118,6 +118,20 @@ function SearchMerchantsAll() {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
+  const handleReset = () => {
+    const params = new URLSearchParams(searchParams)
+
+    params.set("page", "1")
+    params.set("open", "true")
+    params.set("sort", "-averageRating")
+    params.set("rating", "0-5")
+    params.set("maxDist", "50+")
+
+    setSearchParams(params)
+
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
   const pages = [
     {
       link: `/search?query=${query}`,
@@ -152,8 +166,9 @@ function SearchMerchantsAll() {
   return (
     <div className="flex flex-col gap-5 p-6">
       <BreadcrumbLinkComponent currentPage={"Merchants"} pages={pages} />
-      <h1 className="text-2xl font-bold">
-        All Merchants ({data?.pagination.total})
+      <h1 className="flex flex-row items-center gap-2 text-2xl font-bold">
+        <span>All Merchants</span> <Search stroke="#ff6b00" />{" "}
+        <span>({data?.pagination.total})</span>
       </h1>
 
       <main className="flex w-full flex-col gap-2">
@@ -186,10 +201,11 @@ function SearchMerchantsAll() {
         <div className="flex w-full flex-row gap-10">
           <aside className="hidden lg:flex">
             <form>
-              <SearchFilterMerchants
+              <FilterMerchants
                 onHandleToggleOpen={handleToggleOpen}
                 onHandleRatingChange={handleRatingChange}
                 onHandleDistanceChange={handleDistanceChange}
+                onHandleReset={handleReset}
                 maxDist={maxDist}
                 ratingKey={ratingKey}
                 open={open}

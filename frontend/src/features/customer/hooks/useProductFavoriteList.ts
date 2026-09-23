@@ -1,24 +1,85 @@
-import { useQuery } from "@tanstack/react-query"
 import axios from "@/lib/axios"
-import type { ApiResponse } from "@/types/types"
-import type { ProductFavorite } from "../types/favorites"
+import { useQuery } from "@tanstack/react-query"
+import type { ProductFavoritePagination } from "../types/favorites"
 
-const getProductFavoriteList = async (): Promise<ProductFavorite[]> => {
-  const { data } =
-    await axios.get<ApiResponse<ProductFavorite[]>>("/product/favorites")
+const ITEMS_PER_PAGE = 8
 
+const getProductFavoriteList = async (
+  page: number,
+  selectedCategory: string,
+  price: [number, number],
+  timeRange: {
+    min: number
+    max: number
+  } | null,
+  sortParams: string
+): Promise<ProductFavoritePagination> => {
+  console.log(selectedCategory)
+  let url = `/product/favorites?limit=${ITEMS_PER_PAGE}&page=${page}&sort=${sortParams}`
+
+  if (
+    selectedCategory &&
+    selectedCategory !== "All" &&
+    selectedCategory !== ""
+  ) {
+    url += `&category=${selectedCategory}`
+  }
+  if (price) {
+    if (price[0] !== price[1]) {
+      url += `&price.gte=${price[0]}&price.lte=${price[1]}`
+    } else {
+      url += `&price.gt=${price[0]}`
+    }
+  }
+  if (timeRange) {
+    url += `&preparationTime.gte=${timeRange.min}`
+
+    if (isFinite(timeRange.max)) {
+      url += `&preparationTime.lte=${timeRange.max}`
+    }
+  }
+
+  const { data } = await axios.get(url)
   return data.data
 }
 
-export const useProductFavoriteList = () => {
+export const useProductFavoriteList = (
+  page: number,
+  selectedCategory: string,
+  price: [number, number],
+  timeRange: {
+    min: number
+    max: number
+  } | null,
+  sortParams: string
+) => {
   const {
-    data: productFavoriteList = [],
+    data: productFavoriteList,
     isLoading,
     error,
-  } = useQuery<ProductFavorite[]>({
-    queryKey: ["productFavoriteList"],
-    queryFn: getProductFavoriteList,
+  } = useQuery({
+    queryKey: [
+      "productFavoriteList",
+      page,
+      selectedCategory,
+      price,
+      timeRange,
+      sortParams,
+    ],
+    queryFn: () =>
+      getProductFavoriteList(
+        page,
+        selectedCategory,
+        price,
+        timeRange,
+        sortParams
+      ),
+    staleTime: 5 * 60 * 1000,
   })
 
-  return { productFavoriteList, isLoading, error }
+  return {
+    data: productFavoriteList,
+    isLoading,
+    error,
+  }
 }

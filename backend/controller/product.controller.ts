@@ -237,11 +237,22 @@ export const getProductFavorites = asyncHandler(
       throw new UnauthorizedError("User not authorized");
     }
 
-    const favorites = await getProductFavoritesService(user);
+    const { docs, total, queryData } = await getProductFavoritesService(
+      req.query,
+      user._id.toString(),
+    );
 
     res.status(200).json({
       success: true,
-      data: favorites,
+      data: {
+        products: docs,
+        pagination: {
+          total,
+          page: queryData.page,
+          limit: queryData.limit,
+          pages: Math.ceil(total / queryData.limit),
+        },
+      },
     });
   },
 );

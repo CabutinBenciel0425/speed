@@ -13,13 +13,14 @@ import { useAuth } from "@/hooks/useAuth"
 import { MapPin } from "lucide-react"
 import { AiFillStar } from "react-icons/ai"
 
-function SearchFilterMerchants({
+function FilterMerchants({
   ratingKey,
   open,
   maxDist,
   onHandleToggleOpen,
   onHandleRatingChange,
   onHandleDistanceChange,
+  onHandleReset,
 }: {
   ratingKey: string
   open: boolean
@@ -27,6 +28,7 @@ function SearchFilterMerchants({
   onHandleToggleOpen: (value: boolean) => void
   onHandleRatingChange: (value: string) => void
   onHandleDistanceChange: (value: string) => void
+  onHandleReset: () => void
 }) {
   const { defaultAddress } = useAddress()
   const { isAuthenticated } = useAuth()
@@ -170,6 +172,7 @@ function SearchFilterMerchants({
 
       <Button
         type="reset"
+        onClick={onHandleReset}
         className={"mb-5 w-full border border-muted-foreground/10"}
         variant={"ghost"}
       >
@@ -179,4 +182,4 @@ function SearchFilterMerchants({
   )
 }
 
-export default SearchFilterMerchants
+export default FilterMerchants

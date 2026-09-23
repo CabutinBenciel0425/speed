@@ -9,7 +9,7 @@ import SkeletonPagination from "@/components/common/Skeleton/SkeletonPagination"
 import { PaginationPage } from "@/components/common/PaginationPage"
 import { useSearchProductResults } from "../hooks/useSearchProductsResults"
 import { useCategories } from "../hooks/useCategories"
-import { ArchiveX } from "lucide-react"
+import { ArchiveX, Search } from "lucide-react"
 import { Spinner } from "@/components/ui/spinner"
 import { getTimeRangeFromSelected } from "../utils/timeUtils"
 import {
@@ -164,8 +164,9 @@ function SearchProductsAll() {
   return (
     <div className="flex flex-col gap-5 p-6">
       <BreadcrumbLinkComponent currentPage={"Products"} pages={pages} />
-      <h1 className="mb-6 text-2xl font-bold">
-        All Products ({data?.pagination.total})
+      <h1 className="flex flex-row items-center gap-2 text-2xl font-bold">
+        <span>All Products</span> <Search stroke="#ff6b00" />{" "}
+        <span>({data?.pagination.total})</span>
       </h1>
       <main className="flex w-full flex-col gap-2">
         <div className="mb-5 flex w-full items-end justify-end">

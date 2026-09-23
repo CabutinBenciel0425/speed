@@ -1,5 +1,5 @@
 import type { Merchant } from "./merchant"
-import type { Product } from "./products"
+import type { Pagination, Product } from "./products"
 
 export type ProductFavorite = {
   _id: string
@@ -13,7 +13,24 @@ export type MerchantFavorite = {
   merchant: Merchant
 }
 
+export type MerchantFavoritePagination = {
+  merchants: MerchantFavorite[]
+  pagination: Pagination
+}
+
+export type ProductFavoritePagination = {
+  products: ProductFavorite[]
+  pagination: Pagination
+}
+
 export type FavoriteLists = {
-  products: ProductFavorite
-  merchants: MerchantFavorite
+  products: ProductFavoritePagination
+  merchants: MerchantFavoritePagination
+}
+
+export type FavoriteListsPageProps = {
+  products?: ProductFavoritePagination
+  merchants?: MerchantFavoritePagination
+  isLoading: boolean
+  error: boolean
 }

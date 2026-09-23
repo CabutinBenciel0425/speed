@@ -45,6 +45,7 @@ export const useToggleMerchantFavorite = () => {
           ? "Merchant added to favorites"
           : "Merchant removed from favorites"
       )
+      queryClient.invalidateQueries({ queryKey: ["merchantFavoriteList"] })
     },
   })
 }
