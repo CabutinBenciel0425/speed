@@ -1,6 +1,8 @@
+import type { User } from "./user"
+
 export interface Address {
   _id: string
-  user: string
+  user: User
   label: AddressLabel
   recipientName?: string
   phoneNumber: string
