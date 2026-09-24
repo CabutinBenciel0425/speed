@@ -2,6 +2,7 @@ import { useSearchParams } from "react-router-dom"
 import BreadcrumbLinkComponent from "../../../components/common/BreadcrumbLink"
 import { useSearchPageResults } from "@/hooks/useSearchPageResults"
 import SearchPageResults from "../components/SearchPageResults"
+import { Search } from "lucide-react"
 
 function SearchPage() {
   const [searchParams] = useSearchParams()
@@ -20,13 +21,16 @@ function SearchPage() {
       </div>
 
       <div className="ml-4 flex w-full flex-col gap-3">
-        <h1 className="text-lg font-semibold">
-          Search results for <span className="text-primary">"{query}"</span>
-        </h1>
+        <div className="flex flex-row items-center gap-3">
+          <Search className="size-6 md:size-8 xl:size-10" stroke="#ff6b00" />
+          <h1 className="text-lg font-semibold">
+            Search results for <span className="text-primary">"{query}"</span>
+          </h1>
 
-        <h4 className="text-base font-normal text-muted-foreground/50">
-          {totalResults} results found
-        </h4>
+          <h4 className="text-base font-normal text-muted-foreground/50">
+            {totalResults} results found
+          </h4>
+        </div>
 
         <main className="flex w-full">
           <SearchPageResults

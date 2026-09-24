@@ -5,7 +5,7 @@ import SkeletonPagination from "@/components/common/Skeleton/SkeletonPagination"
 import { PaginationPage } from "@/components/common/PaginationPage"
 import { useSearchMerchantResults } from "../hooks/useSearchMerchantResults"
 import { SkeletonMerchantCard } from "@/components/common/Skeleton/SkeletonMerchantCard"
-import { ArchiveX, Search } from "lucide-react"
+import { ArchiveX } from "lucide-react"
 import Sort from "@/components/common/Sort"
 import {
   DropdownMenuLabel,
@@ -15,6 +15,7 @@ import {
 import { getRatingRange } from "../utils/getRatingRange"
 import { useAddress } from "@/hooks/useAddress"
 import FilterMerchants from "./FilterMerchants"
+import { BsShop } from "react-icons/bs"
 
 function SearchMerchantsAll() {
   const { defaultAddress } = useAddress()
@@ -167,8 +168,10 @@ function SearchMerchantsAll() {
     <div className="flex flex-col gap-5 p-6">
       <BreadcrumbLinkComponent currentPage={"Merchants"} pages={pages} />
       <h1 className="flex flex-row items-center gap-2 text-2xl font-bold">
-        <span>All Merchants</span> <Search stroke="#ff6b00" />{" "}
-        <span>({data?.pagination.total})</span>
+        <BsShop className="size-6 text-primary lg:size-8" />
+        <span className="text-base font-semibold lg:text-lg">
+          All Merchants ({data?.pagination.total})
+        </span>
       </h1>
 
       <main className="flex w-full flex-col gap-2">

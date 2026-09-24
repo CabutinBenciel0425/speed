@@ -165,7 +165,7 @@ function MerchantFavoritesAll() {
         pages={pages}
       />
       <h1 className="flex flex-row items-center gap-3 text-2xl font-bold">
-        <BsShop className="size-8 text-primary" />
+        <BsShop className="size-6 text-primary lg:size-8" />
         <span className="text-base font-semibold lg:text-lg">
           All Favorite Merchants ({merchantFavoriteList?.pagination.total})
         </span>

@@ -9,7 +9,7 @@ import SkeletonPagination from "@/components/common/Skeleton/SkeletonPagination"
 import { PaginationPage } from "@/components/common/PaginationPage"
 import { useSearchProductResults } from "../hooks/useSearchProductsResults"
 import { useCategories } from "../hooks/useCategories"
-import { ArchiveX, Search } from "lucide-react"
+import { ArchiveX } from "lucide-react"
 import { Spinner } from "@/components/ui/spinner"
 import { getTimeRangeFromSelected } from "../utils/timeUtils"
 import {
@@ -18,6 +18,7 @@ import {
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu"
 import Sort from "@/components/common/Sort"
+import { LiaBoxOpenSolid } from "react-icons/lia"
 
 function SearchProductsAll() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -165,9 +166,12 @@ function SearchProductsAll() {
     <div className="flex flex-col gap-5 p-6">
       <BreadcrumbLinkComponent currentPage={"Products"} pages={pages} />
       <h1 className="flex flex-row items-center gap-2 text-2xl font-bold">
-        <span>All Products</span> <Search stroke="#ff6b00" />{" "}
-        <span>({data?.pagination.total})</span>
+        <LiaBoxOpenSolid className="size-6 text-primary lg:size-8" />
+        <span className="text-base font-semibold lg:text-lg">
+          All Products ({data?.pagination.total})
+        </span>
       </h1>
+
       <main className="flex w-full flex-col gap-2">
         <div className="mb-5 flex w-full items-end justify-end">
           <Sort value={sortParams}>

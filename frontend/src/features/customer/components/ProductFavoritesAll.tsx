@@ -161,7 +161,7 @@ function ProductFavoritesAll() {
     <div className="flex flex-col gap-5 p-6">
       <BreadcrumbLinkComponent currentPage={"Products"} pages={pages} />
       <h1 className="flex flex-row items-center gap-2 text-2xl font-bold">
-        <LiaBoxOpenSolid className="size-4 text-primary md:size-6 xl:size-8" />
+        <LiaBoxOpenSolid className="size-6 text-primary lg:size-8" />
         <span className="text-base font-semibold lg:text-lg">
           All Favorite Products ({data?.pagination.total})
         </span>

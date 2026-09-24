@@ -25,7 +25,7 @@ function Hero() {
           </p>
 
           <PressButton className="h-8 w-fit rounded-xl bg-primary px-2 text-white lg:h-12 lg:px-4">
-            <span className="text-xs font-normal lg:text-base xl:text-lg">
+            <span className="px-2 text-xs font-normal lg:text-base xl:text-lg">
               Order now
             </span>
             <ArrowRight className="size-4 md:size-5 lg:size-6" />
