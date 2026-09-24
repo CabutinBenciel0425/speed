@@ -24,7 +24,7 @@ function SearchPage() {
           Search results for <span className="text-primary">"{query}"</span>
         </h1>
 
-        <h4 className="text-md font-normal text-muted-foreground/50">
+        <h4 className="text-base font-normal text-muted-foreground/50">
           {totalResults} results found
         </h4>
 

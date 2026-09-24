@@ -56,7 +56,7 @@ function SearchFilterProducts({
     >
       {/* Categories */}
       <AccordionItem key="categories" value={"categories"} className={"py-4"}>
-        <AccordionTrigger className={"text-md font-semibold"}>
+        <AccordionTrigger className={"text-base font-semibold"}>
           Categories
         </AccordionTrigger>
 
@@ -83,7 +83,7 @@ function SearchFilterProducts({
         value={"price-range"}
         className={"py-4"}
       >
-        <AccordionTrigger className={"text-md font-semibold"}>
+        <AccordionTrigger className={"text-base font-semibold"}>
           Price Range
         </AccordionTrigger>
         <AccordionContent className={"w-full py-2"}>
@@ -145,7 +145,7 @@ function SearchFilterProducts({
         value={"prep-time"}
         className={"mb-5 py-4"}
       >
-        <AccordionTrigger className={"text-md font-semibold"}>
+        <AccordionTrigger className={"text-base font-semibold"}>
           Preparation Time
         </AccordionTrigger>
 

@@ -19,7 +19,7 @@ function BreadcrumbLinkComponent({
         <BreadcrumbItem>
           <BreadcrumbLink
             render={
-              <NavLink to="/" className="lg:text-md text-xs md:text-sm">
+              <NavLink to="/" className="text-xs md:text-sm lg:text-base">
                 Home
               </NavLink>
             }
@@ -33,7 +33,7 @@ function BreadcrumbLinkComponent({
                 render={
                   <NavLink
                     to={page.link}
-                    className="lg:text-md text-xs md:text-sm"
+                    className="text-xs md:text-sm lg:text-base"
                   >
                     {page.pageName}
                   </NavLink>
@@ -45,7 +45,7 @@ function BreadcrumbLinkComponent({
         ))}
 
         <BreadcrumbItem>
-          <BreadcrumbPage className="lg:text-md text-xs md:text-sm">
+          <BreadcrumbPage className="text-xs md:text-sm lg:text-base">
             {currentPage}
           </BreadcrumbPage>
         </BreadcrumbItem>

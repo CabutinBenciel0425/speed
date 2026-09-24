@@ -42,31 +42,31 @@ export function ProfileButton() {
           <DropdownMenuItem className={"block md:hidden"}>
             <NavLink to="/cart" className={"flex flex-row gap-2"}>
               <ShoppingCart className="size-4 lg:size-5" />
-              <span className="lg:text-md text-xs md:text-sm">Cart</span>
+              <span className="text-xs md:text-sm lg:text-base">Cart</span>
             </NavLink>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <NavLink to="/orders" className={"flex flex-row gap-2"}>
               <PaperBag className="size-4 lg:size-5" />
-              <span className="lg:text-md text-xs md:text-sm">Orders</span>
+              <span className="text-xs md:text-sm lg:text-base">Orders</span>
             </NavLink>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <NavLink to="/favorites" className={"flex flex-row gap-2"}>
               <Heart className="size-4 lg:size-5" />
-              <span className="lg:text-md text-xs md:text-sm">Favorites</span>
+              <span className="text-xs md:text-sm lg:text-base">Favorites</span>
             </NavLink>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <NavLink to="/reviews" className={"flex flex-row gap-2"}>
               <File className="size-4 lg:size-5" />
-              <span className="lg:text-md text-xs md:text-sm">Reviews</span>
+              <span className="text-xs md:text-sm lg:text-base">Reviews</span>
             </NavLink>
           </DropdownMenuItem>
           <DropdownMenuItem>
             <NavLink to="/notifications" className={"flex flex-row gap-2"}>
               <BellIcon className="size-4 lg:size-5" />
-              <span className="lg:text-md text-xs md:text-sm">
+              <span className="text-xs md:text-sm lg:text-base">
                 Notifications
               </span>
             </NavLink>
@@ -75,7 +75,7 @@ export function ProfileButton() {
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => logout()}>
           <LogOutIcon className="size-4 lg:size-5" />
-          <span className="lg:text-md text-xs md:text-sm">Log Out</span>
+          <span className="text-xs md:text-sm lg:text-base">Log Out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

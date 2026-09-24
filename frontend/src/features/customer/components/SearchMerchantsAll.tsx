@@ -180,19 +180,19 @@ function SearchMerchantsAll() {
               onValueChange={handleSortChange}
             >
               <DropdownMenuRadioItem value="-averageRating">
-                <span className="text-md font-semibold">Rating</span>
+                <span className="text-base font-semibold">Rating</span>
                 <span className="text-muted-foreground">Highest to Lowest</span>
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="averageRating">
-                <span className="text-md font-semibold">Rating</span>
+                <span className="text-base font-semibold">Rating</span>
                 <span className="text-muted-foreground">Lowest to Highest</span>
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="merchantName">
-                <span className="text-md font-semibold">Name</span>
+                <span className="text-base font-semibold">Name</span>
                 <span className="text-muted-foreground">A to Z</span>
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="-merchantName">
-                <span className="text-md font-semibold">Name</span>
+                <span className="text-base font-semibold">Name</span>
                 <span className="text-muted-foreground">Z to A</span>
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>

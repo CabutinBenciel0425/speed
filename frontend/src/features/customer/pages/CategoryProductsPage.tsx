@@ -112,7 +112,7 @@ function CategoryProductsPage() {
       )}
 
       <div className="-mb-2 flex flex-col gap-5 md:mb-5">
-        <p className="text-md text-muted-foreground md:text-lg">
+        <p className="text-base text-muted-foreground md:text-lg">
           {productsByCategory?.pagination?.total} items found
         </p>
         <div className="flex w-full items-center justify-between">
@@ -129,19 +129,19 @@ function CategoryProductsPage() {
               onValueChange={handleSortChange}
             >
               <DropdownMenuRadioItem value="-price">
-                <span className="text-md font-semibold">Price</span>
+                <span className="text-base font-semibold">Price</span>
                 <span className="text-muted-foreground">Highest to Lowest</span>
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="price">
-                <span className="text-md font-semibold">Price</span>
+                <span className="text-base font-semibold">Price</span>
                 <span className="text-muted-foreground">Lowest to Highest</span>
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="name">
-                <span className="text-md font-semibold">Name</span>
+                <span className="text-base font-semibold">Name</span>
                 <span className="text-muted-foreground">A to Z</span>
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="-name">
-                <span className="text-md font-semibold">Name</span>
+                <span className="text-base font-semibold">Name</span>
                 <span className="text-muted-foreground">Z to A</span>
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>

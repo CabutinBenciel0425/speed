@@ -5,7 +5,7 @@ function ViewAllButton() {
     <Button
       variant={"ghost"}
       className={
-        "text-md text-primary hover:bg-transparent hover:text-speed-orange-hover hover:underline"
+        "text-base text-primary hover:bg-transparent hover:text-speed-orange-hover hover:underline"
       }
     >
       View all

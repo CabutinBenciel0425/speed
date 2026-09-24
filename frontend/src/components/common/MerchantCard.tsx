@@ -49,7 +49,7 @@ function MerchantCard({ merchant }: { merchant: Merchant }) {
             </CardAction>
             <CardTitle
               className={
-                "lg:text-md flex flex-row items-start justify-start gap-2 text-sm font-semibold"
+                "flex flex-row items-start justify-start gap-2 text-sm font-semibold lg:text-base"
               }
             >
               <span>

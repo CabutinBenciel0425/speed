@@ -73,7 +73,7 @@ function OrderSummary({
                 Subtotal ({totalItems} {totalItems > 1 ? "items" : "item"})
               </span>
             )}
-            <span className="md:text-md text-sm font-semibold">
+            <span className="text-sm font-semibold md:text-base">
               ₱{subtotal}
             </span>
           </div>
@@ -82,7 +82,7 @@ function OrderSummary({
             <span className="text-xs text-muted-foreground md:text-sm">
               Delivery fee
             </span>
-            <span className="md:text-md text-sm font-semibold">
+            <span className="text-sm font-semibold md:text-base">
               ₱{deliveryFee}
             </span>
           </div>
@@ -90,17 +90,17 @@ function OrderSummary({
         <Separator />
         <div className="flex w-full flex-col justify-center gap-5">
           <div className="flex flex-row items-center justify-between">
-            <span className="text-md font-semibold lg:text-lg">Total</span>
+            <span className="text-base font-semibold lg:text-lg">Total</span>
             <span className="text-lg font-semibold text-primary lg:text-xl">
               ₱{total}
             </span>
           </div>
           <div className="mb-5 flex w-full flex-col items-center justify-center gap-2">
             <Button
-              className={`text-md flex w-full cursor-pointer flex-row items-center justify-center rounded-md py-6 font-normal ${!isMerchantOpen ? "bg-muted-foreground/40" : ""}`}
+              className={`flex w-full cursor-pointer flex-row items-center justify-center rounded-md py-6 text-base font-normal ${!isMerchantOpen ? "bg-muted-foreground/40" : ""}`}
               disabled={!isMerchantOpen}
             >
-              <span className="md:text-md text-sm lg:text-lg">
+              <span className="text-sm md:text-base lg:text-lg">
                 Proceed to checkout
               </span>
               <ArrowRight />
@@ -118,11 +118,11 @@ function OrderSummary({
                 Estimated Delivery Time
               </p>
               {deliveryTime ? (
-                <p className="lg:text-md text-sm font-semibold">
+                <p className="text-sm font-semibold lg:text-base">
                   {deliveryTime} - {deliveryTime + 15} mins
                 </p>
               ) : (
-                <p className="lg:text-md text-sm font-semibold">
+                <p className="text-sm font-semibold lg:text-base">
                   Something went wrong on getting the necessary data
                 </p>
               )}
@@ -135,7 +135,7 @@ function OrderSummary({
             </p>
             <Textarea
               placeholder="Type here..."
-              className="lg:text-md line-clamp-5 resize-none text-sm"
+              className="line-clamp-5 resize-none text-sm lg:text-base"
               maxLength={500}
               value={note}
               onChange={(e) => setNote(e.target.value)}
@@ -143,7 +143,7 @@ function OrderSummary({
               disabled={isSavingCustomerNote}
             />
             <div className="flex w-full flex-row items-center justify-between">
-              <span className="lg:text-md text-xs text-muted-foreground/40">
+              <span className="text-xs text-muted-foreground/40 lg:text-base">
                 {noteStatus === "saving" || isSavingCustomerNote
                   ? "Saving..."
                   : noteStatus === "saved"
@@ -159,10 +159,10 @@ function OrderSummary({
           <div className="flex flex-row items-center justify-start gap-2 rounded-md bg-muted-foreground/10 px-4 py-3">
             <ShieldCheck className="size-8" color="#ff6b00" />
             <div className="flex flex-col items-start justify-center">
-              <p className="lg:text-md text-sm font-semibold">
+              <p className="text-sm font-semibold lg:text-base">
                 Secure & safe checkout
               </p>
-              <p className="lg:text-md text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground lg:text-base">
                 Your information is always protected
               </p>
             </div>

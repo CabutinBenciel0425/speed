@@ -37,7 +37,9 @@ function Category() {
                   alt={category.name}
                   className="h-2/3"
                 />
-                <p className="lg:text-md text-xs text-wrap">{category.name}</p>
+                <p className="text-xs text-wrap lg:text-base">
+                  {category.name}
+                </p>
               </CategoryCard>
             </NavLink>
           ))}

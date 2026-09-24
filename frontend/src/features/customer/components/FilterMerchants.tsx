@@ -46,7 +46,7 @@ function FilterMerchants({
         key={"open-now"}
         value={"open-now"}
       >
-        <AccordionTrigger className={"text-md font-semibold"}>
+        <AccordionTrigger className={"text-base font-semibold"}>
           Availability
         </AccordionTrigger>
         <AccordionContent key={"open-now"} className={"mt-2.5"}>
@@ -66,7 +66,7 @@ function FilterMerchants({
         className={`w-full py-4 ${defaultAddress && isAuthenticated ? "" : "mb-5"}`}
         key={"rating"}
       >
-        <AccordionTrigger className={"text-md font-semibold"}>
+        <AccordionTrigger className={"text-base font-semibold"}>
           Rating
         </AccordionTrigger>
         <RadioGroup onValueChange={onHandleRatingChange} value={ratingKey}>
@@ -115,7 +115,7 @@ function FilterMerchants({
       {/*Location*/}
       {defaultAddress && isAuthenticated && (
         <AccordionItem className={"mb-5 w-full py-4"} key={"location"}>
-          <AccordionTrigger className={"text-md font-semibold"}>
+          <AccordionTrigger className={"text-base font-semibold"}>
             Location
           </AccordionTrigger>
           <RadioGroup

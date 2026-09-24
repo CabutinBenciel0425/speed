@@ -74,24 +74,24 @@ function ProductCard({ product }: { product: Product }) {
             <NavLink
               to={`/merchant/${product?.merchant}/${product?._id}`}
               style={{ textDecoration: "none" }}
-              className={"lg:text-md text-sm font-semibold"}
+              className={"text-sm font-semibold lg:text-base"}
             >
               {product.name}
             </NavLink>
           </CardTitle>
 
-          <CardDescription className="lg:text-md line-clamp-1 text-xs md:line-clamp-2 md:text-sm lg:line-clamp-1">
+          <CardDescription className="line-clamp-1 text-xs md:line-clamp-2 md:text-sm lg:line-clamp-1 lg:text-base">
             {product.description}
           </CardDescription>
           <CardDescription className="flex flex-row gap-2">
-            <Clock className="lg:text-md mt-0.5 size-4 text-xs" />
+            <Clock className="mt-0.5 size-4 text-xs lg:text-base" />
             <span className="text-xs lg:text-sm">
               {product.preparationTime} mins
             </span>
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-row items-center justify-between">
-          <span className="md:text-md text-sm font-bold text-primary lg:text-lg">
+          <span className="text-sm font-bold text-primary md:text-base lg:text-lg">
             ₱{product?.price}
           </span>
         </CardContent>

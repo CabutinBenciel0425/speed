@@ -1,5 +1,5 @@
 import { useAddress } from "@/hooks/useAddress"
-import { ArchiveX, Heart } from "lucide-react"
+import { ArchiveX } from "lucide-react"
 import { useSearchParams } from "react-router-dom"
 import { getRatingRange } from "../utils/getRatingRange"
 import BreadcrumbLinkComponent from "@/components/common/BreadcrumbLink"
@@ -15,6 +15,7 @@ import SkeletonPagination from "@/components/common/Skeleton/SkeletonPagination"
 import { PaginationPage } from "@/components/common/PaginationPage"
 import { useMerchantFavoriteList } from "../hooks/useMerchantFavoriteList"
 import FilterMerchants from "./FilterMerchants"
+import { BsShop } from "react-icons/bs"
 
 function MerchantFavoritesAll() {
   const { defaultAddress } = useAddress()
@@ -163,10 +164,11 @@ function MerchantFavoritesAll() {
         currentPage={"Favorite Merchants"}
         pages={pages}
       />
-      <h1 className="flex flex-row items-center gap-2 text-2xl font-bold">
-        <span>All Favorite Merchants</span>{" "}
-        <Heart stroke="#ff6b00" fill="#ff6b00" />{" "}
-        <span>({merchantFavoriteList?.pagination.total})</span>
+      <h1 className="flex flex-row items-center gap-3 text-2xl font-bold">
+        <BsShop className="size-8 text-primary" />
+        <span className="text-base font-semibold lg:text-lg">
+          All Favorite Merchants ({merchantFavoriteList?.pagination.total})
+        </span>
       </h1>
 
       <main className="flex w-full flex-col gap-2">
@@ -178,19 +180,19 @@ function MerchantFavoritesAll() {
               onValueChange={handleSortChange}
             >
               <DropdownMenuRadioItem value="-averageRating">
-                <span className="text-md font-semibold">Rating</span>
+                <span className="text-base font-semibold">Rating</span>
                 <span className="text-muted-foreground">Highest to Lowest</span>
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="averageRating">
-                <span className="text-md font-semibold">Rating</span>
+                <span className="text-base font-semibold">Rating</span>
                 <span className="text-muted-foreground">Lowest to Highest</span>
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="merchantName">
-                <span className="text-md font-semibold">Name</span>
+                <span className="text-base font-semibold">Name</span>
                 <span className="text-muted-foreground">A to Z</span>
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="-merchantName">
-                <span className="text-md font-semibold">Name</span>
+                <span className="text-base font-semibold">Name</span>
                 <span className="text-muted-foreground">Z to A</span>
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>

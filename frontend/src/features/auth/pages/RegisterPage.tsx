@@ -56,7 +56,9 @@ export function RegisterPage() {
             <CardAction className="mt-2">
               <NavLink
                 to="/login"
-                className={"text-md font-semibold text-primary hover:underline"}
+                className={
+                  "text-base font-semibold text-primary hover:underline"
+                }
               >
                 Login
               </NavLink>

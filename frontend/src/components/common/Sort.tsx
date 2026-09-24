@@ -21,8 +21,13 @@ function Sort({
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
-            <Button variant="outline">
-              <span className="text-md text-muted-foreground">Sort by: </span>
+            <Button
+              variant="outline"
+              className={"text-xs font-semibold lg:text-sm"}
+            >
+              <span className="text-xs text-muted-foreground lg:text-sm">
+                Sort by:{" "}
+              </span>
               {formatSortTitle(value)}
             </Button>
           }

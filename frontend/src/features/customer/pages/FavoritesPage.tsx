@@ -1,6 +1,7 @@
 import BreadcrumbLinkComponent from "@/components/common/BreadcrumbLink"
 import { useFavoriteLists } from "../hooks/useFavoriteLists"
 import MerchantAndProductResults from "../components/MerchantAndProductsResults"
+import { Heart } from "lucide-react"
 
 function FavoritesPage() {
   const { data, isLoading, isError } = useFavoriteLists()
@@ -13,8 +14,10 @@ function FavoritesPage() {
       </div>
 
       <div className="ml-4 flex w-full flex-col gap-3">
-        <h1 className="text-lg font-semibold">Your Favorites List</h1>
-
+        <div className="flex flex-row items-center gap-3">
+          <Heart className="size-10" stroke="#ff6b00" fill="#ff6b00" />
+          <h1 className="text-lg font-semibold">Your Favorites List</h1>
+        </div>
         <main className="flex w-full">
           <MerchantAndProductResults
             products={products}

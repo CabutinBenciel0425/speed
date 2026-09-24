@@ -84,7 +84,7 @@ function Searchbar() {
           ref={inputRef}
           placeholder="Search for food or restaurant"
           type="search"
-          className="lg:text-md flex-1 bg-transparent py-1 text-xs outline-none md:text-sm"
+          className="flex-1 bg-transparent py-1 text-xs outline-none md:text-sm lg:text-base"
           value={query}
           onChange={handleChange}
           onFocus={() => {

@@ -111,7 +111,7 @@ function ProductPage() {
           </div>
 
           {/* Description */}
-          <p className="lg:text-md text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground lg:text-base">
             {product.description}
           </p>
 

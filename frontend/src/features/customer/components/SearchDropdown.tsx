@@ -48,7 +48,7 @@ function SearchDropdown({
                   />
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col items-start justify-center">
-                  <span className="text-md font-semibold">
+                  <span className="text-base font-semibold">
                     {merchant.merchantName}
                   </span>
                   <span className="w-full truncate text-sm text-muted-foreground/40">
@@ -83,12 +83,12 @@ function SearchDropdown({
                     <span className="text-sm text-muted-foreground">
                       {product.merchantName}
                     </span>
-                    <h3 className="text-md flex-nowrap font-semibold">
+                    <h3 className="flex-nowrap text-base font-semibold">
                       {product.name}
                     </h3>
                   </div>
                   <div className="w-1/5">
-                    <span className="text-md w-1/3 font-semibold">
+                    <span className="w-1/3 text-base font-semibold">
                       ₱{product.price}
                     </span>
                   </div>

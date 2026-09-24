@@ -177,19 +177,19 @@ function SearchProductsAll() {
               onValueChange={handleSortChange}
             >
               <DropdownMenuRadioItem value="-price">
-                <span className="text-md font-semibold">Price</span>
+                <span className="text-base font-semibold">Price</span>
                 <span className="text-muted-foreground">Highest to Lowest</span>
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="price">
-                <span className="text-md font-semibold">Price</span>
+                <span className="text-base font-semibold">Price</span>
                 <span className="text-muted-foreground">Lowest to Highest</span>
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="name">
-                <span className="text-md font-semibold">Name</span>
+                <span className="text-base font-semibold">Name</span>
                 <span className="text-muted-foreground">A to Z</span>
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="-name">
-                <span className="text-md font-semibold">Name</span>
+                <span className="text-base font-semibold">Name</span>
                 <span className="text-muted-foreground">Z to A</span>
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>

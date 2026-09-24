@@ -3,7 +3,7 @@ import CartItemCard from "../components/CartItemCard"
 import OrderSummary from "../components/OrderSummary"
 import { useCart } from "../hooks/useCart"
 import { Button } from "@/components/ui/button"
-import { Trash2 } from "lucide-react"
+import { ShoppingCart, Trash2 } from "lucide-react"
 import { useDeleteItemCart } from "../hooks/useDeleteItemCart"
 import { BsCartX } from "react-icons/bs"
 import { NavLink } from "react-router-dom"
@@ -43,14 +43,17 @@ function CartPage() {
 
   return (
     <div className="relative flex w-full flex-col items-center px-4 py-5 sm:px-6 lg:px-8 xl:px-10">
-      <div className="flex w-full max-w-7xl flex-col items-start justify-start">
-        <h1 className="mb-1 text-lg font-bold sm:text-xl 2xl:text-2xl">
-          Your Cart
-        </h1>
+      <div className="flex w-full max-w-7xl flex-row items-center gap-5 2xl:max-w-375">
+        <ShoppingCart className="size-13" stroke="#ff6b00" />
+        <div>
+          <h1 className="mb-1 text-lg font-bold sm:text-xl 2xl:text-2xl">
+            Your Cart
+          </h1>
 
-        <h3 className="text-xs font-normal text-muted-foreground/50 sm:text-sm">
-          Good food is always a good idea
-        </h3>
+          <h3 className="text-xs font-normal text-muted-foreground/50 sm:text-sm">
+            Good food is always a good idea
+          </h3>
+        </div>
       </div>
 
       {cartItems && cartItems.length > 0 ? (

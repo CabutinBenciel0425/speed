@@ -1,4 +1,4 @@
-import { ArchiveX, Heart } from "lucide-react"
+import { ArchiveX } from "lucide-react"
 import { useSearchParams } from "react-router-dom"
 import { useCategories } from "../hooks/useCategories"
 import { useMemo, useState } from "react"
@@ -17,6 +17,7 @@ import ProductCard from "@/components/common/ProductCard"
 import SkeletonPagination from "@/components/common/Skeleton/SkeletonPagination"
 import { PaginationPage } from "@/components/common/PaginationPage"
 import { useProductFavoriteList } from "../hooks/useProductFavoriteList"
+import { LiaBoxOpenSolid } from "react-icons/lia"
 
 function ProductFavoritesAll() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -160,9 +161,10 @@ function ProductFavoritesAll() {
     <div className="flex flex-col gap-5 p-6">
       <BreadcrumbLinkComponent currentPage={"Products"} pages={pages} />
       <h1 className="flex flex-row items-center gap-2 text-2xl font-bold">
-        <span>All Favorite Products</span>{" "}
-        <Heart stroke="#ff6b00" fill="#ff6b00" />{" "}
-        <span>({data?.pagination.total})</span>
+        <LiaBoxOpenSolid className="size-4 text-primary md:size-6 xl:size-8" />
+        <span className="text-base font-semibold lg:text-lg">
+          All Favorite Products ({data?.pagination.total})
+        </span>
       </h1>
       <main className="flex w-full flex-col gap-2">
         <div className="mb-5 flex w-full items-end justify-end">
@@ -173,19 +175,19 @@ function ProductFavoritesAll() {
               onValueChange={handleSortChange}
             >
               <DropdownMenuRadioItem value="-price">
-                <span className="text-md font-semibold">Price</span>
+                <span className="text-base font-semibold">Price</span>
                 <span className="text-muted-foreground">Highest to Lowest</span>
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="price">
-                <span className="text-md font-semibold">Price</span>
+                <span className="text-base font-semibold">Price</span>
                 <span className="text-muted-foreground">Lowest to Highest</span>
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="name">
-                <span className="text-md font-semibold">Name</span>
+                <span className="text-base font-semibold">Name</span>
                 <span className="text-muted-foreground">A to Z</span>
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="-name">
-                <span className="text-md font-semibold">Name</span>
+                <span className="text-base font-semibold">Name</span>
                 <span className="text-muted-foreground">Z to A</span>
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>

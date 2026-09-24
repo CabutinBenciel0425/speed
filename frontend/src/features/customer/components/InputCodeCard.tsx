@@ -75,7 +75,7 @@ function InputCodeCard() {
         <CardTitle className="text-lg">Verify your email</CardTitle>
         <CardDescription>
           Enter the verification code we sent to your email address:{" "}
-          <span className="text-md font-semibold text-primary">
+          <span className="text-base font-semibold text-primary">
             {user?.email}
           </span>
           .
