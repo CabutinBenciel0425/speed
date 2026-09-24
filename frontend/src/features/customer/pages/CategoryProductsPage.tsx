@@ -112,7 +112,7 @@ function CategoryProductsPage() {
       )}
 
       <div className="-mb-2 flex flex-col gap-5 md:mb-5">
-        <p className="text-base text-muted-foreground md:text-lg">
+        <p className="text-xs text-muted-foreground md:text-base xl:text-lg">
           {productsByCategory?.pagination?.total} items found
         </p>
         <div className="flex w-full items-center justify-between">

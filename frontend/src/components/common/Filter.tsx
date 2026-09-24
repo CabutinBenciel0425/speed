@@ -13,7 +13,7 @@ function Filter({ tags, value, onFilterChange }: FilterProps) {
       onValueChange={handleValueChange}
       size="lg"
       variant="outline"
-      spacing={4}
+      spacing={2}
       className="flex-wrap"
     >
       <ToggleGroupItem value="all">All</ToggleGroupItem>
@@ -22,7 +22,7 @@ function Filter({ tags, value, onFilterChange }: FilterProps) {
         <ToggleGroupItem
           key={tag._id}
           value={tag._id}
-          className={`text-sm capitalize ${tag._id === value ? "scale-110" : ""}`}
+          className={`text-xs capitalize lg:text-sm ${tag._id === value ? "scale-110" : ""}`}
         >
           {tag._id}
         </ToggleGroupItem>

@@ -19,6 +19,7 @@ import CartPage from "./features/customer/pages/CartPage"
 import FavoritesPage from "./features/customer/pages/FavoritesPage"
 import MerchantFavoritesAll from "./features/customer/components/MerchantFavoritesAll"
 import ProductFavoritesAll from "./features/customer/components/ProductFavoritesAll"
+import AddressPage from "./features/customer/pages/AddressPage"
 
 export function App() {
   const { isAuthenticated, isVerified } = useAuth()
@@ -88,6 +89,11 @@ export function App() {
             element={
               isAuthenticated ? <ProductFavoritesAll /> : <Navigate to="/" />
             }
+          />
+
+          <Route
+            path="/address"
+            element={isAuthenticated ? <AddressPage /> : <Navigate to="/" />}
           />
         </Route>
       </Routes>

@@ -40,8 +40,8 @@ function MerchantPageContent({
         <div className="flex flex-row items-center justify-center">
           <img src={logo} alt={merchantName} className="w-30 md:w-45 lg:w-60" />
           <div className="flex flex-col gap-2">
-            <h1 className="text-lg lg:text-2xl">{merchantName}</h1>
-            <p className="text-sm text-wrap text-muted-foreground lg:text-base">
+            <h1 className="text-base lg:text-lg">{merchantName}</h1>
+            <p className="line-clamp-2 truncate text-xs text-wrap text-muted-foreground lg:text-sm">
               {description}
             </p>
             <div className="flex flex-row items-center justify-start gap-2">
@@ -56,7 +56,7 @@ function MerchantPageContent({
             </div>
             <div className="flex flex-row items-start justify-start gap-2 md:items-center">
               <MapPin className="mt-1 size-4 shrink-0 md:-mt-0.5 md:size-6 lg:size-9" />
-              <span className="text-sm lg:text-lg">{addressFormatted}</span>
+              <span className="text-xs lg:text-sm">{addressFormatted}</span>
             </div>
           </div>
         </div>

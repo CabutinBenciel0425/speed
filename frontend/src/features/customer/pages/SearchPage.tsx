@@ -22,12 +22,12 @@ function SearchPage() {
 
       <div className="ml-4 flex w-full flex-col gap-3">
         <div className="flex flex-row items-center gap-3">
-          <Search className="size-6 md:size-8 xl:size-10" stroke="#ff6b00" />
-          <h1 className="text-lg font-semibold">
+          <Search className="size-6 lg:size-8 2xl:size-10" stroke="#ff6b00" />
+          <h1 className="text-base font-semibold xl:text-lg">
             Search results for <span className="text-primary">"{query}"</span>
           </h1>
 
-          <h4 className="text-base font-normal text-muted-foreground/50">
+          <h4 className="text-xs font-normal text-muted-foreground/50 lg:text-sm">
             {totalResults} results found
           </h4>
         </div>

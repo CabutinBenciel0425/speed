@@ -4,6 +4,7 @@ import {
   Heart,
   LogOutIcon,
   PaperBag,
+  Pin,
   ShoppingCart,
 } from "lucide-react"
 
@@ -69,6 +70,13 @@ export function ProfileButton() {
               <span className="text-xs md:text-sm lg:text-base">
                 Notifications
               </span>
+            </NavLink>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem>
+            <NavLink to="/address" className={"flex flex-row gap-2"}>
+              <Pin className="size-4 lg:size-5" />
+              <span className="text-xs md:text-sm lg:text-base">Addresses</span>
             </NavLink>
           </DropdownMenuItem>
         </DropdownMenuGroup>

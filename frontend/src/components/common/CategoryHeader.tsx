@@ -17,8 +17,10 @@ export const CategoryHeader = memo(function CategoryHeader({
       )}
 
       <div>
-        <h1 className="mb-2 text-2xl font-bold md:mb-5 md:text-3xl">{name}</h1>
-        <p className="text-sm text-muted-foreground md:text-base lg:text-lg">
+        <h1 className="mb-2 text-base font-bold md:mb-5 lg:text-lg xl:text-xl 2xl:text-2xl">
+          {name}
+        </h1>
+        <p className="text-xs text-muted-foreground md:text-sm lg:text-base">
           {description}
         </p>
       </div>

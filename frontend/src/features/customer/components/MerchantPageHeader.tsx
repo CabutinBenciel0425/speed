@@ -36,9 +36,9 @@ function MerchantPageHeader({
     <div className="relative h-64 w-full md:h-80 lg:h-112.5">
       <Button
         onClick={() => navigate("/")}
-        className="absolute top-4 left-4 z-20 h-12 w-12 rounded-full bg-black/40 p-2 text-white shadow-lg backdrop-blur-sm transition hover:bg-black/60 lg:left-8"
+        className="absolute top-4 left-4 z-20 h-7 w-7 rounded-full bg-black/40 p-2 text-white shadow-lg backdrop-blur-sm transition hover:bg-black/60 md:h-9 md:w-9 lg:left-8 lg:h-11 lg:w-11"
       >
-        <ChevronLeft className="-ml-1 size-6" />
+        <ChevronLeft className="-ml-1 size-4 md:size-5 lg:size-6" />
       </Button>
 
       <motion.div
@@ -65,10 +65,10 @@ function MerchantPageHeader({
           </div>
 
           <div className="flex flex-col text-white">
-            <h1 className="text-2xl font-bold md:text-3xl lg:text-4xl">
+            <h1 className="text-lg font-bold lg:text-xl 2xl:text-2xl">
               {merchantName}
             </h1>
-            <div className="flex flex-wrap items-center gap-2 text-sm md:text-base">
+            <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm">
               {ratingCount > 0 && (
                 <span className="text-white/80">({ratingCount} reviews)</span>
               )}

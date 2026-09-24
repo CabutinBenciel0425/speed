@@ -55,7 +55,7 @@ function MerchantAndProductResults({
   }
 
   return (
-    <div className="flex w-full flex-col gap-6 px-30">
+    <div className="flex w-full flex-col gap-6">
       {hasMerchants && (
         <Accordion
           multiple
@@ -64,7 +64,7 @@ function MerchantAndProductResults({
           className="w-full"
         >
           <AccordionItem value="merchants" className="border-0">
-            <AccordionTrigger className="group flex w-full items-center justify-between rounded-xl bg-muted/30 px-6 py-4 hover:bg-muted/50 [&[data-state=open]>svg]:rotate-180">
+            <AccordionTrigger className="group flex w-full min-w-58 items-center justify-between rounded-xl bg-muted/30 px-6 py-4 hover:bg-muted/50 [&[data-state=open]>svg]:rotate-180">
               <div className="flex items-center gap-3">
                 <div className="rounded-full bg-primary/10 p-2">
                   <BsShop className="size-5 text-primary" />

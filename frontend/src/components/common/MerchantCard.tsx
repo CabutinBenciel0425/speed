@@ -28,7 +28,7 @@ function MerchantCard({ merchant }: { merchant: Merchant }) {
         to={`/merchant/${merchant._id}`}
         style={{ textDecoration: "none" }}
       >
-        <Card className="relative mx-auto w-full max-w-sm min-w-50 pt-0">
+        <Card className="relative mx-auto w-full max-w-sm min-w-30 pt-0">
           <div className="absolute inset-0 z-30 aspect-video bg-black/35" />
           <img
             src={merchant.banner}
@@ -41,7 +41,7 @@ function MerchantCard({ merchant }: { merchant: Merchant }) {
             className="absolute -top-1 -left-1 z-50 size-20 rounded-full 2xl:h-30 2xl:w-30"
           />
           <CardHeader>
-            <CardAction>
+            <CardAction className="opacity-0 md:opacity-95">
               <Badge variant="secondary">
                 {merchant.averageRating}{" "}
                 <AiFillStar className="text-lg text-yellow-500" />
@@ -57,16 +57,18 @@ function MerchantCard({ merchant }: { merchant: Merchant }) {
                   className={`-mt-5 -ml-6 size-15 ${merchant.isOpen ? "text-green-500" : "text-red-700"}`}
                 />
               </span>
-              <span className="-ml-6">{merchant.merchantName}</span>
+              <span className="-ml-6 line-clamp-1 truncate text-sm font-semibold lg:text-base">
+                {merchant.merchantName}
+              </span>
               <span>
                 <Badge
-                  className={`block ${merchant.isOpen ? "bg-green-500" : "bg-red-700"} text-white md:hidden xl:block`}
+                  className={`${merchant.isOpen ? "bg-green-500" : "bg-red-700"} hidden text-white xl:block`}
                 >
                   {merchant.isOpen ? "Open" : "Closed"}
                 </Badge>
               </span>
             </CardTitle>
-            <CardDescription className="line-clamp-1">
+            <CardDescription className="line-clamp-1 text-xs md:text-sm">
               {merchant.description}
             </CardDescription>
           </CardHeader>
