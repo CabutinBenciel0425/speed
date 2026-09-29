@@ -8,6 +8,7 @@ const toggleDefaultAddress = async (
   label: AddressLabel
 ): Promise<Address[] | []> => {
   try {
+    console.log(label)
     const { data } = await axios.patch(`/address/${label}`)
     return data.data
   } catch (error) {

@@ -7,10 +7,12 @@ export const addressSchema = z.object({
     .string()
     .min(1, "Phone number is required")
     .regex(/^(\+63|0)[0-9]{10}$/, "Invalid Philippine phone number format"),
+  houseOrUnitNumber: z.string(),
   street: z.string(),
   barangay: z.string(),
   city: z.string(),
   province: z.string(),
+  region: z.string(),
   location: z
     .object({
       type: z.string().optional(),
@@ -26,10 +28,12 @@ export const addressInputSchema = addressSchema.pick({
   label: true,
   recipientName: true,
   phoneNumber: true,
+  houseOrUnitNumber: true,
   street: true,
   barangay: true,
   city: true,
   province: true,
+  region: true,
   location: true,
   landmark: true,
   instructions: true,
@@ -39,10 +43,12 @@ export const updateSchemaInput = addressSchema.partial({
   label: true,
   recipientName: true,
   phoneNumber: true,
+  houseOrUnitNumber: true,
   street: true,
   barangay: true,
   city: true,
   province: true,
+  region: true,
   location: true,
   landmark: true,
 });

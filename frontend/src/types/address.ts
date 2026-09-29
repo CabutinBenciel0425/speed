@@ -5,11 +5,13 @@ export interface Address {
   user: User
   label: AddressLabel
   recipientName?: string
+  houseOrUnitNumber: string
   phoneNumber: string
   street: string
   barangay: string
   city: string
   province: string
+  region: string
   location: {
     type: "Point"
     coordinates?: number[]

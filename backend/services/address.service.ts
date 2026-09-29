@@ -30,10 +30,12 @@ export const createNewAddress = async (payload: AddressInput, user: IUser) => {
     label: payload.label,
     recipientName: payload.recipientName,
     phoneNumber: payload.phoneNumber,
+    houseOrUnitNumber: payload.houseOrUnitNumber,
     street: payload.street,
     barangay: payload.barangay,
     city: payload.city,
     province: payload.province,
+    region: payload.region,
     location: {
       type: payload.location?.type || "Point",
       coordinates: payload.location?.coordinates,
@@ -72,6 +74,11 @@ export const updateAddressDetails = async (
   if (payload.phoneNumber) {
     address.phoneNumber = payload.phoneNumber;
   }
+
+  if (payload.houseOrUnitNumber) {
+    address.houseOrUnitNumber = payload.houseOrUnitNumber;
+  }
+
   if (payload.street) {
     address.street = payload.street;
   }
@@ -86,6 +93,10 @@ export const updateAddressDetails = async (
 
   if (payload.province) {
     address.province = payload.province;
+  }
+
+  if (payload.region) {
+    address.region = payload.region;
   }
 
   if (payload.location) {

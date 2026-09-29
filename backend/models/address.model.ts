@@ -5,10 +5,12 @@ export interface IAddress extends Document {
   label: "Home" | "Work" | "Other";
   recipientName?: string;
   phoneNumber: string;
+  houseOrUnitNumber: string;
   street: string;
   barangay: string;
   city: string;
   province: string;
+  region: string;
   location: {
     type: "Point";
     coordinates?: number[];
@@ -36,6 +38,11 @@ export const addressSchema = new Schema<IAddress>(
     },
     phoneNumber: {
       type: String,
+      required: true,
+    },
+    houseOrUnitNumber: {
+      type: String,
+      required: true,
     },
     street: {
       type: String,
@@ -50,6 +57,10 @@ export const addressSchema = new Schema<IAddress>(
       required: true,
     },
     province: {
+      type: String,
+      required: true,
+    },
+    region: {
       type: String,
       required: true,
     },

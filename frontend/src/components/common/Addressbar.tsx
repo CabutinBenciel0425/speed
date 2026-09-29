@@ -35,7 +35,9 @@ export function Addressbar() {
   const formatAddress = (address: Address | null): string => {
     if (!address) return "Select Address"
     return (
-      address.label || address.street || `${address.barangay}, ${address.city}`
+      address.label ||
+      address.street ||
+      `${address.houseOrUnitNumber} ${address.barangay}, ${address.city}`
     )
   }
 
@@ -109,7 +111,8 @@ export function Addressbar() {
                           )}
                         </div>
                         <span className="line-clamp-1 text-xs text-gray-500">
-                          {address.street} {address.barangay}, {address.city}
+                          {address.houseOrUnitNumber} {address.street}{" "}
+                          {address.barangay}, {address.city}
                         </span>
                       </div>
 

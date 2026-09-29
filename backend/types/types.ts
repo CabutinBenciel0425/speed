@@ -25,9 +25,6 @@ export type CreateMerchantInput = merchantInput & {
   logo?: Express.Multer.File | undefined;
   banner?: Express.Multer.File | undefined;
 };
-// export type UpdateMerchantInput = UpdateInput & {
-//   avatar?: Express.Multer.File | undefined;
-// };
 
 export type CreateDriverInput = DriverInput & {
   avatar?: Express.Multer.File | undefined;

@@ -19,7 +19,7 @@ function DeleteModal({
   icon,
 }: {
   open: boolean
-  onOpenChange: (open: boolean) => void
+  onOpenChange: (value: boolean) => void
   onConfirm: () => void
   title?: string
   description?: string

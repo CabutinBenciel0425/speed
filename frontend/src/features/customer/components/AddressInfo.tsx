@@ -3,10 +3,10 @@ import { Clock, ShieldCheck, Star } from "lucide-react"
 
 function AddressInfo() {
   return (
-    <div className="w-full lg:sticky lg:top-5 lg:w-80 lg:shrink-0 xl:w-95 2xl:w-105">
-      <div className="flex h-92 flex-col items-start justify-start gap-5 rounded-md border border-muted-foreground/10 bg-background/20 p-5 shadow-xs">
+    <div className="flex w-full items-center justify-center lg:sticky lg:top-5 lg:w-80 lg:shrink-0 xl:w-95 2xl:w-105">
+      <div className="flex h-80 max-w-90 flex-col items-start justify-start gap-5 rounded-md border border-muted-foreground/10 bg-background/20 p-5 shadow-xs lg:h-102 xl:h-92">
         <h1 className="text-base font-bold lg:text-lg">Quick Tips</h1>
-        <div className="flex w-full flex-row items-center justify-center gap-5">
+        <div className="flex w-full flex-row items-center justify-start gap-5">
           <div className="">
             <ShieldCheck
               className="size-10 rounded-full bg-primary p-2"

@@ -1,18 +1,34 @@
-import { MapPin, Plus } from "lucide-react"
+import { MapPin } from "lucide-react"
 import { useAddressStore } from "@/store/addressStore"
 import AddressCard from "../components/AddressCard"
 import { useToggleDefaultAddress } from "@/hooks/useToggleDefaultAddress"
-import type { AddressLabel } from "@/types/address"
-import { Button } from "@/components/ui/button"
-
+import type { Address, AddressLabel } from "@/types/address"
 import AddressInfo from "../components/AddressInfo"
+import type React from "react"
+import AddAddressForm from "../components/AddAddressForm"
+import { useState } from "react"
 
 function AddressPage() {
   const { addresses } = useAddressStore()
   const { mutate: toggleDefault } = useToggleDefaultAddress()
+  const [addressToEdit, setAddressToEdit] = useState<Address | undefined>()
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const handleAddressChange = (label: AddressLabel) => {
+  const handleAddressChange = (
+    e: React.MouseEvent<HTMLDivElement>,
+    label: AddressLabel
+  ) => {
+    e.stopPropagation()
+    const defaultAddress = addresses.filter((address) => address.isDefault)
+    if (defaultAddress[0].label === label) {
+      return
+    }
     toggleDefault(label)
+  }
+
+  const handleAddressEdit = (values: Address) => {
+    setAddressToEdit(values)
+    setIsModalOpen(true)
   }
 
   return (
@@ -36,27 +52,24 @@ function AddressPage() {
           <div className="flex w-full min-w-0 flex-col items-center justify-center gap-3 lg:flex-1">
             {addresses.map((address) => (
               <AddressCard
-                type={address.label}
-                address={`${address.street} ${address.barangay} ${address.city}, ${address.province}`}
-                isDefault={address.isDefault}
+                address={address}
                 onHandleAddressChange={handleAddressChange}
+                onHandleAddressEdit={handleAddressEdit}
               />
             ))}
           </div>
           <div className="mt-10 flex w-full min-w-0 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-muted-foreground/50 bg-muted-foreground/10 px-10 py-3 lg:flex-1">
-            <Button
-              variant={"ghost"}
-              className={
-                "flex cursor-pointer flex-row items-center justify-center text-base"
-              }
-            >
-              <Plus className="size-5" />
-              <span className="mt-0.5 text-sm lg:text-base">
-                {" "}
-                Add New Address
-              </span>
-            </Button>
-            {addresses.length === 2 && (
+            <AddAddressForm
+              key={addressToEdit?.label ?? "new"}
+              addresses={addresses}
+              addressValues={addressToEdit}
+              open={isModalOpen}
+              onOpenChange={(value) => {
+                setIsModalOpen(value)
+                if (!value) setAddressToEdit(undefined)
+              }}
+            />
+            {addresses.length === 3 && (
               <div className="flex flex-col items-center justify-center text-xs text-muted-foreground/50 lg:text-sm">
                 <p>Maximum of 3 addresses reached</p>
                 <p>Edit an existing address to make changes</p>
