@@ -4,21 +4,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useCartStore } from "@/store/cartStore"
 import { toast } from "sonner"
 
-const addNewAddress = async ({
-  "label": "Home",
-  "recipientName": "Stephanie Cabutin",
-  "phoneNumber": "09923383623",
-  "houseOrUnitNumber": "27",
-  "street": "Anthony St.",
-  "barangay": "Tunasan",
-  "city": "Muntinlupa City",
-  "province": "Metro Manila",
-  "region": "National Capital Region",
-  "location": {
-    "coordinates": [121.0497754, 14.3856019]
-  },
-  "landmark": "",
-  "instructions": ""
+const addProductNote = async ({
+  note,
+  productId,
 }: {
   note: string
   productId: string
