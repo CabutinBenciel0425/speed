@@ -30,19 +30,19 @@ function LabelWithRadio({
       {type === "Home" && (
         <House
           stroke={registered ? "#6b7280" : "#ff6b00"}
-          className={`size-8 ${!registered ? "" : "rounded-full bg-muted-foreground/20"} p-3 md:size-10 lg:size-12`}
+          className={`size-12 ${!registered ? "" : "rounded-full bg-muted-foreground/20"} p-3 md:size-13 lg:size-14`}
         />
       )}
       {type === "Work" && (
         <BriefcaseBusiness
           stroke={registered ? "#6b7280" : "#ff6b00"}
-          className={`size-8 ${!registered ? "" : "rounded-full bg-muted-foreground/20"} p-3 md:size-10 lg:size-12`}
+          className={`size-12 ${!registered ? "" : "rounded-full bg-muted-foreground/20"} p-3 md:size-13 lg:size-14`}
         />
       )}
       {type === "Other" && (
         <LayoutDashboard
           stroke={registered ? "#6b7280" : "#ff6b00"}
-          className={`size-8 ${!registered ? "" : "rounded-full bg-muted-foreground/20"} p-3 md:size-10 lg:size-12`}
+          className={`size-12 ${!registered ? "" : "rounded-full bg-muted-foreground/20"} p-3 md:size-13 lg:size-14`}
         />
       )}
       <span>{type}</span>

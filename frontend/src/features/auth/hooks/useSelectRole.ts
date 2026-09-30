@@ -16,12 +16,14 @@ const selectRole = async (role: string) => {
 
 export const useSelectRole = () => {
   const setAuth = useAuthStore((state) => state.setAuth)
+  const setActiveRole = useAuthStore((state) => state.setActiveRole)
   return useMutation({
     mutationFn: selectRole,
     onSuccess: (response) => {
       toast.success("Role selected successfully")
-      const user = response.data
-
+      const activeRole = response.data.activeRole
+      const user = response.data.userDetails
+      setActiveRole(activeRole)
       setAuth(user)
 
       sessionStorage.removeItem("refreshFailed")

@@ -167,10 +167,12 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 export const selectRole = asyncHandler(async (req: Request, res: Response) => {
   const activeRole: ValidUserRoleInput = req.body.activeRole;
 
-  const { userDetails, accessToken, refreshToken } = await selectRoleService(
-    activeRole,
-    req,
-  );
+  const {
+    activeRole: roleSelected,
+    userDetails,
+    accessToken,
+    refreshToken,
+  } = await selectRoleService(activeRole, req);
 
   setAccessToken(res, accessToken);
   setRefreshToken(res, refreshToken);
@@ -178,7 +180,10 @@ export const selectRole = asyncHandler(async (req: Request, res: Response) => {
 
   res.status(200).json({
     success: true,
-    data: userDetails,
+    data: {
+      activeRole: roleSelected,
+      userDetails: userDetails,
+    },
   });
 });
 

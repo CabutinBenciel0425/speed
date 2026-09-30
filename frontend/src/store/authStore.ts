@@ -1,13 +1,15 @@
-import type { User } from "@/types/user"
+import type { User, ValidRole } from "@/types/user"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
 interface AuthStore {
   user: User | null
+  activeRole: ValidRole | null
   isAuthenticated: boolean
   isVerified: boolean
   isLoading: boolean
   setAuth: (user: User) => void
+  setActiveRole: (role: ValidRole) => void
   setVerified: (isVerified: boolean) => void
   setLoading: (loading: boolean) => void
   logout: () => void
@@ -17,6 +19,7 @@ export const useAuthStore = create<AuthStore>()(
   persist(
     (set) => ({
       user: null,
+      activeRole: null,
       token: null,
       isAuthenticated: false,
       isVerified: false,
@@ -28,6 +31,7 @@ export const useAuthStore = create<AuthStore>()(
           isAuthenticated: true,
           isLoading: false,
         }),
+      setActiveRole: (role) => set({ activeRole: role }),
       setVerified: (isVerified) => set({ isVerified }),
       setLoading: (isLoading) => set({ isLoading }),
       logout: () =>

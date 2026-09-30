@@ -65,6 +65,7 @@ function AddressModalCarousel({
   useEffect(() => {
     if (!open || !api) return
 
+    api.reInit()
     api.scrollTo(0)
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentStep(0)
@@ -79,7 +80,7 @@ function AddressModalCarousel({
     >
       <CarouselContent className="w-full">
         <CarouselItem className="min-w-0 basis-full">
-          <div className="w-full min-w-sm py-5">
+          <div className="w-full min-w-0 py-5">
             <AddressLabelStep
               addresses={addresses}
               addressValues={addressValues}

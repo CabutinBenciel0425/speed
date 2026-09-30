@@ -17,6 +17,7 @@ const fetchCurrentUser = async (): Promise<User | null> => {
 export const useAuth = () => {
   const {
     user,
+    activeRole,
     isAuthenticated,
     isVerified,
     isLoading,
@@ -54,6 +55,7 @@ export const useAuth = () => {
 
   return {
     user,
+    activeRole,
     isAuthenticated,
     isVerified,
     setVerified,

@@ -44,6 +44,8 @@ function AddressDetailsStep() {
 
   const { data: regions = [] } = useRegions()
 
+  console.log(regions)
+
   const { data: provinces = [] } = useProvincesByRegion(
     selectedRegion?.psgc10DigitCode ?? ""
   )
@@ -167,7 +169,7 @@ function AddressDetailsStep() {
                 placeholder="Select your region"
                 className="w-full rounded-sm text-xs lg:text-sm"
               />
-              <ComboboxContent className="w-full rounded-sm">
+              <ComboboxContent className="rounded-sm">
                 <ComboboxEmpty>No items found.</ComboboxEmpty>
                 <ComboboxList>
                   {(item) => (
@@ -216,7 +218,7 @@ function AddressDetailsStep() {
                     }
                     className="w-full rounded-sm text-xs lg:text-sm"
                   />
-                  <ComboboxContent className="w-full rounded-sm">
+                  <ComboboxContent className="rounded-sm">
                     <ComboboxEmpty>No items found.</ComboboxEmpty>
                     <ComboboxList>
                       {(item) => (
@@ -263,7 +265,7 @@ function AddressDetailsStep() {
                 placeholder={cityPlaceholder}
                 className="w-full rounded-sm text-xs lg:text-sm"
               />
-              <ComboboxContent className="w-full rounded-sm">
+              <ComboboxContent className="rounded-sm">
                 <ComboboxEmpty>No items found.</ComboboxEmpty>
                 <ComboboxList>
                   {(item) => (
@@ -306,7 +308,7 @@ function AddressDetailsStep() {
                 placeholder="Select your barangay"
                 className="w-full rounded-sm text-xs lg:text-sm"
               />
-              <ComboboxContent className="w-full rounded-sm">
+              <ComboboxContent className="rounded-sm">
                 <ComboboxEmpty>No items found.</ComboboxEmpty>
                 <ComboboxList>
                   {(item) => (

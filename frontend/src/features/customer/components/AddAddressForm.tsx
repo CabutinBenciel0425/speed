@@ -49,14 +49,14 @@ function AddAddressForm({
         }
       />
 
-      <DialogContent className="w-[calc(100vw-2rem)]! max-w-3xl! overflow-hidden lg:px-5 lg:py-10">
+      <DialogContent className="w-[calc(100vw-2rem)]! max-w-3xl! min-w-90 lg:px-5 lg:py-10">
         <FormProvider {...form}>
           <form
             id="form-address"
             onSubmit={handleSubmit(onSubmit)}
             className="w-full min-w-0"
           >
-            <h2 className="text-sm text-primary lg:text-base">
+            <h2 className="text-base font-semibold text-primary lg:text-lg">
               {isEditing ? "Edit Address" : "Add New Address"}
             </h2>
 

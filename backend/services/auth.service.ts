@@ -270,6 +270,7 @@ export const selectRoleService = async (
   await storeRefreshToken(user._id.toString(), activeRole, refreshToken);
 
   return {
+    activeRole,
     userDetails,
     accessToken,
     refreshToken,
