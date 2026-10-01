@@ -213,9 +213,6 @@ export const getProductFavoritesService = async (
     );
   }
 
-  console.log("productMatch:", JSON.stringify(productMatch, null, 2));
-  console.log("sort:", sort);
-
   const userObjectId = new mongoose.Types.ObjectId(userId);
 
   const docs = await ProductFavorite.aggregate([
@@ -255,7 +252,7 @@ export const getProductFavoritesService = async (
   ]);
 
   const total = totalAgg[0]?.total ?? 0;
-  console.log(docs);
+
   return { docs, total, queryData };
 };
 
@@ -291,8 +288,6 @@ export const getProductsService = async (query: any) => {
       },
     ];
   }
-
-  console.log(queryData.filter);
 
   const docs = await Product.find(queryData.filter)
     .sort(sort)

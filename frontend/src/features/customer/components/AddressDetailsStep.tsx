@@ -44,8 +44,6 @@ function AddressDetailsStep() {
 
   const { data: regions = [] } = useRegions()
 
-  console.log(regions)
-
   const { data: provinces = [] } = useProvincesByRegion(
     selectedRegion?.psgc10DigitCode ?? ""
   )

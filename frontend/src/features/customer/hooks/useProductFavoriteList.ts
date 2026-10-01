@@ -14,7 +14,6 @@ const getProductFavoriteList = async (
   } | null,
   sortParams: string
 ): Promise<ProductFavoritePagination> => {
-  console.log(selectedCategory)
   let url = `/product/favorites?limit=${ITEMS_PER_PAGE}&page=${page}&sort=${sortParams}`
 
   if (

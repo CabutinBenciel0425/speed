@@ -137,8 +137,6 @@ function ProductFavoritesAll() {
     },
   ]
 
-  console.log(data)
-
   if (isLoading) {
     return (
       <div className="mt-50 flex h-full items-center justify-center">

@@ -19,6 +19,7 @@ function AddressPage() {
     label: AddressLabel
   ) => {
     e.stopPropagation()
+
     const defaultAddress = addresses.filter((address) => address.isDefault)
     if (defaultAddress[0].label === label) {
       return
@@ -52,6 +53,7 @@ function AddressPage() {
           <div className="flex w-full min-w-0 flex-col items-center justify-center gap-3 lg:flex-1">
             {addresses.map((address) => (
               <AddressCard
+                key={address._id}
                 address={address}
                 onHandleAddressChange={handleAddressChange}
                 onHandleAddressEdit={handleAddressEdit}

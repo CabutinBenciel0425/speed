@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { FormProvider, useForm } from "react-hook-form"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { Plus } from "lucide-react"
-import AddressModalCarousel from "./AddressModalCarousel"
+import AddressModalSteps from "./AddressModalSteps"
 import type { AddressFormValues } from "../types/address"
 import { getDefaultAddressValues } from "../utils/addressForm"
 
@@ -33,9 +33,7 @@ function AddAddressForm({
   }
 
   useEffect(() => {
-    if (!open) return
-
-    reset(getDefaultAddressValues(addressValues))
+    if (!open) reset(getDefaultAddressValues(addressValues))
   }, [open, addressValues, reset])
 
   return (
@@ -49,7 +47,7 @@ function AddAddressForm({
         }
       />
 
-      <DialogContent className="w-[calc(100vw-2rem)]! max-w-3xl! min-w-90 lg:px-5 lg:py-10">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)]! max-w-3xl! min-w-90 overflow-x-hidden overflow-y-auto transition duration-300 ease-in-out lg:px-5 lg:py-10">
         <FormProvider {...form}>
           <form
             id="form-address"
@@ -60,11 +58,10 @@ function AddAddressForm({
               {isEditing ? "Edit Address" : "Add New Address"}
             </h2>
 
-            <AddressModalCarousel
+            <AddressModalSteps
               addresses={addresses}
               addressValues={addressValues}
               isEditing={isEditing}
-              open={open}
             />
           </form>
         </FormProvider>

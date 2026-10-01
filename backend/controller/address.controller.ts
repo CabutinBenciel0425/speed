@@ -22,7 +22,7 @@ export const getAllAddress = asyncHandler(
       throw new NotFoundError("User");
     }
     const allAddress = await Address.find({ user: user._id }).populate("user");
-    console.log(allAddress);
+
     if (allAddress.length === 1) {
       await Address.findOneAndUpdate(
         { user: user._id },

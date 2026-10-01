@@ -12,39 +12,31 @@ function LabelWithRadio({
 }) {
   const registered = onRegisteredLabel(type)
 
+  const iconProps = {
+    stroke: registered ? "#6b7280" : "#ff6b00",
+    className: `size-12 p-3 md:size-13 lg:size-14 ${
+      registered ? "rounded-full bg-muted-foreground/20" : ""
+    }`,
+  }
+
   return (
+    // No htmlFor/id: the radio is nested inside the label, which is enough
+    // for the label to activate it, and it avoids global duplicate ids.
     <Label
-      htmlFor={type}
-      className={`flex cursor-pointer flex-row items-center gap-2 rounded-sm border-2 px-4 py-3 ${
+      aria-disabled={registered}
+      className={`flex flex-row items-center gap-2 rounded-sm border-2 px-4 py-3 transition-colors ${
         registered
           ? "cursor-not-allowed bg-muted-foreground/10 text-muted-foreground"
-          : "border-primary bg-primary/5"
+          : "cursor-pointer border-primary/40 bg-primary/5 hover:border-primary has-data-checked:border-primary has-data-checked:bg-primary/15 has-data-checked:ring-2 has-data-checked:ring-primary/30"
       }`}
     >
-      <RadioGroupItem
-        value={type}
-        id={type}
-        disabled={registered}
-        className={"hidden"}
-      />
-      {type === "Home" && (
-        <House
-          stroke={registered ? "#6b7280" : "#ff6b00"}
-          className={`size-12 ${!registered ? "" : "rounded-full bg-muted-foreground/20"} p-3 md:size-13 lg:size-14`}
-        />
-      )}
-      {type === "Work" && (
-        <BriefcaseBusiness
-          stroke={registered ? "#6b7280" : "#ff6b00"}
-          className={`size-12 ${!registered ? "" : "rounded-full bg-muted-foreground/20"} p-3 md:size-13 lg:size-14`}
-        />
-      )}
-      {type === "Other" && (
-        <LayoutDashboard
-          stroke={registered ? "#6b7280" : "#ff6b00"}
-          className={`size-12 ${!registered ? "" : "rounded-full bg-muted-foreground/20"} p-3 md:size-13 lg:size-14`}
-        />
-      )}
+      {/* sr-only (not display:none) keeps the control focusable and in the a11y tree */}
+      <RadioGroupItem value={type} disabled={registered} className="sr-only" />
+
+      {type === "Home" && <House {...iconProps} />}
+      {type === "Work" && <BriefcaseBusiness {...iconProps} />}
+      {type === "Other" && <LayoutDashboard {...iconProps} />}
+
       <span>{type}</span>
     </Label>
   )
