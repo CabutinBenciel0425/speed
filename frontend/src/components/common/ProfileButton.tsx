@@ -23,7 +23,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { useLogout } from "@/features/auth/hooks/useLogout"
 
 export function ProfileButton() {
-  const { user } = useAuth()
+  const { user, activeRole } = useAuth()
   const { mutate: logout } = useLogout()
 
   return (
@@ -40,45 +40,56 @@ export function ProfileButton() {
       <DropdownMenuContent align="end">
         <DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem className={"block md:hidden"}>
-            <NavLink to="/cart" className={"flex flex-row gap-2"}>
-              <ShoppingCart className="size-4 lg:size-5" />
-              <span className="text-xs md:text-sm lg:text-base">Cart</span>
-            </NavLink>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <NavLink to="/orders" className={"flex flex-row gap-2"}>
-              <PaperBag className="size-4 lg:size-5" />
-              <span className="text-xs md:text-sm lg:text-base">Orders</span>
-            </NavLink>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <NavLink to="/favorites" className={"flex flex-row gap-2"}>
-              <Heart className="size-4 lg:size-5" />
-              <span className="text-xs md:text-sm lg:text-base">Favorites</span>
-            </NavLink>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <NavLink to="/reviews" className={"flex flex-row gap-2"}>
-              <File className="size-4 lg:size-5" />
-              <span className="text-xs md:text-sm lg:text-base">Reviews</span>
-            </NavLink>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <NavLink to="/notifications" className={"flex flex-row gap-2"}>
-              <BellIcon className="size-4 lg:size-5" />
-              <span className="text-xs md:text-sm lg:text-base">
-                Notifications
-              </span>
-            </NavLink>
-          </DropdownMenuItem>
-
-          <DropdownMenuItem>
-            <NavLink to="/address" className={"flex flex-row gap-2"}>
-              <Pin className="size-4 lg:size-5" />
-              <span className="text-xs md:text-sm lg:text-base">Addresses</span>
-            </NavLink>
-          </DropdownMenuItem>
+          {activeRole === "Customer" && (
+            <>
+              <DropdownMenuItem className={"block md:hidden"}>
+                <NavLink to="/cart" className={"flex flex-row gap-2"}>
+                  <ShoppingCart className="size-4 lg:size-5" />
+                  <span className="text-xs md:text-sm lg:text-base">Cart</span>
+                </NavLink>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <NavLink to="/orders" className={"flex flex-row gap-2"}>
+                  <PaperBag className="size-4 lg:size-5" />
+                  <span className="text-xs md:text-sm lg:text-base">
+                    Orders
+                  </span>
+                </NavLink>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <NavLink to="/favorites" className={"flex flex-row gap-2"}>
+                  <Heart className="size-4 lg:size-5" />
+                  <span className="text-xs md:text-sm lg:text-base">
+                    Favorites
+                  </span>
+                </NavLink>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <NavLink to="/reviews" className={"flex flex-row gap-2"}>
+                  <File className="size-4 lg:size-5" />
+                  <span className="text-xs md:text-sm lg:text-base">
+                    Reviews
+                  </span>
+                </NavLink>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <NavLink to="/notifications" className={"flex flex-row gap-2"}>
+                  <BellIcon className="size-4 lg:size-5" />
+                  <span className="text-xs md:text-sm lg:text-base">
+                    Notifications
+                  </span>
+                </NavLink>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <NavLink to="/address" className={"flex flex-row gap-2"}>
+                  <Pin className="size-4 lg:size-5" />
+                  <span className="text-xs md:text-sm lg:text-base">
+                    Addresses
+                  </span>
+                </NavLink>
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => logout()}>

@@ -38,12 +38,9 @@ import {
 } from "../utils/errors.js";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 
-import User, { type IUser } from "../models/user.model.js";
+import User from "../models/user.model.js";
 import type { merchantInput } from "../schemas/merchant.schema.js";
 import type { DriverInput } from "../schemas/driver.schema.js";
-import Merchant, { type IMerchant } from "../models/merchant.model.js";
-import type { IDriver } from "../models/driver.model.js";
-import Driver from "../models/driver.model.js";
 import { getProductFavoritesService } from "../services/product.service.js";
 import { getMerchantFavoritesService } from "../services/merchant.service.js";
 
@@ -207,27 +204,21 @@ export const myProfile = asyncHandler(async (req: Request, res: Response) => {
     throw new UnauthorizedError("Unauthorized user");
   }
 
-  let data: IUser | IMerchant | IDriver | null = null;
-
-  if (activeRole === "Customer" || "Admin") {
-    data = user;
-  }
-
-  if (activeRole === "Merchant") {
-    data = await Merchant.findOne({ owner: user._id });
-  }
-
-  if (activeRole === "Driver") {
-    data = await Driver.findOne({ user: user._id });
-  }
-
-  if (!data) {
-    throw new UnauthorizedError("Unauthorized user");
-  }
-
   res.status(200).json({
     success: true,
-    data,
+    data: {
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        role: user.role,
+        avatar: user.avatar,
+        isVerified: user.isVerified,
+      },
+      activeRole,
+    },
   });
 });
 

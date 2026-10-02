@@ -4,7 +4,9 @@ import type { User } from "@/types/user"
 import { useQuery } from "@tanstack/react-query"
 import { useEffect } from "react"
 
-const fetchCurrentUser = async (): Promise<User | null> => {
+type CurrentSession = { user: User; activeRole: User["role"][number] }
+
+const fetchCurrentUser = async (): Promise<CurrentSession | null> => {
   try {
     const { data } = await axios.get("/auth/profile")
     return data.data
@@ -40,8 +42,8 @@ export const useAuth = () => {
     if (isQueryLoading) return
 
     if (!isError && data) {
-      setAuth(data)
-      setVerified(data.isVerified)
+      setAuth(data.user, data.activeRole)
+      setVerified(data.user.isVerified)
     } else {
       setLoading(false)
     }

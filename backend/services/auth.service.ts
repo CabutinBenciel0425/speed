@@ -247,7 +247,7 @@ export const selectRoleService = async (
     if (!merchant) {
       throw new NotFoundError("Merchant");
     }
-    userDetails = merchant;
+    userDetails = user;
   }
 
   if (activeRole === "Driver") {
@@ -255,7 +255,7 @@ export const selectRoleService = async (
     if (!driver) {
       throw new NotFoundError("Driver");
     }
-    userDetails = driver;
+    userDetails = user;
   }
 
   if (!userDetails) {

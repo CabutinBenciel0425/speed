@@ -2,8 +2,9 @@ import { useMutation } from "@tanstack/react-query"
 import axios from "@/lib/axios"
 import { toast } from "sonner"
 import { useAuthStore } from "@/store/authStore"
+import type { ValidRole } from "@/types/user"
 
-const selectRole = async (role: string) => {
+const selectRole = async (role: ValidRole) => {
   try {
     const res = await axios.post("auth/select-role", { activeRole: role })
     return res.data
@@ -16,15 +17,13 @@ const selectRole = async (role: string) => {
 
 export const useSelectRole = () => {
   const setAuth = useAuthStore((state) => state.setAuth)
-  const setActiveRole = useAuthStore((state) => state.setActiveRole)
   return useMutation({
     mutationFn: selectRole,
     onSuccess: (response) => {
       toast.success("Role selected successfully")
       const activeRole = response.data.activeRole
       const user = response.data.userDetails
-      setActiveRole(activeRole)
-      setAuth(user)
+      setAuth(user, activeRole)
 
       sessionStorage.removeItem("refreshFailed")
     },

@@ -20,6 +20,16 @@ import FavoritesPage from "./features/customer/pages/FavoritesPage"
 import MerchantFavoritesAll from "./features/customer/components/MerchantFavoritesAll"
 import ProductFavoritesAll from "./features/customer/components/ProductFavoritesAll"
 import AddressPage from "./features/customer/pages/AddressPage"
+import MerchantDashboard from "./features/merchant/pages/MerchantDashboard"
+import { Outlet } from "react-router-dom"
+
+function MerchantOnlyRoute() {
+  const { activeRole, isAuthenticated, isLoading } = useAuth()
+  if (isLoading) return null
+  if (!isAuthenticated) return <Navigate to="/login" replace />
+  if (activeRole !== "Merchant") return <Navigate to="/" replace />
+  return <Outlet />
+}
 
 export function App() {
   const { isAuthenticated, isVerified } = useAuth()
@@ -29,6 +39,9 @@ export function App() {
       {/* authentication */}
       <ScrollToTop />
       <Routes>
+        <Route element={<MerchantOnlyRoute />}>
+          <Route path="/merchant/dashboard" element={<MerchantDashboard />} />
+        </Route>
         <Route element={<AuthLayout />}>
           <Route
             path="/login"

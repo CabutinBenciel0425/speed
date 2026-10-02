@@ -3,6 +3,7 @@ import type { LoginInput } from "../types/auth"
 import axios from "@/lib/axios"
 import { toast } from "sonner"
 import { useAuthStore } from "@/store/authStore"
+import type { ValidRole } from "@/types/user"
 
 export const useLogin = () => {
   const setAuth = useAuthStore((state) => state.setAuth)
@@ -14,7 +15,7 @@ export const useLogin = () => {
       if (!response.requiresRoleSelection) {
         const user = response.data
 
-        setAuth(user)
+        setAuth(user, user.role[0] as ValidRole)
 
         sessionStorage.removeItem("refreshFailed")
       }

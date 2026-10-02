@@ -10,7 +10,7 @@ import SkeletonNavbar from "./Skeleton/SkeletonNavbar"
 import EmailVerifyTab from "./EmailVerifyTab"
 
 function Navbar() {
-  const { user, isAuthenticated, isLoading, isVerified } = useAuth()
+  const { user, activeRole, isAuthenticated, isLoading, isVerified } = useAuth()
 
   if (isLoading) {
     return <SkeletonNavbar />
@@ -33,14 +33,14 @@ function Navbar() {
         <div
           className={`flex w-2/4 flex-row items-center justify-between gap-2 lg:gap-10 ${!isAuthenticated ? "justify-center" : ""}`}
         >
-          <SearchBar />
-          {isAuthenticated && <Addressbar />}
+          {(!isAuthenticated || activeRole === "Customer") && <SearchBar />}
+          {isAuthenticated && activeRole === "Customer" && <Addressbar />}
         </div>
 
         <div className="flex w-1/4 flex-row items-center justify-end gap-2 lg:gap-10">
           {isAuthenticated ? (
             <>
-              <NavigationLinks />
+              {activeRole === "Customer" && <NavigationLinks />}
               <ProfileButton />
             </>
           ) : (

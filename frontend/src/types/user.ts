@@ -8,7 +8,7 @@ export interface User {
   phoneNumber: string
   role: ValidRole[]
   avatar: string
-  isVerified: true
+  isVerified: boolean
 }
 
 export interface AuthState {
