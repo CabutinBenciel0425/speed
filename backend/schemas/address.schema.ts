@@ -21,7 +21,7 @@ export const addressSchema = z.object({
     .optional(),
   landmark: z.string().optional(),
   instructions: z.string().optional(),
-  isDefault: z.boolean().default(false),
+  isDefault: z.coerce.boolean().default(false),
 });
 
 export const addressInputSchema = addressSchema.pick({
@@ -37,6 +37,7 @@ export const addressInputSchema = addressSchema.pick({
   location: true,
   landmark: true,
   instructions: true,
+  isDefault: true,
 });
 
 export const updateSchemaInput = addressSchema.partial({
@@ -55,5 +56,5 @@ export const updateSchemaInput = addressSchema.partial({
 
 export const toggleIsDefaultInput = addressSchema.pick({ isDefault: true });
 
-export type AddressInput = z.infer<typeof addressSchema>;
+export type AddressInput = z.infer<typeof addressInputSchema>;
 export type UpdateAddressInput = z.infer<typeof updateSchemaInput>;

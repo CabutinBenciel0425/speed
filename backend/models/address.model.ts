@@ -9,7 +9,7 @@ export interface IAddress extends Document {
   street: string;
   barangay: string;
   city: string;
-  province: string;
+  province?: string;
   region: string;
   location: {
     type: "Point";
@@ -58,7 +58,6 @@ export const addressSchema = new Schema<IAddress>(
     },
     province: {
       type: String,
-      required: true,
     },
     region: {
       type: String,

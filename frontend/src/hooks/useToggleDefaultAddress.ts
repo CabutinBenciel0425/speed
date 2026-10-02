@@ -8,7 +8,6 @@ const toggleDefaultAddress = async (
   label: AddressLabel
 ): Promise<Address[] | []> => {
   try {
-    console.log(label)
     const { data } = await axios.patch(`/address/${label}`)
     return data.data
   } catch (error) {
@@ -28,7 +27,7 @@ export const useToggleDefaultAddress = () => {
     },
     onError: (error: AxiosError) => {
       const message =
-        (error.response?.data as any)?.message ||
+        (error.response?.data as { message?: string } | undefined)?.message ||
         "Failed to update default address"
       toast.error(message)
     },

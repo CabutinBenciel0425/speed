@@ -12,7 +12,6 @@ export const createNewAddress = async (payload: AddressInput, user: IUser) => {
   const existingAddresses = await Address.find({ user: user._id });
 
   const existingLabels = existingAddresses.map((addr) => addr.label);
-
   const existingLabelsLength = new Set(existingLabels).size;
 
   if (existingLabelsLength >= 3) {
@@ -22,6 +21,16 @@ export const createNewAddress = async (payload: AddressInput, user: IUser) => {
   if (existingLabels.includes(payload.label)) {
     throw new ConflictError(
       `You have an existing address in the type ${payload.label}`,
+    );
+  }
+
+  const shouldBeDefault =
+    existingAddresses.length === 0 || Boolean(payload.isDefault);
+
+  if (shouldBeDefault && existingAddresses.length > 0) {
+    await Address.updateMany(
+      { user: user._id },
+      { $set: { isDefault: false } },
     );
   }
 
@@ -42,7 +51,7 @@ export const createNewAddress = async (payload: AddressInput, user: IUser) => {
     },
     landmark: payload.landmark,
     instructions: payload.instructions,
-    isDefault: existingLabelsLength === 0,
+    isDefault: shouldBeDefault,
   });
 
   await newAddress.save();
@@ -157,17 +166,37 @@ export const deleteUserAddress = async (
   if (!addressType) {
     throw new NotFoundError("Address type");
   }
-  const formattedAddressType =
-    addressType.charAt(0).toUpperCase() + addressType.slice(1);
 
-  const address = await Address.findOneAndDelete({
+  const normalizedLabel =
+    addressType.charAt(0).toUpperCase() + addressType.slice(1).toLowerCase();
+
+  const deletedAddress = await Address.findOneAndDelete({
     user: user._id,
-    label: formattedAddressType,
+    label: normalizedLabel,
   } as any);
 
-  if (!address) {
+  if (!deletedAddress) {
     throw new NotFoundError("Address");
   }
 
-  return address;
+  if (deletedAddress.isDefault) {
+    const remaining = await Address.find({ user: user._id }).sort({
+      createdAt: 1,
+    });
+
+    if (remaining.length > 0) {
+      const [newDefault, ...others] = remaining;
+
+      await Address.findByIdAndUpdate(newDefault!._id, { isDefault: true });
+
+      if (others.length > 0) {
+        await Address.updateMany(
+          { _id: { $in: others.map((a) => a._id) } },
+          { isDefault: false },
+        );
+      }
+    }
+  }
+
+  return deletedAddress;
 };

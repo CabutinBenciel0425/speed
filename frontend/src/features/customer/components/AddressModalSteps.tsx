@@ -2,12 +2,14 @@ import { useState, type ReactNode } from "react"
 import { useFormContext } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import type { Address } from "@/types/address"
-import type { AddressFormValues } from "../types/address"
+import type { AddressInput } from "../types/address"
 import { ADDRESS_STEP_FIELDS } from "../utils/addressForm"
 import AddressLabelStep from "./AddressLabelStep"
 import RecipientStep from "./RecipientStep"
 import AddressDetailsStep from "./AddressDetailsStep"
 import LocationStep from "./LocationStep"
+import AddressOptionalDetails from "./AddressOptionalDetails"
+import { Spinner } from "@/components/ui/spinner"
 
 const LAST_STEP = ADDRESS_STEP_FIELDS.length - 1
 
@@ -40,12 +42,14 @@ function AddressModalSteps({
   addresses,
   addressValues,
   isEditing,
+  isPending,
 }: {
   addresses: Address[]
   addressValues?: Address
   isEditing: boolean
+  isPending: boolean
 }) {
-  const { trigger } = useFormContext<AddressFormValues>()
+  const { trigger } = useFormContext<AddressInput>()
   const [currentStep, setCurrentStep] = useState(0)
 
   const handleNext = async () => {
@@ -82,7 +86,11 @@ function AddressModalSteps({
       </StepPanel>
 
       <StepPanel active={currentStep === 3}>
-        <LocationStep />
+        <AddressOptionalDetails />
+      </StepPanel>
+
+      <StepPanel active={currentStep === 4}>
+        <LocationStep active={currentStep === 4} />
       </StepPanel>
 
       <div className="flex items-center">
@@ -107,7 +115,15 @@ function AddressModalSteps({
           </Button>
         ) : (
           <Button type="submit" className="ml-auto min-w-40">
-            {isEditing ? "Save Changes" : "Add Address"}
+            {isEditing && !isPending ? (
+              "Save Changes"
+            ) : !isEditing && !isPending ? (
+              "Add Address"
+            ) : (
+              <>
+                <Spinner /> <span>Adding Address</span>
+              </>
+            )}
           </Button>
         )}
       </div>

@@ -105,8 +105,10 @@ export const deleteAddress = asyncHandler(
     const address = await deleteUserAddress(user, addressType);
 
     res.status(200).json({
-      success: true,
-      data: address,
+      success: !!address,
+      message: !!address
+        ? "Address successfully deleted"
+        : "No address has been deleted",
     });
   },
 );

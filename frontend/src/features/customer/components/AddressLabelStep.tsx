@@ -40,7 +40,7 @@ function AddressLabelStep({
           <RadioGroup
             value={field.value}
             onValueChange={field.onChange}
-            className="mt-10 flex flex-wrap items-center justify-center gap-3"
+            className="my-10 flex flex-wrap items-center justify-center gap-3"
           >
             {ADDRESS_LABELS.map((label) => (
               <LabelWithRadio

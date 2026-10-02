@@ -20,11 +20,9 @@ function LabelWithRadio({
   }
 
   return (
-    // No htmlFor/id: the radio is nested inside the label, which is enough
-    // for the label to activate it, and it avoids global duplicate ids.
     <Label
       aria-disabled={registered}
-      className={`flex flex-row items-center gap-2 rounded-sm border-2 px-4 py-3 transition-colors ${
+      className={`flex flex-col items-center justify-start gap-2 rounded-sm border-2 px-10 py-3 transition-colors ${
         registered
           ? "cursor-not-allowed bg-muted-foreground/10 text-muted-foreground"
           : "cursor-pointer border-primary/40 bg-primary/5 hover:border-primary has-data-checked:border-primary has-data-checked:bg-primary/15 has-data-checked:ring-2 has-data-checked:ring-primary/30"

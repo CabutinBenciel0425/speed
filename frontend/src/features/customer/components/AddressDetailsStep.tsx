@@ -10,7 +10,7 @@ import {
 import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Controller } from "react-hook-form"
-import type { AddressFormValues } from "../types/address"
+import type { AddressInput } from "../types/address"
 import { useFormContext } from "react-hook-form"
 import { useState } from "react"
 import type {
@@ -27,7 +27,7 @@ import {
 } from "../hooks/usePsgcData"
 
 function AddressDetailsStep() {
-  const { register, control, setValue } = useFormContext<AddressFormValues>()
+  const { control, setValue } = useFormContext<AddressInput>()
 
   const [selectedRegion, setSelectedRegion] = useState<PSGCRegion | null>(null)
 
@@ -131,18 +131,6 @@ function AddressDetailsStep() {
           </Field>
         )}
       />
-
-      <Field>
-        <FieldLabel>
-          Landmark
-          <span className="text-muted-foreground/70"> (optional)</span>
-        </FieldLabel>
-
-        <Input
-          {...register("landmark")}
-          placeholder="e.g. Next to Apollo Hospital"
-        />
-      </Field>
 
       <Controller
         control={control}

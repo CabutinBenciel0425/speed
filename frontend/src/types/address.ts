@@ -14,7 +14,7 @@ export interface Address {
   region: string
   location: {
     type: "Point"
-    coordinates?: number[]
+    coordinates?: [number, number]
   }
   landmark?: string
   instructions?: string

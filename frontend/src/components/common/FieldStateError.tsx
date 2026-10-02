@@ -7,7 +7,7 @@ function FieldStateError({ fieldState }: { fieldState: FieldStateType }) {
     <div className="relative min-h-3">
       <AnimatePresence>
         {fieldState.invalid && (
-          <motion.p
+          <motion.div
             key="error-message"
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
@@ -15,7 +15,7 @@ function FieldStateError({ fieldState }: { fieldState: FieldStateType }) {
             className="absolute inset-0 text-xs text-red-500"
           >
             <FieldError errors={[fieldState.error]} />
-          </motion.p>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

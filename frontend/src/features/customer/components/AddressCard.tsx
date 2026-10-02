@@ -19,20 +19,25 @@ import {
   Trash,
   TrashIcon,
 } from "lucide-react"
+import { Spinner } from "@/components/ui/spinner"
 
 type AddressCard = {
   address: Address
+  labelDeleting: AddressLabel | null
   onHandleAddressChange: (
     e: MouseEvent<HTMLDivElement>,
     value: AddressLabel
   ) => void
   onHandleAddressEdit: (values: Address) => void
+  onHandleAddressDelete: (label: AddressLabel) => void
 }
 
 function AddressCard({
   address,
+  labelDeleting,
   onHandleAddressChange,
   onHandleAddressEdit,
+  onHandleAddressDelete,
 }: AddressCard) {
   const {
     label,
@@ -113,9 +118,10 @@ function AddressCard({
           className={"hidden md:flex"}
           onClick={(e) => {
             e.stopPropagation()
+            onHandleAddressDelete(address.label)
           }}
         >
-          <Trash />
+          {labelDeleting === address.label ? <Spinner /> : <Trash />}
         </Button>
 
         <div className="block md:hidden">

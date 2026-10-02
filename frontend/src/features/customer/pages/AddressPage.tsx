@@ -7,12 +7,15 @@ import AddressInfo from "../components/AddressInfo"
 import type React from "react"
 import AddAddressForm from "../components/AddAddressForm"
 import { useState } from "react"
+import { useDeleteAddress } from "../hooks/useDeleteAddress"
 
 function AddressPage() {
   const { addresses } = useAddressStore()
   const { mutate: toggleDefault } = useToggleDefaultAddress()
+  const { mutate: deleteAddress } = useDeleteAddress()
   const [addressToEdit, setAddressToEdit] = useState<Address | undefined>()
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [labelDeleting, setLabelDeleting] = useState<AddressLabel | null>(null)
 
   const handleAddressChange = (
     e: React.MouseEvent<HTMLDivElement>,
@@ -21,6 +24,7 @@ function AddressPage() {
     e.stopPropagation()
 
     const defaultAddress = addresses.filter((address) => address.isDefault)
+
     if (defaultAddress[0].label === label) {
       return
     }
@@ -30,6 +34,12 @@ function AddressPage() {
   const handleAddressEdit = (values: Address) => {
     setAddressToEdit(values)
     setIsModalOpen(true)
+  }
+
+  const handleAddressDelete = (label: AddressLabel) => {
+    if (!label) return
+    setLabelDeleting(label)
+    deleteAddress(label)
   }
 
   return (
@@ -55,8 +65,10 @@ function AddressPage() {
               <AddressCard
                 key={address._id}
                 address={address}
+                labelDeleting={labelDeleting}
                 onHandleAddressChange={handleAddressChange}
                 onHandleAddressEdit={handleAddressEdit}
+                onHandleAddressDelete={handleAddressDelete}
               />
             ))}
           </div>

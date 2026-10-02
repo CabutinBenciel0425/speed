@@ -7,6 +7,7 @@ import App from "./App.tsx"
 import { ThemeProvider } from "@/components/theme-provider.tsx"
 import { Toaster } from "sonner"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import "leaflet/dist/leaflet.css"
 
 const queryClient = new QueryClient()
 

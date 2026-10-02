@@ -16,6 +16,7 @@ import {
 const addressRouter = Router();
 
 addressRouter.get("/", protectRoute, getAllAddress);
+
 addressRouter.post("/", protectRoute, validate(addressInputSchema), addAddress);
 addressRouter.patch(
   "/",
