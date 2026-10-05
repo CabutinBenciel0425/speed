@@ -9,13 +9,31 @@ import { formatOperatingHours } from "@/utils/timeUtils"
 import { useToggleMerchantFavorite } from "../hooks/useToggleMerchantFavorite"
 import { useMerchantFavorite } from "../hooks/useMerchantFavorite"
 
+export type RequestType = "public" | "merchant"
+
 function MerchantPage() {
-  const { merchantId } = useParams()
+  const { merchantId, page, tags, sort, limit, requestType } = useParams()
+  const pageParams = page ? Number(page) : 1
+  const tagsParams = tags ? tags : ""
+  const sortParams = sort ? sort : ""
+  const limitParams = limit ? Number(limit) : 100
+  const requestTypeParams =
+    requestType === "public" || requestType === "merchant"
+      ? requestType
+      : "public"
+
   const { isMerchantFavorite } = useMerchantFavorite(merchantId || "")
   const { mutate: toggleMerchantFavorite } = useToggleMerchantFavorite()
   const { merchant, isLoading, error } = useMerchant(merchantId || "")
   const { productsByMerchant, isLoadingProducts, errorProducts } =
-    useProductsByMerchant(merchantId || "")
+    useProductsByMerchant(
+      merchantId || "",
+      pageParams,
+      tagsParams,
+      sortParams,
+      limitParams,
+      requestTypeParams
+    )
 
   const products = productsByMerchant?.data?.products || []
 

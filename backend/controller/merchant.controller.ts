@@ -9,6 +9,7 @@ import {
   getMerchantProductsService,
   getMerchantsService,
   merchantAcceptOrder,
+  merchantCancelOrder,
   merchantReadyOrder,
   merchantRejectOrder,
   toggleMerchantFavoriteService,
@@ -20,14 +21,35 @@ import Order from "../models/order.model.js";
 import { userInfo } from "node:os";
 import Address from "../models/address.model.js";
 
-export const getOrders = asyncHandler(async (req: Request, res: Response) => {
-  const merchantId = req.params.merchantId;
+const requireOwnedMerchant = async (userId: string, merchantId: string) => {
+  const merchant = await Merchant.findOne({ _id: merchantId, owner: userId });
+  if (!merchant) throw new NotFoundError("Merchant");
+  return merchant;
+};
 
+export const getMyMerchant = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.user) throw new UnauthorizedError("Unauthorized user");
+    const merchant = await Merchant.findOne({ owner: req.user._id });
+    if (!merchant) throw new NotFoundError("Merchant");
+    res.status(200).json({ success: true, data: merchant });
+  },
+);
+
+export const getOrders = asyncHandler(async (req: Request, res: Response) => {
+  const user = req.user;
+  const merchantId = req.params.merchantId as string;
+
+  if (!user) throw new UnauthorizedError("Unauthorized user");
   if (!merchantId) {
     throw new NotFoundError("Merchant id");
   }
 
-  const orders = await Order.find({ merchant: merchantId });
+  await requireOwnedMerchant(user._id.toString(), merchantId);
+  const orders = await Order.find({ merchant: merchantId })
+    .populate("customer", "firstName lastName phoneNumber")
+    .populate("driver", "workingStatus")
+    .sort({ createdAt: -1 });
 
   res.status(200).json({
     success: true,
@@ -36,6 +58,7 @@ export const getOrders = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const acceptOrder = asyncHandler(async (req: Request, res: Response) => {
+  const user = req.user;
   const merchantId = req.params.merchantId as string;
   const orderId = req.params.orderId as string;
 
@@ -47,6 +70,8 @@ export const acceptOrder = asyncHandler(async (req: Request, res: Response) => {
     throw new NotFoundError("Order id");
   }
 
+  if (!user) throw new UnauthorizedError("Unauthorized user");
+  await requireOwnedMerchant(user._id.toString(), merchantId);
   const order = await merchantAcceptOrder(orderId, merchantId);
 
   const orders = await Order.find({ merchant: merchantId });
@@ -58,6 +83,7 @@ export const acceptOrder = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const rejectOrder = asyncHandler(async (req: Request, res: Response) => {
+  const user = req.user;
   const merchantId = req.params.merchantId as string;
   const orderId = req.params.orderId as string;
 
@@ -69,6 +95,8 @@ export const rejectOrder = asyncHandler(async (req: Request, res: Response) => {
     throw new NotFoundError("Order id");
   }
 
+  if (!user) throw new UnauthorizedError("Unauthorized user");
+  await requireOwnedMerchant(user._id.toString(), merchantId);
   const order = await merchantRejectOrder(orderId, merchantId);
 
   res.status(200).json({
@@ -78,6 +106,7 @@ export const rejectOrder = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const readyOrder = asyncHandler(async (req: Request, res: Response) => {
+  const user = req.user;
   const merchantId = req.params.merchantId as string;
   const orderId = req.params.orderId as string;
 
@@ -89,6 +118,8 @@ export const readyOrder = asyncHandler(async (req: Request, res: Response) => {
     throw new NotFoundError("Order id");
   }
 
+  if (!user) throw new UnauthorizedError("Unauthorized user");
+  await requireOwnedMerchant(user._id.toString(), merchantId);
   const order = await merchantReadyOrder(orderId, merchantId);
 
   res.status(200).json({
@@ -96,6 +127,27 @@ export const readyOrder = asyncHandler(async (req: Request, res: Response) => {
     data: order,
   });
 });
+
+export const cancelMerchantOrder = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+    const merchantId = req.params.merchantId as string;
+    const orderId = req.params.orderId as string;
+    const cancellationReason =
+      typeof req.body?.cancellationReason === "string"
+        ? req.body.cancellationReason
+        : "Cancelled by merchant";
+
+    if (!user) throw new UnauthorizedError("Unauthorized user");
+    await requireOwnedMerchant(user._id.toString(), merchantId);
+    const order = await merchantCancelOrder(
+      orderId,
+      merchantId,
+      cancellationReason,
+    );
+    res.status(200).json({ success: true, data: order });
+  },
+);
 
 export const getMerchants = asyncHandler(
   async (req: Request, res: Response) => {
@@ -166,16 +218,29 @@ export const getMerchantDetails = asyncHandler(
   },
 );
 
+export type RequestType = "public" | "merchant";
+
 export const getMerchantProducts = asyncHandler(
   async (req: Request, res: Response) => {
     const merchantId = req.params.merchantId as string;
+    const requestType = req.params.requestType as RequestType;
+    let user = null;
+
+    if (req.user) {
+      user = req.user;
+    }
 
     if (!merchantId) {
       throw new NotFoundError("Merchant Id");
     }
 
     const { docs, merchant, total, queryData } =
-      await getMerchantProductsService(req.query, merchantId);
+      await getMerchantProductsService(
+        req.query,
+        merchantId,
+        requestType,
+        user?._id.toString(),
+      );
 
     res.status(200).json({
       success: true,

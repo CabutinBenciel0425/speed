@@ -16,6 +16,7 @@ import Product from "../models/product.model.js";
 import type { UserCoordinatesObj } from "../types/types.js";
 import { EARTH_RADIUS } from "../config/constants.js";
 import { formatSortName } from "../utils/formatSortName.js";
+import type { RequestType } from "../controller/merchant.controller.js";
 
 export const merchantRejectOrder = async (
   orderId: string,
@@ -68,6 +69,11 @@ export const merchantAcceptOrder = async (
   orderId: string,
   merchantId: string,
 ) => {
+  const isOrderValid = await validateMerchantOrder(orderId, merchantId);
+  if (!isOrderValid) {
+    throw new ConflictError("There is some error. Check the console");
+  }
+
   const order = await Order.findById(orderId);
 
   if (!order) {
@@ -151,6 +157,61 @@ export const merchantReadyOrder = async (
   return order;
 };
 
+export const merchantCancelOrder = async (
+  orderId: string,
+  merchantId: string,
+  cancellationReason: string,
+) => {
+  const order = await Order.findOne({ _id: orderId, merchant: merchantId });
+  if (!order) throw new NotFoundError("Order");
+
+  if (
+    ["Delivered", "PickedUp", "Cancelled", "Rejected"].includes(order.status)
+  ) {
+    throw new ConflictError("Order can no longer be cancelled");
+  }
+
+  const session = await mongoose.startSession();
+  const driver = order.driver
+    ? await Driver.findById(order.driver).session(session)
+    : null;
+  if (
+    driver &&
+    (driver.workingStatus === "ArrivedAtMerchant" ||
+      driver.workingStatus === "Delivering")
+  ) {
+    await session.endSession();
+    throw new ConflictError(
+      "Order cannot be cancelled after the driver arrives",
+    );
+  }
+
+  try {
+    await session.withTransaction(async () => {
+      order.status = "Cancelled";
+      order.payment.status = "Cancelled";
+      order.cancelledAt = new Date();
+      order.cancelledBy = "Merchant";
+      order.cancellationReason = cancellationReason;
+      await order.save({ session });
+
+      if (driver) {
+        driver.activeOrder = null;
+        driver.isAvailable = true;
+        driver.workingStatus = "Available";
+        await driver.save({ session });
+      }
+    });
+  } finally {
+    await session.endSession();
+  }
+
+  if (driver) io.to(`driver:${driver._id}`).emit("order:cancel");
+  io.to(`customer:${order.customer}`).emit("order:cancel");
+  io.to(`merchant:${merchantId}`).emit("order:cancel");
+  return order;
+};
+
 const validateMerchantOrder = async (orderId: string, merchantId: string) => {
   const order = await Order.findById(orderId);
   if (!order) {
@@ -174,39 +235,35 @@ const validateMerchantOrder = async (orderId: string, merchantId: string) => {
     throw new ConflictError("Order's status should be 'Pending' first");
   }
 
-  if (order.acceptedAt === null) {
+  if (!order.acceptedAt) {
     throw new ConflictError("Order must have assigned driver first");
   }
 
-  if (order.rejectedAt !== null) {
+  if (order.rejectedAt) {
     throw new ConflictError("Order is rejected already");
   }
 
-  if (order.cancelledBy !== null) {
+  if (order.cancelledBy) {
     throw new ConflictError("Order is cancelled already");
   }
 
-  if (order.cancelledAt !== null) {
+  if (order.cancelledAt) {
     throw new ConflictError("Order is cancelled already");
   }
 
-  if (order.pickedUpAt !== null) {
+  if (order.pickedUpAt) {
     throw new ConflictError("Order already picked up");
   }
 
-  if (order.deliveredAt !== null) {
+  if (order.deliveredAt) {
     throw new ConflictError("Order already picked up");
   }
 
-  if (order.merchantReceivedAt === null) {
-    throw new ConflictError("Merchant haven't received the order yet");
-  }
-
-  if (order.driverAssignedAt === null) {
+  if (!order.driverAssignedAt) {
     throw new ConflictError("Order must have assigned driver first");
   }
 
-  if (order.payment.method !== "Cash" && order.payment.transactionId === null) {
+  if (order.payment.method !== "Cash" && !order.payment.transactionId) {
     throw new ConflictError(
       "Order payment method is not cash but no transaction id found",
     );
@@ -298,6 +355,8 @@ export const getMerchantsService = async (
 export const getMerchantProductsService = async (
   payload: any,
   merchantId: string,
+  requestType: RequestType,
+  userId?: string,
 ) => {
   const queryData = buildQuery(payload);
   const allowedSorts = [
@@ -312,11 +371,33 @@ export const getMerchantProductsService = async (
   const sort = allowedSorts.includes(queryData.sort)
     ? queryData.sort
     : "-createdAt";
+  let filter = { ...queryData.filter };
 
-  const filter: any = {
-    merchant: merchantId,
-    ...queryData.filter,
-  };
+  if (requestType === "public") {
+    filter = {
+      ...queryData.filter,
+      merchant: merchantId,
+      isAvailable: true,
+    };
+  } else if (requestType === "merchant" && userId) {
+    const merchant = await Merchant.findById(merchantId);
+
+    if (!merchant) {
+      throw new NotFoundError("Merchant");
+    }
+
+    if (merchant.owner.toString() !== userId) {
+      throw new ConflictError(
+        "Owner of this merchant is different from this user",
+      );
+    }
+    filter = {
+      ...queryData.filter,
+      merchant: merchantId,
+    };
+  } else {
+    throw new ConflictError("Invalid merchant product request type");
+  }
 
   if (queryData.search) {
     filter.name = {
@@ -324,7 +405,7 @@ export const getMerchantProductsService = async (
       $options: "i",
     };
   }
-
+  console.log(filter);
   const docs = await Product.find(filter)
     .populate("merchant")
     .sort(sort)
@@ -338,7 +419,7 @@ export const getMerchantProductsService = async (
     throw new NotFoundError("Merchant");
   }
 
-  const total = await Merchant.countDocuments(queryData.filter);
+  const total = await Product.countDocuments(filter);
 
   return { docs, merchant, total, queryData };
 };

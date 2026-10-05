@@ -36,7 +36,9 @@ export const getOrders = asyncHandler(async (req: Request, res: Response) => {
 
   queryData.filter.customer = user._id;
 
-  const sort = allowedSorts.includes(queryData.sort) ? queryData.sort : "-name";
+  const sort = allowedSorts.includes(queryData.sort)
+    ? queryData.sort
+    : "-createdAt";
 
   if (queryData.search) {
     queryData.filter.name = {
@@ -135,8 +137,9 @@ export const cancelOrderCustomer = asyncHandler(
       throw new NotFoundError("User");
     }
     const cancelledOrder = await cancelOrderServiceCustomer(
-      user._id.toString(),
       orderId,
+      user._id.toString(),
+      cancellationReason,
     );
 
     res.status(200).json({

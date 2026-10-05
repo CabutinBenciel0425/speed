@@ -13,6 +13,7 @@ import type { ValidUserRoleInput } from "../types/auth"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useSelectRole } from "../hooks/useSelectRole"
 import { motion } from "framer-motion"
+import { getRoleHomePath } from "@/utils/roleRoutes"
 
 export type RoleFormValues = {
   role: ValidUserRoleInput
@@ -34,8 +35,7 @@ function RoleSelectorPage() {
   const onSubmit = (data: RoleFormValues) => {
     if (!data.role) return
     mutate(data.role, {
-      onSuccess: () =>
-        navigate(data.role === "Merchant" ? "/merchant/dashboard" : "/"),
+      onSuccess: () => navigate(getRoleHomePath(data.role)),
     })
   }
 

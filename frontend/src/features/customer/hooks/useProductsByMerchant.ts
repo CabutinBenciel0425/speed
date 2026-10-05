@@ -2,19 +2,22 @@ import axios from "@/lib/axios"
 import type { MerchantByProducts } from "../types/products"
 import { useQuery } from "@tanstack/react-query"
 
+export type RequestType = "public" | "merchant"
+
 const fetchProductsByMerchant = async (
   merchantId: string,
   page: number,
   tags: string = "",
   sort: string = "-price",
-  limit: number
+  limit: number,
+  requestType: RequestType,
+  category: string = "",
 ): Promise<MerchantByProducts> => {
-  const urlToUse =
-    tags !== null && tags !== ""
-      ? `/merchant/${merchantId}/products?tags=${tags}&sort=${sort}&page=${page}&limit=${limit}`
-      : sort !== null && sort !== ""
-        ? `/merchant/${merchantId}/products?sort=${sort}&page=${page}&limit=${limit}`
-        : `/merchant/${merchantId}/products?page=${page}&limit=${limit}`
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) })
+  if (tags) params.set("tags", tags)
+  if (sort) params.set("sort", sort)
+  if (category) params.set("category", category)
+  const urlToUse = `/merchant/${merchantId}/${requestType}/products?${params.toString()}`
 
   const { data } = await axios.get<MerchantByProducts>(urlToUse)
 
@@ -26,15 +29,18 @@ export const useProductsByMerchant = (
   page: number = 1,
   tags: string = "",
   sort: string = "",
-  limit: number = 100
+  limit: number = 100,
+  requestType: RequestType,
+  category: string = "",
 ) => {
   const {
     data: productsByMerchant,
     isLoading: isLoadingProducts,
     error: errorProducts,
   } = useQuery<MerchantByProducts>({
-    queryKey: ["products", merchantId, page, tags, limit, sort],
-    queryFn: () => fetchProductsByMerchant(merchantId, page, tags, sort, limit),
+    queryKey: ["products", merchantId, page, tags, limit, sort, requestType, category],
+    queryFn: () =>
+      fetchProductsByMerchant(merchantId, page, tags, sort, limit, requestType, category),
     enabled: !!merchantId,
     staleTime: 1000 * 60 * 1,
   })

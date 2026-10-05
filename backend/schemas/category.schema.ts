@@ -11,6 +11,8 @@ export const createCategorySchema = categorySchema.pick({
   name: true,
   description: true,
   displayOrder: true,
+}).partial({
+  displayOrder: true,
 });
 
 export const categoryUpdateSchema = categorySchema.partial({

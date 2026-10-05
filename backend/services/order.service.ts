@@ -144,7 +144,7 @@ export const prepareOrderData = async (userId: string) => {
       quantity: item.quantity,
       unitPrice: product.price,
       subtotal: item.quantity * product.price,
-      notes: item.notes,
+      notes: item.note,
     });
   }
 
@@ -208,6 +208,7 @@ export const createOrderFromPreparedData = async (
 export const cancelOrderServiceCustomer = async (
   orderId: string,
   userId: string,
+  cancellationReason: string,
 ) => {
   const session = await mongoose.startSession();
   const order = await Order.findOne({ customer: userId, _id: orderId }).session(
@@ -247,6 +248,7 @@ export const cancelOrderServiceCustomer = async (
       order.status = "Cancelled";
       order.cancelledAt = new Date();
       order.cancelledBy = "Customer";
+      order.cancellationReason = cancellationReason;
       await order.save({ session });
       if (driver) {
         driver.activeOrder = null;

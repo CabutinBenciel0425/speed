@@ -42,6 +42,6 @@ categoryRouter.patch(
   updateCategory,
 );
 
-categoryRouter.get("/:id/status", protectRoute, adminOnly, toggleIsActive);
+categoryRouter.patch("/:id/status", protectRoute, adminOnly, toggleIsActive);
 
 export default categoryRouter;

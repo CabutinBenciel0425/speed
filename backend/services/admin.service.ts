@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import Driver from "../models/driver.model.js";
-import Order from "../models/order.model.js";
+import Order, { type IOrder } from "../models/order.model.js";
 import type { IUser } from "../models/user.model.js";
 import {
   ConflictError,
@@ -8,90 +8,71 @@ import {
   UnauthorizedError,
 } from "../utils/errors.js";
 import type { PeriodType } from "../controller/admin.controller.js";
-import { string } from "zod";
 import Merchant from "../models/merchant.model.js";
-import { ApiError } from "../utils/apiError.js";
 import Product from "../models/product.model.js";
 
 export const cancelOrderService = async (user: IUser, orderId: string) => {
-  const session = await mongoose.startSession();
   if (!user.role.includes("Admin")) {
     throw new UnauthorizedError("Unauthorized user");
   }
 
-  const order = await Order.findById(orderId);
-
-  if (!order) {
-    throw new NotFoundError("Order");
-  }
-
-  const driver = await Driver.findById(order.driver);
-
-  if (!driver) {
-    throw new NotFoundError("Driver");
-  }
-
-  if (driver?.activeOrder?.toString() !== order._id.toString()) {
-    throw new ConflictError(
-      "Driver's active order is not equal to the provided order's id",
-    );
-  }
-
-  if (order.status === "Delivered" || order.status === "Cancelled") {
-    throw new ConflictError("Order cannot be cancelled");
-  }
+  const session = await mongoose.startSession();
+  let result: IOrder | null = null;
 
   try {
     await session.withTransaction(async () => {
+      const order = await Order.findById(orderId).session(session);
+      if (!order) throw new NotFoundError("Order");
+      if (["Delivered", "Cancelled", "Rejected"].includes(order.status)) {
+        throw new ConflictError("Order cannot be cancelled");
+      }
+
+      if (order.driver) {
+        const driver = await Driver.findById(order.driver).session(session);
+        if (driver?.activeOrder?.toString() === order._id.toString()) {
+          driver.activeOrder = null;
+          driver.workingStatus = "Available";
+          driver.isAvailable = driver.status === "Operational";
+          driver.cancelledDeliveries += 1;
+          await driver.save({ session });
+        }
+      }
+
       order.payment.status = "Cancelled";
       order.status = "Cancelled";
       order.cancelledAt = new Date();
       order.cancelledBy = "Admin";
-
-      driver.activeOrder = null;
-      driver.workingStatus = "Available";
-      driver.isAvailable = true;
-      driver.cancelledDeliveries += 1;
+      order.cancellationReason = "Cancelled by administrator";
       await order.save({ session });
-      await driver.save({ session });
+      result = order;
     });
   } finally {
     await session.endSession();
   }
+
+  return result;
 };
 
 export const getRevenueAnalyticsService = async (period: PeriodType) => {
-  let groupBy;
-
-  switch (period) {
-    case "hour":
-      groupBy = { $hour: "$deliveredAt" };
-      break;
-    case "day":
-      groupBy = { $day: "$deliveredAt" };
-      break;
-    case "week":
-      groupBy = { $week: "$deliveredAt" };
-      break;
-    case "month":
-      groupBy = { $year: "$deliveredAt" };
-      break;
-    default:
-      groupBy = { $day: "$deliveredAt" };
-      break;
-  }
+  const format = {
+    hour: "%Y-%m-%d %H:00",
+    day: "%Y-%m-%d",
+    week: "%G-W%V",
+    month: "%Y-%m",
+  }[period];
 
   const revenue = await Order.aggregate([
     {
       $match: {
         status: "Delivered",
+        "payment.status": "Paid",
       },
     },
     {
       $group: {
-        _id: groupBy,
+        _id: { $dateToString: { format, date: "$deliveredAt" } },
         revenue: {
-          $sum: "$pricing.total",
+          $sum: "$pricing.subtotal",
         },
         orders: {
           $sum: 1,
@@ -108,51 +89,21 @@ export const getRevenueAnalyticsService = async (period: PeriodType) => {
   return revenue;
 };
 
-type OrderAnalytics = {
-  Pending: number;
-  ReadyForPickup: number;
-  Delivering: number;
-  Delivered: number;
-  Cancelled: number;
-  Rejected: number;
-};
-
 export const getOrderAnalyticsService = async (user: IUser) => {
   if (!user.role.includes("Admin")) {
     throw new UnauthorizedError("Unauthorized user");
   }
 
-  const orderCounts = await Order.aggregate([
-    {
-      $group: {
-        _id: "$status",
-        count: {
-          $sum: 1,
-        },
-      },
-    },
+  const [activeOrders, completedOrders, cancelledOrders] = await Promise.all([
+    Order.countDocuments({ status: { $in: ["Pending", "Preparing", "ReadyForPickup", "PickedUp"] } }),
+    Order.countDocuments({ status: "Delivered" }),
+    Order.countDocuments({ status: { $in: ["Cancelled", "Rejected", "NoDriverFound"] } }),
   ]);
 
-  const analytics = orderCounts.reduce<OrderAnalytics>(
-    (acc, order: { _id: keyof OrderAnalytics; count: number }) => {
-      acc[order._id] = order.count;
-      return acc;
-    },
-    {
-      Pending: 0,
-      ReadyForPickup: 0,
-      Delivering: 0,
-      Delivered: 0,
-      Cancelled: 0,
-      Rejected: 0,
-    },
-  );
-
   return {
-    activeOrders:
-      analytics.Pending + analytics.ReadyForPickup + analytics.Delivering,
-    completedOrders: analytics.Delivered,
-    cancelledOrders: analytics.Cancelled + analytics.Rejected,
+    activeOrders,
+    completedOrders,
+    cancelledOrders,
   };
 };
 

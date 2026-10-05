@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import User from "../models/user.model.js";
 import { NotFoundError, UnauthorizedError } from "../utils/errors.js";
-import { DEFAULT_DRIVER_AVATAR } from "../config/constants.js";
+import { DEFAULT_DRIVER_AVATAR, DEFAULT_PRODUCT_IMAGE } from "../config/constants.js";
 import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";
 import cloudinary from "../config/cloudinary.js";
 import { buildQuery } from "../utils/buildQuery.js";
@@ -24,6 +24,8 @@ export const userProfile = asyncHandler(async (req: Request, res: Response) => {
 
   const user = await User.findById(userId).select("-password");
 
+  if (!user) throw new NotFoundError("User");
+
   res.status(200).json({
     success: true,
     data: user,
@@ -38,11 +40,12 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
     throw new NotFoundError("User");
   }
 
-  if (!user.role.includes("Admin")) {
-    throw new UnauthorizedError("Unauthorized user");
+  if (user.role.includes("Admin") || user._id.toString() === req.user?._id.toString()) {
+    throw new ApiError(400, "Admin accounts cannot be deleted here");
   }
 
   user.isDeleted = true;
+  await user.save();
 
   if (user.avatar && user.avatar !== DEFAULT_DRIVER_AVATAR) {
     const publicId = extractPublicIdFromUrl(user.avatar);
@@ -75,6 +78,7 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
 
 export const allUsers = asyncHandler(async (req: Request, res: Response) => {
   const queryData = buildQuery(req.query);
+  queryData.filter.isDeleted = false;
 
   const allowedSorts = ["createdAt", "-createdAt"];
 
@@ -112,9 +116,9 @@ export const allUsers = asyncHandler(async (req: Request, res: Response) => {
   }
 
   const docs = await User.find(queryData.filter)
-    .select("-password")
     .sort(sort)
     .select(queryData.select)
+    .select("-password")
     .skip(queryData.skip)
     .limit(queryData.limit);
 
@@ -137,6 +141,8 @@ export const merchantProfile = asyncHandler(
     const merchantId = req.params.merchantId;
 
     const merchant = await Merchant.findById(merchantId).populate("owner");
+
+    if (!merchant) throw new NotFoundError("Merchant");
 
     res.status(200).json({
       success: true,
@@ -161,7 +167,7 @@ export const toggleMerchantStatus = asyncHandler(
     const merchant = await Merchant.findById(merchantId);
 
     if (!merchant) {
-      throw new NotFoundError("User");
+      throw new NotFoundError("Merchant");
     }
 
     if (!user) {
@@ -172,7 +178,11 @@ export const toggleMerchantStatus = asyncHandler(
       throw new UnauthorizedError("Unauthorized user");
     }
 
+    const validStatuses: MerchantStatusType[] = ["Approved", "Closed", "Open", "Pending", "Rejected", "Suspended"];
+    if (!validStatuses.includes(status)) throw new ApiError(400, "Invalid merchant status");
     merchant.status = status;
+    merchant.isOpen = status === "Open";
+    await merchant.save();
 
     res.status(200).json({
       success: true,
@@ -242,11 +252,13 @@ export const driverProfile = asyncHandler(
   async (req: Request, res: Response) => {
     const driverId = req.params.driverId;
 
-    const merchant = await Driver.findById(driverId).populate("user");
+    const driver = await Driver.findById(driverId).populate("user");
+
+    if (!driver) throw new NotFoundError("Driver");
 
     res.status(200).json({
       success: true,
-      data: merchant,
+      data: driver,
     });
   },
 );
@@ -261,7 +273,7 @@ export const toggleDriverStatus = asyncHandler(
     const driver = await Driver.findById(driverId);
 
     if (!driver) {
-      throw new NotFoundError("User");
+      throw new NotFoundError("Driver");
     }
 
     if (!user) {
@@ -272,7 +284,14 @@ export const toggleDriverStatus = asyncHandler(
       throw new UnauthorizedError("Unauthorized user");
     }
 
+    const validStatuses: DriverStatusType[] = ["Pending", "Operational", "Suspended"];
+    if (!validStatuses.includes(status)) throw new ApiError(400, "Invalid driver status");
     driver.status = status;
+    if (status !== "Operational") {
+      driver.isAvailable = false;
+      if (!driver.activeOrder) driver.workingStatus = "Offline";
+    }
+    await driver.save();
 
     res.status(200).json({
       success: true,
@@ -327,6 +346,7 @@ export const allDrivers = asyncHandler(async (req: Request, res: Response) => {
   const docs = await Driver.find(queryData.filter)
     .sort(sort)
     .select(queryData.select)
+    .populate("user", "firstName lastName email phoneNumber")
     .skip(queryData.skip)
     .limit(queryData.limit);
 
@@ -448,8 +468,10 @@ export const orderDetails = asyncHandler(
     const orderId = req.params.orderId;
 
     const order = await Order.findById(orderId).populate(
-      "user merchant driver",
+      "customer merchant driver",
     );
+
+    if (!order) throw new NotFoundError("Order");
 
     res.status(200).json({
       success: true,
@@ -541,6 +563,28 @@ export const allProducts = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+export const toggleProductAdmin = asyncHandler(async (req: Request, res: Response) => {
+  const product = await Product.findById(req.params.productId);
+  if (!product) throw new NotFoundError("Product");
+  product.isAvailable = !product.isAvailable;
+  await product.save();
+  res.status(200).json({ success: true, data: product });
+});
+
+export const deleteProductAdmin = asyncHandler(async (req: Request, res: Response) => {
+  const product = await Product.findById(req.params.productId);
+  if (!product) throw new NotFoundError("Product");
+  await Product.findByIdAndDelete(product._id);
+  if (product.image && product.image !== DEFAULT_PRODUCT_IMAGE) {
+    const publicId = extractPublicIdFromUrl(product.image);
+    if (publicId) {
+      const result = await cloudinary.uploader.destroy(publicId);
+      if (result.result !== "ok") console.warn(`Cloudinary cleanup failed for ${publicId}: ${result.result}`);
+    }
+  }
+  res.status(200).json({ success: true, message: "Product deleted" });
+});
+
 export const allReviews = asyncHandler(async (req: Request, res: Response) => {
   const queryData = buildQuery(req.query);
 
@@ -608,6 +652,8 @@ export const reviewDetails = asyncHandler(
       "order reviewer reviewee",
     );
 
+    if (!review) throw new NotFoundError("Review");
+
     res.status(200).json({
       success: true,
       data: review,
@@ -619,14 +665,18 @@ export const hideReview = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
   const reviewId = req.params.reviewId;
 
-  if (user?.role.includes("Admin")) {
+  if (!user?.role.includes("Admin")) {
     throw new UnauthorizedError("Unauthorized user");
   }
 
-  const review = await Review.findByIdAndUpdate(reviewId, { isHidden: true });
+  const review = await Review.findByIdAndUpdate(
+    reviewId,
+    { isHidden: true },
+    { new: true, runValidators: true },
+  );
 
   if (!review) {
-    throw new NotFoundError("Order");
+    throw new NotFoundError("Review");
   }
 
   res.status(200).json({
@@ -644,20 +694,19 @@ export const getDashboardSummary = asyncHandler(
       throw new UnauthorizedError("Unauthorized user");
     }
 
-    const totalCustomer = await User.countDocuments({});
-    const totalMerchants = await Merchant.countDocuments({});
-    const totalDrivers = await Driver.countDocuments({});
-
-    const totalOrders = await Order.countDocuments({});
-    const pendingOrders = await Order.countDocuments({ status: "Pending" });
-    const completedOrders = await Order.countDocuments({ status: "Delivered" });
-    const cancelledOrders = await Order.countDocuments({ status: "Cancelled" });
-
-    const totalProducts = await Product.countDocuments({});
-    const totalCategories = await Category.countDocuments({});
-
-    //{ _id: null, totalRevenue: 4250.50, totalDeliveryFees: 150.00 }
-    const totalRevenue = Order.aggregate([
+    const [totalCustomer, totalMerchants, totalDrivers, totalOrders,
+      pendingOrders, completedOrders, cancelledOrders, totalProducts,
+      totalCategories, revenue] = await Promise.all([
+      User.countDocuments({ role: "Customer", isDeleted: false }),
+      Merchant.countDocuments({}),
+      Driver.countDocuments({}),
+      Order.countDocuments({}),
+      Order.countDocuments({ status: "Pending" }),
+      Order.countDocuments({ status: "Delivered" }),
+      Order.countDocuments({ status: "Cancelled" }),
+      Product.countDocuments({}),
+      Category.countDocuments({}),
+      Order.aggregate([
       {
         $match: {
           status: "Delivered",
@@ -671,6 +720,7 @@ export const getDashboardSummary = asyncHandler(
           totalDeliveryFee: { $sum: "$pricing.deliveryFee" },
         },
       },
+      ]),
     ]);
 
     res.status(200).json({
@@ -685,7 +735,8 @@ export const getDashboardSummary = asyncHandler(
         cancelledOrders,
         totalProducts,
         totalCategories,
-        totalRevenue,
+        totalRevenue: revenue[0]?.totalRevenue ?? 0,
+        totalDeliveryFee: revenue[0]?.totalDeliveryFee ?? 0,
       },
     });
   },
@@ -695,7 +746,10 @@ export type PeriodType = "hour" | "day" | "week" | "month";
 
 export const getRevenueAnalytics = asyncHandler(
   async (req: Request, res: Response) => {
-    const period = req.params.period as PeriodType;
+    const period = (req.params.period ?? req.query.period) as PeriodType;
+    if (!["hour", "day", "week", "month"].includes(period)) {
+      throw new ApiError(400, "Period must be hour, day, week, or month");
+    }
 
     const revenue = await getRevenueAnalyticsService(period);
 

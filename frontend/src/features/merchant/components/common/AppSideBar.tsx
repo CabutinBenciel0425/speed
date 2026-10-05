@@ -1,0 +1,67 @@
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  useSidebar,
+} from "@/components/ui/sidebar"
+import { NavLink } from "react-router-dom"
+import speedIconSmall from "@/assets/speed-sm.png"
+import speedIconLogo from "@/assets/speed-s-logo.png"
+import { ChartLine, House, Settings, ShoppingBag, Utensils } from "lucide-react"
+
+function AppSideBar() {
+  const { isMobile, state, setOpenMobile } = useSidebar()
+  const iconsOnly = !isMobile && state === "collapsed"
+
+  const navItems = [
+    { to: "/merchant/dashboard", label: "Overview", Icon: House },
+    { to: "/merchant/orders", label: "Orders", Icon: ShoppingBag },
+    { to: "/merchant/menu", label: "Menu", Icon: Utensils },
+    { to: "/merchant/analytics", label: "Analytics", Icon: ChartLine },
+    { to: "/merchant/settings", label: "Settings", Icon: Settings },
+  ]
+
+  return (
+    <Sidebar collapsible="icon">
+      <SidebarHeader className={iconsOnly ? "mb-2 px-1" : "mb-5"}>
+        <div className="flex w-full items-center justify-center py-5">
+          <NavLink to="/">
+            <img
+              src={iconsOnly ? speedIconLogo : speedIconSmall}
+              alt="speed small"
+              className={`${iconsOnly ? "w-8" : "w-30"} cursor-pointer`}
+            />
+          </NavLink>
+        </div>
+      </SidebarHeader>
+      <SidebarContent
+        className={`flex flex-col gap-3 ${iconsOnly ? "items-center px-1" : "px-5"}`}
+      >
+        {navItems.map(({ to, label, Icon }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={to === "/merchant/dashboard"}
+            title={label}
+            aria-label={label}
+            onClick={() => {
+              if (isMobile) setOpenMobile(false)
+            }}
+            className={({ isActive }) =>
+              `flex min-h-11 ${iconsOnly ? "w-10 justify-center px-0" : "w-full gap-3 px-2"} items-center rounded-md text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
+                isActive
+                  ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
+                  : "text-muted-foreground"
+              }`
+            }
+          >
+            <Icon className="size-5 shrink-0" aria-hidden="true" />
+            {!iconsOnly && <span className="truncate">{label}</span>}
+          </NavLink>
+        ))}
+      </SidebarContent>
+    </Sidebar>
+  )
+}
+
+export default AppSideBar

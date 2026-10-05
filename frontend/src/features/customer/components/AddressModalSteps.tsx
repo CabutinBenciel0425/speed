@@ -42,12 +42,14 @@ function AddressModalSteps({
   addresses,
   addressValues,
   isEditing,
-  isPending,
+  addingNewAddress,
+  updatingAddress,
 }: {
   addresses: Address[]
   addressValues?: Address
   isEditing: boolean
-  isPending: boolean
+  addingNewAddress: boolean
+  updatingAddress: boolean
 }) {
   const { trigger } = useFormContext<AddressInput>()
   const [currentStep, setCurrentStep] = useState(0)
@@ -115,15 +117,22 @@ function AddressModalSteps({
           </Button>
         ) : (
           <Button type="submit" className="ml-auto min-w-40">
-            {isEditing && !isPending ? (
-              "Save Changes"
-            ) : !isEditing && !isPending ? (
-              "Add Address"
-            ) : (
-              <>
-                <Spinner /> <span>Adding Address</span>
-              </>
-            )}
+            {isEditing && updatingAddress && !addingNewAddress && <Spinner />}
+            {!isEditing && !updatingAddress && addingNewAddress && <Spinner />}
+            {isEditing &&
+              !updatingAddress &&
+              !addingNewAddress &&
+              "Save Changes"}
+            {isEditing &&
+              updatingAddress &&
+              !addingNewAddress &&
+              " Updating..."}
+
+            {!isEditing &&
+              !updatingAddress &&
+              !addingNewAddress &&
+              "Add Address"}
+            {!isEditing && !updatingAddress && addingNewAddress && " Adding..."}
           </Button>
         )}
       </div>

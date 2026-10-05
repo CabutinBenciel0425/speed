@@ -24,11 +24,28 @@ import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";
 import Merchant from "../models/merchant.model.js";
 import ProductFavorite from "../models/productFavorite.model.js";
 
+const getParam = (value: string | string[] | undefined) =>
+  Array.isArray(value) ? value[0] : value;
+
+const requireOwnedMerchant = async (userId: string, merchantId: string) => {
+  const merchant = await Merchant.findOne({ _id: merchantId, owner: userId });
+  if (!merchant) throw new NotFoundError("Merchant");
+};
+
+const requireOwnedProduct = async (
+  userId: string,
+  merchantId: string,
+  productId: string,
+) => {
+  await requireOwnedMerchant(userId, merchantId);
+  const product = await Product.findOne({ _id: productId, merchant: merchantId });
+  if (!product) throw new NotFoundError("Product");
+  return product;
+};
+
 export const addProduct = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
-  const merchantId = Array.isArray(req.params.merchantId)
-    ? req.params.merchantId[0]
-    : req.params.merchantId;
+  const merchantId = getParam(req.params.merchantId);
   const payload: ProductInput = req.body;
   const image = req.file;
 
@@ -39,6 +56,8 @@ export const addProduct = asyncHandler(async (req: Request, res: Response) => {
   if (!merchantId) {
     throw new NotFoundError("Merchant is undefined or");
   }
+
+  await requireOwnedMerchant(user._id.toString(), merchantId);
 
   const newProduct = await createNewProduct(merchantId, payload, image);
 
@@ -53,9 +72,8 @@ export const addProduct = asyncHandler(async (req: Request, res: Response) => {
 export const updateProduct = asyncHandler(
   async (req: Request, res: Response) => {
     const user = req.user;
-    const productId = Array.isArray(req.params.id)
-      ? req.params.id[0]
-      : req.params.id;
+    const productId = getParam(req.params.id);
+    const merchantId = getParam(req.params.merchantId);
     const payload: UpdateProductInput = req.body;
     const image = req.file;
 
@@ -66,6 +84,9 @@ export const updateProduct = asyncHandler(
     if (!productId) {
       throw new NotFoundError("Merchant is undefined or");
     }
+    if (!merchantId) throw new NotFoundError("Merchant");
+
+    await requireOwnedProduct(user._id.toString(), merchantId, productId);
 
     const updatedProduct = await updateProductDetails(
       productId,
@@ -84,11 +105,15 @@ export const updateProduct = asyncHandler(
 
 export const toggleAvailability = asyncHandler(
   async (req: Request, res: Response) => {
-    const product = await Product.findById(req.params.id);
-
-    if (!product) {
-      throw new NotFoundError("Product");
-    }
+    if (!req.user) throw new UnauthorizedError("User not authenticated");
+    const merchantId = getParam(req.params.merchantId);
+    const productId = getParam(req.params.id);
+    if (!merchantId || !productId) throw new NotFoundError("Product");
+    const product = await requireOwnedProduct(
+      req.user._id.toString(),
+      merchantId,
+      productId,
+    );
 
     product.isAvailable = !product.isAvailable;
 
@@ -103,11 +128,15 @@ export const toggleAvailability = asyncHandler(
 
 export const toggleFeatured = asyncHandler(
   async (req: Request, res: Response) => {
-    const product = await Product.findById(req.params.id);
-
-    if (!product) {
-      throw new NotFoundError("Product");
-    }
+    if (!req.user) throw new UnauthorizedError("User not authenticated");
+    const merchantId = getParam(req.params.merchantId);
+    const productId = getParam(req.params.id);
+    if (!merchantId || !productId) throw new NotFoundError("Product");
+    const product = await requireOwnedProduct(
+      req.user._id.toString(),
+      merchantId,
+      productId,
+    );
 
     product.isFeatured = !product.isFeatured;
 
@@ -122,11 +151,16 @@ export const toggleFeatured = asyncHandler(
 
 export const deleteProduct = asyncHandler(
   async (req: Request, res: Response) => {
-    const product = await Product.findByIdAndDelete(req.params.id);
-
-    if (!product) {
-      throw new NotFoundError("Product");
-    }
+    if (!req.user) throw new UnauthorizedError("User not authenticated");
+    const merchantId = getParam(req.params.merchantId);
+    const productId = getParam(req.params.id);
+    if (!merchantId || !productId) throw new NotFoundError("Product");
+    const product = await requireOwnedProduct(
+      req.user._id.toString(),
+      merchantId,
+      productId,
+    );
+    await Product.findByIdAndDelete(product._id);
 
     if (product.image && product.image !== DEFAULT_PRODUCT_IMAGE) {
       const publicId = extractPublicIdFromUrl(product.image);

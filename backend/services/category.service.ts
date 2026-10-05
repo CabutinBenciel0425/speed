@@ -8,7 +8,7 @@ import { imageUpload } from "../utils/imageUpload.js";
 export const createNewCategory = async (
   name: string,
   description: string,
-  displayOrder: number,
+  displayOrder: number | undefined,
   image: Express.Multer.File | undefined,
 ) => {
   const slug = name.toLowerCase().trim().replace(/\s+/g, "-");
@@ -19,12 +19,14 @@ export const createNewCategory = async (
     cloudinaryImageUrl = await imageUpload(image, "category");
   }
 
+  const nextOrder = displayOrder ?? ((await Category.findOne().sort({ displayOrder: -1 }).select("displayOrder"))?.displayOrder ?? -1) + 1;
+
   const newCategory = new Category({
     name,
     slug,
     description,
     isActive: true,
-    displayOrder,
+    displayOrder: nextOrder,
     image:
       cloudinaryImageUrl ||
       "https://res.cloudinary.com/dwqlvkvup/image/upload/v1784387940/default-category_fbl4h0.png",
@@ -48,17 +50,18 @@ export const updateDetailsCategory = async (
 
   if (data.name) {
     category.name = data.name;
+    if (!data.slug) category.slug = data.name.toLowerCase().trim().replace(/\s+/g, "-");
   }
 
   if (data.slug) {
     category.slug = data.slug;
   }
 
-  if (data.description) {
+  if (data.description !== undefined) {
     category.description = data.description;
   }
 
-  if (data.displayOrder) {
+  if (data.displayOrder !== undefined) {
     category.displayOrder = data.displayOrder;
   }
 

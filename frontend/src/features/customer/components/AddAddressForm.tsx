@@ -8,6 +8,7 @@ import AddressModalSteps from "./AddressModalSteps"
 import type { AddressInput } from "../types/address"
 import { getDefaultAddressValues } from "../utils/addressForm"
 import { useAddNewAddress } from "../hooks/useAddNewAddress"
+import { useUpdateAddress } from "../hooks/useUpdateAddress"
 
 function AddAddressForm({
   addresses,
@@ -20,7 +21,10 @@ function AddAddressForm({
   open: boolean
   onOpenChange: (value: boolean) => void
 }) {
-  const { mutate: addNewAddress, isPending } = useAddNewAddress()
+  const { mutate: addNewAddress, isPending: addingNewAddress } =
+    useAddNewAddress()
+  const { mutate: updateAddress, isPending: updatingAddress } =
+    useUpdateAddress()
   const form = useForm<AddressInput>({
     defaultValues: getDefaultAddressValues(addressValues),
   })
@@ -30,7 +34,14 @@ function AddAddressForm({
   const isEditing = Boolean(addressValues)
 
   const onSubmit = (data: AddressInput) => {
-    console.log(data)
+    if (isEditing && addressValues) {
+      updateAddress(data, {
+        onSuccess: () => {
+          onOpenChange(false)
+        },
+      })
+    }
+
     addNewAddress(data, {
       onSuccess: () => {
         onOpenChange(false)
@@ -69,7 +80,8 @@ function AddAddressForm({
               addresses={addresses}
               addressValues={addressValues}
               isEditing={isEditing}
-              isPending={isPending}
+              addingNewAddress={addingNewAddress}
+              updatingAddress={updatingAddress}
             />
           </form>
         </FormProvider>

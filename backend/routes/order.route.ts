@@ -11,8 +11,7 @@ const orderRouter = Router();
 
 orderRouter.post("/checkout/cod", protectRoute, createOrderForCOD);
 orderRouter.get("/", protectRoute, getOrders);
-orderRouter.post("/:orderId", protectRoute, getOrder);
-orderRouter.patch("/:orderId/cancel", protectRoute, cancelOrderCustomer);
+orderRouter.get("/:orderId", protectRoute, getOrder);
 orderRouter.patch("/:orderId/cancel", protectRoute, cancelOrderCustomer);
 
 export default orderRouter;

@@ -14,11 +14,14 @@ import {
   orderDetails,
   cancelOrder,
   allProducts,
+  toggleProductAdmin,
+  deleteProductAdmin,
   allReviews,
   reviewDetails,
   hideReview,
   getDashboardSummary,
   getRevenueAnalytics,
+  getOrderAnalytics,
 } from "../controller/admin.controller.js";
 
 const adminRouter = Router();
@@ -26,7 +29,7 @@ const adminRouter = Router();
 //user routes
 adminRouter.get("/users", protectRoute, adminOnly, allUsers);
 adminRouter.get("/users/:id", protectRoute, adminOnly, userProfile);
-adminRouter.delete("/:id", protectRoute, adminOnly, deleteUser);
+adminRouter.delete("/users/:id", protectRoute, adminOnly, deleteUser);
 
 //merchant routes
 adminRouter.get("/merchant", protectRoute, adminOnly, allMerchants);
@@ -66,6 +69,8 @@ adminRouter.patch(
 
 //product routes
 adminRouter.get("/product", protectRoute, adminOnly, allProducts);
+adminRouter.patch("/product/:productId/status", protectRoute, adminOnly, toggleProductAdmin);
+adminRouter.delete("/product/:productId", protectRoute, adminOnly, deleteProductAdmin);
 
 //reviews routes
 adminRouter.get("/review", protectRoute, adminOnly, allReviews);
@@ -79,16 +84,17 @@ adminRouter.patch(
 
 //analytics routes
 adminRouter.get(
-  "/admin/dashboard",
+  "/dashboard",
   protectRoute,
   adminOnly,
   getDashboardSummary,
 );
 adminRouter.get(
-  "/admin/analytics/revenue",
+  "/analytics/revenue/:period",
   protectRoute,
   adminOnly,
   getRevenueAnalytics,
 );
+adminRouter.get("/analytics/orders", protectRoute, adminOnly, getOrderAnalytics);
 
 export default adminRouter;

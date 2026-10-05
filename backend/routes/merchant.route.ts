@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type RequestHandler } from "express";
 import { merchantOnly, protectRoute } from "../middlewares/auth.middleware.js";
 import {
   getMerchantDetails,
@@ -13,6 +13,8 @@ import {
   rejectOrder,
   readyOrder,
   getMerchantFavoriteStatus,
+  getMyMerchant,
+  cancelMerchantOrder,
 } from "../controller/merchant.controller.js";
 import { upload } from "../middlewares/upload.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
@@ -20,10 +22,29 @@ import { merchantUpdateInput } from "../schemas/merchant.schema.js";
 
 const merchantRouter = Router();
 
+const authenticateMerchantProductRequest: RequestHandler = (req, res, next) => {
+  if (req.params.requestType === "merchant") {
+    return protectRoute(req, res, next);
+  }
+  next();
+};
+
+const authorizeMerchantProductRequest: RequestHandler = (req, res, next) => {
+  if (req.params.requestType === "merchant") {
+    return merchantOnly(req, res, next);
+  }
+  next();
+};
+
 //public routes
 merchantRouter.get("/:merchantId/details", getMerchantDetails);
 merchantRouter.get("/", getMerchants);
-merchantRouter.get("/:merchantId/products", getMerchantProducts);
+merchantRouter.get(
+  "/:merchantId/:requestType/products",
+  authenticateMerchantProductRequest,
+  authorizeMerchantProductRequest,
+  getMerchantProducts,
+);
 
 //customer routes
 merchantRouter.post(
@@ -39,6 +60,7 @@ merchantRouter.get(
 merchantRouter.get("/favorites", protectRoute, getMerchantFavorites);
 
 //merchant routes
+merchantRouter.get("/me", protectRoute, merchantOnly, getMyMerchant);
 merchantRouter.get(
   "/:merchantId/profile",
   protectRoute,
@@ -63,23 +85,29 @@ merchantRouter.get(
   merchantOnly,
   getOrders,
 );
-merchantRouter.get(
+merchantRouter.patch(
   "/:merchantId/orders/:orderId/accept",
   protectRoute,
   merchantOnly,
   acceptOrder,
 );
-merchantRouter.get(
+merchantRouter.patch(
   "/:merchantId/orders/:orderId/reject",
   protectRoute,
   merchantOnly,
   rejectOrder,
 );
-merchantRouter.get(
+merchantRouter.patch(
   "/:merchantId/orders/:orderId/ready",
   protectRoute,
   merchantOnly,
   readyOrder,
+);
+merchantRouter.patch(
+  "/:merchantId/orders/:orderId/cancel",
+  protectRoute,
+  merchantOnly,
+  cancelMerchantOrder,
 );
 
 //TODO: GET merchant stats

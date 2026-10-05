@@ -20,6 +20,7 @@ import LoginForm from "../components/LoginForm"
 import { useLogin } from "../hooks/useLogin"
 import { useEffect } from "react"
 import { NavLink, useNavigate } from "react-router-dom"
+import { getRoleHomePath } from "@/utils/roleRoutes"
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -45,7 +46,7 @@ export function LoginPage() {
       if (data.requiresRoleSelection) {
         navigate("/select-role", { state: { roles: data.roles } })
       } else {
-        navigate("/")
+        navigate(getRoleHomePath(data.data.role[0]))
       }
     }
   }, [data, navigate])
