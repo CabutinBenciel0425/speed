@@ -1,5 +1,6 @@
 import axios from "@/lib/axios"
 import { useQuery } from "@tanstack/react-query"
+import { useAuthStore } from "@/store/authStore"
 
 const getProductFavorite = async (productId: string): Promise<boolean> => {
   const { data } = await axios.get(`/product/favorites/${productId}`)
@@ -8,6 +9,7 @@ const getProductFavorite = async (productId: string): Promise<boolean> => {
 }
 
 export const useProductFavorite = (productId: string) => {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const {
     data: isProductFavorite,
     isLoading,
@@ -15,7 +17,7 @@ export const useProductFavorite = (productId: string) => {
   } = useQuery<boolean>({
     queryKey: ["isProductFavorite", productId],
     queryFn: () => getProductFavorite(productId),
-    enabled: !!productId,
+    enabled: !!productId && isAuthenticated,
     staleTime: 1000 * 60 * 5,
   })
 

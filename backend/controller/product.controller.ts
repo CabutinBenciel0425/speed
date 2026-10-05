@@ -38,7 +38,10 @@ const requireOwnedProduct = async (
   productId: string,
 ) => {
   await requireOwnedMerchant(userId, merchantId);
-  const product = await Product.findOne({ _id: productId, merchant: merchantId });
+  const product = await Product.findOne({
+    _id: productId,
+    merchant: merchantId,
+  });
   if (!product) throw new NotFoundError("Product");
   return product;
 };
@@ -61,7 +64,7 @@ export const addProduct = asyncHandler(async (req: Request, res: Response) => {
 
   const newProduct = await createNewProduct(merchantId, payload, image);
 
-  await newProduct.populate("merchant");
+  await newProduct.populate("merchant", "_id merchantName logo");
 
   res.status(201).json({
     success: true,
@@ -94,7 +97,7 @@ export const updateProduct = asyncHandler(
       image,
     );
 
-    await updatedProduct.populate("merchant");
+    await updatedProduct.populate("merchant", "_id merchantName logo");
 
     res.status(200).json({
       success: true,
@@ -199,7 +202,10 @@ export const getProducts = asyncHandler(async (req: Request, res: Response) => {
 
 export const getProduct = asyncHandler(async (req: Request, res: Response) => {
   const productId = req.params.productId as string;
-  const product = await Product.findById(productId).populate("merchant");
+  const product = await Product.findById(productId).populate(
+    "merchant",
+    "_id merchantName logo",
+  );
 
   if (!product) {
     throw new NotFoundError("Product");
@@ -296,7 +302,10 @@ export const getFeaturedProducts = asyncHandler(
     const featuredProducts = await Product.find({
       isFeatured: true,
       isAvailable: true,
-    });
+    })
+      .select("-merchantLocation")
+      .sort({ totalSold: -1, createdAt: -1 })
+      .limit(12);
     res.status(200).json({
       success: true,
       data: featuredProducts,

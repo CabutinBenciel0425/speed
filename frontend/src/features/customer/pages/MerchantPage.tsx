@@ -15,8 +15,8 @@ function MerchantPage() {
   const { merchantId, page, tags, sort, limit, requestType } = useParams()
   const pageParams = page ? Number(page) : 1
   const tagsParams = tags ? tags : ""
-  const sortParams = sort ? sort : ""
-  const limitParams = limit ? Number(limit) : 100
+  const sortParams = sort || "-price"
+  const limitParams = limit ? Number(limit) : 50
   const requestTypeParams =
     requestType === "public" || requestType === "merchant"
       ? requestType

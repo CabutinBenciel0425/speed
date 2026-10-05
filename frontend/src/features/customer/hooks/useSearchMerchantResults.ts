@@ -15,8 +15,20 @@ const fetchMerchantSearchResults = async (
   lat?: number,
   lng?: number
 ) => {
+  const params = new URLSearchParams({
+    limit: String(ITEMS_PER_PAGE),
+    page: String(page),
+    sort,
+    open: String(open),
+    "averageRating.gte": String(minRating),
+    "averageRating.lte": String(maxRating),
+    maxDist: String(maxDist),
+  })
+  if (query.trim()) params.set("search", query.trim())
+  if (lat !== undefined) params.set("lat", String(lat))
+  if (lng !== undefined) params.set("lng", String(lng))
   const { data } = await axios.get<FetchMerchantResponse>(
-    `/merchant?search=${query}&limit=${ITEMS_PER_PAGE}&page=${page}&sort=${sort}&open=${open}&averageRating.gte=${minRating}&averageRating.lte=${maxRating}&maxDist=${maxDist}&lat=${lat}&lng=${lng}`
+    `/merchant?${params.toString()}`
   )
   return data
 }

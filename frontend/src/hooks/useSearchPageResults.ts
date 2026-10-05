@@ -4,8 +4,9 @@ import type { ApiResponse } from "@/types/types"
 import { useQuery } from "@tanstack/react-query"
 
 const fetchSearchPageResults = async (searchTerm: string) => {
+  const params = new URLSearchParams({ limit: "4", search: searchTerm })
   const { data } = await axios.get<ApiResponse<SearchPageResultsType>>(
-    `/search/public?limit=4&search=${searchTerm}`
+    `/search/public?${params.toString()}`
   )
 
   return data.data

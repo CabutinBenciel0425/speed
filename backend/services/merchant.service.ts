@@ -405,21 +405,19 @@ export const getMerchantProductsService = async (
       $options: "i",
     };
   }
-  console.log(filter);
-  const docs = await Product.find(filter)
-    .populate("merchant")
-    .sort(sort)
-    .select(queryData.select)
-    .skip(queryData.skip)
-    .limit(queryData.limit);
-
-  const merchant = await Merchant.findById(merchantId);
+  const [docs, merchant, total] = await Promise.all([
+    Product.find(filter)
+      .sort(sort)
+      .select(queryData.select)
+      .skip(queryData.skip)
+      .limit(queryData.limit),
+    Merchant.findById(merchantId),
+    Product.countDocuments(filter),
+  ]);
 
   if (!merchant) {
     throw new NotFoundError("Merchant");
   }
-
-  const total = await Product.countDocuments(filter);
 
   return { docs, merchant, total, queryData };
 };

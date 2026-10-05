@@ -16,7 +16,7 @@ function Searchbar() {
   const navigate = useNavigate()
   const [query, setQuery] = useState("")
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const debouncedQuery = useDebounce(query, 500)
+  const debouncedQuery = useDebounce(query, 300)
   const { merchants, products, isLoading } =
     useSearchDropdownPublic(debouncedQuery)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -28,7 +28,7 @@ function Searchbar() {
   }
 
   useEffect(() => {
-    const hasQuery = query.trim().length > 0
+    const hasQuery = query.trim().length >= 2
 
     if (hasQuery) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -37,23 +37,6 @@ function Searchbar() {
       setIsDropdownOpen(false)
     }
   }, [query, products, merchants, isLoading])
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setIsDropdownOpen(false)
-        inputRef.current?.blur()
-      }
-
-      if (e.key === "Enter") {
-        setIsDropdownOpen(false)
-
-        navigate(`/search?query=${encodeURIComponent(debouncedQuery)}`)
-      }
-    }
-    document.addEventListener("keydown", handleKeyDown)
-    return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [navigate, debouncedQuery])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -87,9 +70,20 @@ function Searchbar() {
           className="flex-1 bg-transparent py-1 text-xs outline-none md:text-sm lg:text-base"
           value={query}
           onChange={handleChange}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              setIsDropdownOpen(false)
+              inputRef.current?.blur()
+            }
+            if (event.key === "Enter" && query.trim()) {
+              event.preventDefault()
+              setIsDropdownOpen(false)
+              navigate(`/search?query=${encodeURIComponent(query.trim())}`)
+            }
+          }}
           onFocus={() => {
             if (
-              query.trim().length > 0 &&
+              query.trim().length >= 2 &&
               (products.length > 0 || merchants.length > 0)
             ) {
               setIsDropdownOpen(true)

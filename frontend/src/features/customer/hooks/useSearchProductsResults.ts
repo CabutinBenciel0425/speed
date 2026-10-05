@@ -15,31 +15,35 @@ const fetchProductSearchResults = async (
   } | null,
   sortParams: string
 ) => {
-  let url = `/product?search=${encodeURIComponent(query)}&limit=${ITEMS_PER_PAGE}&page=${page}&sort=${sortParams}`
+  const params = new URLSearchParams({
+    search: query,
+    limit: String(ITEMS_PER_PAGE),
+    page: String(page),
+    sort: sortParams,
+  })
 
   if (
     selectedCategory &&
     selectedCategory !== "All" &&
     selectedCategory !== ""
   ) {
-    url += `&category=${selectedCategory}`
+    params.set("category", selectedCategory)
   }
-  if (price) {
-    if (price[0] !== price[1]) {
-      url += `&price.gte=${price[0]}&price.lte=${price[1]}`
-    } else {
-      url += `&price.gt=${price[0]}`
-    }
+  if (price && Number.isFinite(price[0]) && Number.isFinite(price[1])) {
+    params.set("price.gte", String(price[0]))
+    params.set("price.lte", String(price[1]))
   }
   if (timeRange) {
-    url += `&preparationTime.gte=${timeRange.min}`
+    params.set("preparationTime.gte", String(timeRange.min))
 
     if (isFinite(timeRange.max)) {
-      url += `&preparationTime.lte=${timeRange.max}`
+      params.set("preparationTime.lte", String(timeRange.max))
     }
   }
 
-  const { data } = await axios.get<FetchProductResponse>(url)
+  const { data } = await axios.get<FetchProductResponse>(
+    `/product?${params.toString()}`
+  )
   return data
 }
 

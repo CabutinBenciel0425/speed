@@ -40,7 +40,6 @@ const fetchAll = async <T>(endpoint: string): Promise<T[]> => {
   if (!res.ok) throw new Error(`PSGC API error: ${res.status}`)
   const json = await res.json()
 
-  console.log(json)
   return json.data as T[]
 }
 

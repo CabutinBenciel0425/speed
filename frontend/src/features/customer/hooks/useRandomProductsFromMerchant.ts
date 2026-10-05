@@ -26,6 +26,7 @@ export const useRandomProductsFromMerchant = (
   return useQuery({
     queryKey: ["randomProducts", validIds, limit, merchantId],
     queryFn: () => fetchRandomProductsFromMerchant(validIds, limit, merchantId),
+    enabled: Boolean(merchantId),
     staleTime: 5 * 60 * 1000,
   })
 }

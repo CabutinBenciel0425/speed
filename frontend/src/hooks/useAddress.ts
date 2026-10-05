@@ -3,18 +3,15 @@ import { useAddressStore } from "@/store/addressStore"
 import type { Address } from "@/types/address"
 import { useQuery } from "@tanstack/react-query"
 import { useEffect } from "react"
+import { useAuthStore } from "@/store/authStore"
 
-const fetchUserAddress = async (): Promise<Address[] | []> => {
-  try {
-    const { data } = await axios.get("/address")
-    return data.data
-  } catch (error) {
-    console.log(error)
-    return []
-  }
+const fetchUserAddress = async (): Promise<Address[]> => {
+  const { data } = await axios.get<{ data: Address[] }>("/address")
+  return data.data
 }
 
 export const useAddress = () => {
+  const { isAuthenticated, user } = useAuthStore()
   const {
     addresses,
     defaultAddress,
@@ -29,13 +26,25 @@ export const useAddress = () => {
     isLoading: isQueryLoading,
     isError,
   } = useQuery({
-    queryKey: ["addresses"],
+    queryKey: ["addresses", user?.id],
     queryFn: fetchUserAddress,
+    enabled: isAuthenticated && Boolean(user?.id),
     retry: false,
   })
 
   useEffect(() => {
-    if (isQueryLoading) return
+    if (!isAuthenticated) {
+      setAddresses([])
+      setDefaultAddress(null)
+      setLoading(false)
+      return
+    }
+    if (isQueryLoading) {
+      setAddresses([])
+      setDefaultAddress(null)
+      setLoading(true)
+      return
+    }
     if (!isError && data) {
       setAddresses(data)
       const defaultAddr =
@@ -50,6 +59,7 @@ export const useAddress = () => {
       setLoading(false)
     }
   }, [
+    isAuthenticated,
     isQueryLoading,
     isError,
     data,
@@ -58,13 +68,7 @@ export const useAddress = () => {
     setLoading,
   ])
 
-  useEffect(() => {
-    if (!isQueryLoading) {
-      setLoading(false)
-    }
-  }, [isQueryLoading, setLoading])
-
-  const isLoading = storeIsLoading || isQueryLoading
+  const isLoading = isAuthenticated && (storeIsLoading || isQueryLoading)
 
   return {
     addresses,

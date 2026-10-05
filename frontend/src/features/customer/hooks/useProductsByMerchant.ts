@@ -11,11 +11,14 @@ const fetchProductsByMerchant = async (
   sort: string = "-price",
   limit: number,
   requestType: RequestType,
-  category: string = "",
+  category: string = ""
 ): Promise<MerchantByProducts> => {
-  const params = new URLSearchParams({ page: String(page), limit: String(limit) })
+  const params = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+    sort: sort || "-price",
+  })
   if (tags) params.set("tags", tags)
-  if (sort) params.set("sort", sort)
   if (category) params.set("category", category)
   const urlToUse = `/merchant/${merchantId}/${requestType}/products?${params.toString()}`
 
@@ -28,19 +31,36 @@ export const useProductsByMerchant = (
   merchantId: string,
   page: number = 1,
   tags: string = "",
-  sort: string = "",
-  limit: number = 100,
+  sort: string = "-price",
+  limit: number = 50,
   requestType: RequestType,
-  category: string = "",
+  category: string = ""
 ) => {
   const {
     data: productsByMerchant,
     isLoading: isLoadingProducts,
     error: errorProducts,
   } = useQuery<MerchantByProducts>({
-    queryKey: ["products", merchantId, page, tags, limit, sort, requestType, category],
+    queryKey: [
+      "products",
+      merchantId,
+      page,
+      tags,
+      limit,
+      sort || "-price",
+      requestType,
+      category,
+    ],
     queryFn: () =>
-      fetchProductsByMerchant(merchantId, page, tags, sort, limit, requestType, category),
+      fetchProductsByMerchant(
+        merchantId,
+        page,
+        tags,
+        sort,
+        limit,
+        requestType,
+        category
+      ),
     enabled: !!merchantId,
     staleTime: 1000 * 60 * 1,
   })

@@ -9,12 +9,16 @@ const fetchProductsByCategories = async (
   sort: string = "-price",
   limit: number
 ): Promise<CategoryByProducts> => {
-  const urlToUse =
-    tags !== null && tags !== ""
-      ? `/category/${categoryId}?tags=${tags}&sort=${sort}&page=${page}&limit=${limit}`
-      : `/category/${categoryId}?sort=${sort}&page=${page}&limit=${limit}`
+  const params = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+    sort: sort || "-price",
+  })
+  if (tags) params.set("tags", tags)
 
-  const { data } = await axios.get<CategoryByProducts>(urlToUse)
+  const { data } = await axios.get<CategoryByProducts>(
+    `/category/${categoryId}?${params.toString()}`
+  )
 
   return data
 }
@@ -23,7 +27,7 @@ export const useProductsByCategory = (
   categoryId: string,
   page: number = 1,
   tags: string = "",
-  sort: string = "",
+  sort: string = "-price",
   limit: number = 5
 ) => {
   const {
@@ -31,7 +35,15 @@ export const useProductsByCategory = (
     isLoading,
     error,
   } = useQuery<CategoryByProducts>({
-    queryKey: ["products", "category", categoryId, page, tags, limit, sort],
+    queryKey: [
+      "products",
+      "category",
+      categoryId,
+      page,
+      tags,
+      limit,
+      sort || "-price",
+    ],
     queryFn: () =>
       fetchProductsByCategories(categoryId, page, tags, sort, limit),
     enabled: !!categoryId,

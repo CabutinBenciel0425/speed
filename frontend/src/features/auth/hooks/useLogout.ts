@@ -21,8 +21,8 @@ export const useLogout = () => {
     onSuccess: (response) => {
       toast.success(response.data.message)
 
-      queryClient.invalidateQueries({ queryKey: ["currentUser"] })
       useAuthStore.getState().logout()
+      queryClient.clear()
 
       localStorage.removeItem("auth-storage")
       localStorage.removeItem("address-storage")

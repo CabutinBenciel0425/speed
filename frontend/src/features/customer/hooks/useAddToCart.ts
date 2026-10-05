@@ -48,10 +48,19 @@ export const useAddToCart = ({
       queryClient.invalidateQueries({ queryKey: ["cart"] })
     },
     onError: (error: AxiosError<{ message: string }>) => {
-      const message =
-        error.response?.data?.message ||
-        "Something went wrong. Please try again."
-      toast.error(message)
+      const message = error.response?.data?.message || ""
+      if (
+        error.response?.status === 409 &&
+        /cart contains items from another (restaurant|store)/i.test(message)
+      ) {
+        toast.error("This item is from a different store", {
+          description:
+            "Your cart already has items from another store. Clear your cart before adding this item.",
+        })
+        return
+      }
+
+      toast.error(message || "Something went wrong. Please try again.")
     },
   })
 }

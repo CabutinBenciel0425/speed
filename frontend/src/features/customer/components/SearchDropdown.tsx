@@ -34,9 +34,8 @@ function SearchDropdown({
         <ul>
           <h1 className="mb-2 text-lg font-semibold">Merchants</h1>
           {merchants.map((merchant) => (
-            <NavLink to={`/merchant/${merchant._id}`}>
+            <NavLink key={merchant._id} to={`/merchant/${merchant._id}`}>
               <li
-                key={merchant.merchantName}
                 value={merchant.merchantName}
                 className="flex flex-row items-center justify-start gap-5 border-b border-b-muted-foreground/10"
               >
@@ -65,9 +64,11 @@ function SearchDropdown({
         <ul>
           <h1 className="mt-5 text-lg font-semibold">Products</h1>
           {products.map((product) => (
-            <NavLink to={`/merchant/${product.merchant}/${product._id}`}>
+            <NavLink
+              key={product._id}
+              to={`/merchant/${product.merchant}/${product._id}`}
+            >
               <li
-                key={product.name}
                 value={product.name}
                 className="flex w-full flex-row items-center justify-start gap-5 border-b border-b-muted-foreground/10 hover:bg-muted-foreground/10"
               >

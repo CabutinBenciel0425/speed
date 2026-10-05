@@ -36,6 +36,7 @@ export const useAuth = () => {
     queryKey: ["currentUser"],
     queryFn: fetchCurrentUser,
     retry: false,
+    enabled: isLoading || isAuthenticated,
   })
 
   useEffect(() => {

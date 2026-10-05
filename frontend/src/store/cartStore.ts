@@ -9,7 +9,7 @@ interface CartStore {
   isLoading: boolean
   itemCount: number
   totalPrice: number
-  setCart: (cart: Cart) => void
+  setCart: (cart: Cart | null) => void
   addItem: ({
     id,
     product,
@@ -38,8 +38,8 @@ export const useCartStore = create<CartStore>()(
       setCart: (cart) =>
         set({
           cart,
-          itemCount: cart?.items?.length || 0,
-          totalPrice: cart?.pricing?.total || 0,
+          itemCount: cart?.items?.length ?? 0,
+          totalPrice: cart?.pricing?.total ?? 0,
         }),
 
       addItem: ({
