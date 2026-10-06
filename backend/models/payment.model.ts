@@ -19,10 +19,14 @@ export interface IPayment extends Document {
     ];
     deliveryAddress: {
       address: Types.ObjectId;
+      recipientName: string;
+      houseOrUnitNumber: string;
+      phoneNumber: string;
       street: string;
       barangay: string;
       city: string;
-      province: string;
+      province?: string;
+      region: string;
       location: {
         type: string;
         coordinates: number[];
@@ -43,7 +47,7 @@ export interface IPayment extends Document {
   method: "Cash" | "QRPh";
   amount: number;
   status: "Pending" | "Paid" | "Failed" | "Expired" | "Refunded";
-  paymentIntentId: string | null;
+  paymentIntentId?: string | null;
   transactionId: string | null;
   paidAt: Date | null;
   expiresAt: Date;
@@ -112,6 +116,12 @@ const paymentSchema = new Schema<IPayment>(
           type: Types.ObjectId,
           required: true,
         },
+        recipientName: { type: String, required: true },
+        phoneNumber: { type: String, required: true },
+        houseOrUnitNumber: {
+          type: String,
+          required: true,
+        },
         street: {
           type: String,
           required: true,
@@ -125,6 +135,9 @@ const paymentSchema = new Schema<IPayment>(
           required: true,
         },
         province: {
+          type: String,
+        },
+        region: {
           type: String,
           required: true,
         },
@@ -215,8 +228,6 @@ const paymentSchema = new Schema<IPayment>(
     },
     paymentIntentId: {
       type: String,
-      unique: true,
-      sparse: true,
       validate: {
         validator: function (this: any, value: string | null): boolean {
           if (this.method === "QRPh") {
@@ -245,6 +256,14 @@ const paymentSchema = new Schema<IPayment>(
     },
   },
   { timestamps: true },
+);
+
+paymentSchema.index(
+  { paymentIntentId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { paymentIntentId: { $type: "string" } },
+  },
 );
 
 const Payment = model<IPayment>("Payment", paymentSchema);

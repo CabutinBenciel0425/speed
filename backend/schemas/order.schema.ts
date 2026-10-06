@@ -15,9 +15,11 @@ export const orderSchema = z.object({
   ),
   deliveryAddress: z.object({
     street: z.string(),
+    houseOrUnitNumber: z.string(),
     barangay: z.string(),
     city: z.string(),
-    province: z.string(),
+    province: z.string().optional(),
+    region: z.string(),
     location: z.array(z.coerce.number()),
   }),
   payment: z.object({

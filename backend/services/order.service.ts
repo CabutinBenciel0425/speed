@@ -1,5 +1,5 @@
 import mongoose, { type Types } from "mongoose";
-import Order, { type IOrder } from "../models/order.model.js";
+import Order from "../models/order.model.js";
 import Address from "../models/address.model.js";
 import { ConflictError, NotFoundError } from "../utils/errors.js";
 import Merchant from "../models/merchant.model.js";
@@ -8,10 +8,10 @@ import Cart from "../models/cart.model.js";
 import { generateOrderNumber } from "../utils/generateOrderNumber.js";
 import Driver from "../models/driver.model.js";
 import { io } from "../server.js";
-import { itemSchema } from "../schemas/cart.schema.js";
-import Product, { type IProduct } from "../models/product.model.js";
+import Product from "../models/product.model.js";
 import Payment from "../models/payment.model.js";
 import { driverMatching } from "./driver.service.js";
+import { createNotification } from "./notification.service.js";
 
 type CartItemType = {
   product: Types.ObjectId;
@@ -30,10 +30,14 @@ export type PreparedOrderDataType = {
   items: CartItemType[];
   deliveryAddress: {
     address: Types.ObjectId;
+    recipientName: string;
+    phoneNumber: string;
+    houseOrUnitNumber: string;
     street: string;
     barangay: string;
     city: string;
-    province: string;
+    province?: string;
+    region: string;
     location: {
       type: string;
       coordinates: number[];
@@ -71,6 +75,7 @@ export const createOrderForCODService = async (userId: string) => {
   if (!preparedData) {
     throw new ConflictError("Cannot prepare the required data for the order");
   }
+
   const orderData = preparedData.orderData as PreparedOrderDataType;
   const payment = new Payment({
     customer: preparedData.orderData.customer,
@@ -88,7 +93,6 @@ export const createOrderForCODService = async (userId: string) => {
     method: "Cash",
     amount: preparedData.orderData.pricing.total,
     status: "Pending",
-    paymentIntentId: null,
     transactionId: null,
     paidAt: null,
     expiresAt: null,
@@ -98,6 +102,7 @@ export const createOrderForCODService = async (userId: string) => {
 
   await payment.save();
 
+  orderData.payment.method = "Cash";
   orderData.payment.paymentId = payment._id;
 
   const newOrder = await createOrderFromPreparedData(
@@ -105,9 +110,11 @@ export const createOrderForCODService = async (userId: string) => {
     preparedData.cart._id.toString(),
   );
 
-  await driverMatching(newOrder._id.toString());
+  void driverMatching(newOrder._id.toString()).catch((error) => {
+    console.error("Driver matching failed", error);
+  });
 
-  return payment;
+  return newOrder;
 };
 
 export const prepareOrderData = async (userId: string) => {
@@ -116,9 +123,11 @@ export const prepareOrderData = async (userId: string) => {
   const cart = await Cart.findOne({ customer: userId }).populate(
     "items.product",
   );
+
   if (!cart) {
     throw new NotFoundError("Cart");
   }
+
   const merchant = await Merchant.findById(cart?.merchant);
   const address = await Address.findOne({ user: userId, isDefault: true });
 
@@ -128,6 +137,11 @@ export const prepareOrderData = async (userId: string) => {
 
   if (!address) {
     throw new ConflictError("There is no default address selected");
+  }
+  if (!address.recipientName?.trim() || !address.phoneNumber?.trim()) {
+    throw new ConflictError(
+      "Add the recipient name and phone number to your default address",
+    );
   }
 
   let orderItems: CartItemType[] = [];
@@ -148,12 +162,18 @@ export const prepareOrderData = async (userId: string) => {
     });
   }
 
+  const cartObj = cart.toObject();
+
   return {
     orderData: {
       customer: cart.customer,
       merchant: cart.merchant,
       items: orderItems,
-      deliveryAddress: cart.deliveryAddress,
+      deliveryAddress: {
+        ...cartObj.deliveryAddress,
+        recipientName: address.recipientName,
+        phoneNumber: address.phoneNumber,
+      },
       payment: {
         paymentId: null,
         method: cart?.payment?.method,
@@ -196,11 +216,28 @@ export const createOrderFromPreparedData = async (
       newOrder.orderNumber = generateOrderNumber();
       newOrder.payment.paymentId = paymentId;
       await newOrder.save({ session });
+      await Payment.findByIdAndUpdate(
+        paymentId,
+        { order: newOrder._id },
+        { session },
+      );
       await Cart.findByIdAndDelete(cartId).session(session);
     });
   } finally {
     await session.endSession();
   }
+
+  await createNotification({
+    targetId: orderData.merchant,
+    targetType: "Merchant",
+    type: "NEW_ORDER",
+    title: "New order received",
+    message: `Order #${newOrder.orderNumber} is ready for your review.`,
+    order: newOrder._id,
+  });
+  io.to(`merchant:${orderData.merchant.toString()}`).emit("order:new", {
+    orderId: newOrder._id.toString(),
+  });
 
   return await newOrder.populate(["customer", "merchant"]);
 };
@@ -266,6 +303,15 @@ export const cancelOrderServiceCustomer = async (
   if (driver) {
     io.to(`driver:${driver._id}`).emit("order:cancel");
   }
+
+  await createNotification({
+    targetId: merchant._id,
+    targetType: "Merchant",
+    type: "ORDER_CANCELLED",
+    title: "Order cancelled",
+    message: `Order #${order.orderNumber} was cancelled by the customer.`,
+    order: order._id,
+  });
 
   io.to(`merchant:${merchant._id}`).emit("order:cancel");
   io.to(`customer:${order.customer}`).emit("order:cancel");

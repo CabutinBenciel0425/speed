@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Order from "../models/order.model.js";
+import Order, { type IOrder } from "../models/order.model.js";
 import { ConflictError, NotFoundError } from "../utils/errors.js";
 import Merchant, { type IMerchant } from "../models/merchant.model.js";
 import Driver from "../models/driver.model.js";
@@ -17,25 +17,25 @@ import type { UserCoordinatesObj } from "../types/types.js";
 import { EARTH_RADIUS } from "../config/constants.js";
 import { formatSortName } from "../utils/formatSortName.js";
 import type { RequestType } from "../controller/merchant.controller.js";
+import { createNotification } from "./notification.service.js";
 
 export const merchantRejectOrder = async (
   orderId: string,
   merchantId: string,
 ) => {
   const session = await mongoose.startSession();
-  const isOrderValid = await validateMerchantOrder(orderId, merchantId);
-
-  if (!isOrderValid) {
-    throw new ConflictError("There is some error. Check the console");
-  }
-
-  const order = await Order.findById(orderId).session(session);
+  const order = await Order.findOne({ _id: orderId, merchant: merchantId }).session(session);
   if (!order) {
     throw new NotFoundError("Order");
   }
+  if (order.status !== "Pending") {
+    throw new ConflictError("Only pending orders can be rejected");
+  }
 
-  const driver = await Driver.findById(order.driver).session(session);
-  if (!driver) {
+  const driver = order.driver
+    ? await Driver.findById(order.driver).session(session)
+    : null;
+  if (order.driver && !driver) {
     throw new NotFoundError("Driver");
   }
 
@@ -45,12 +45,14 @@ export const merchantRejectOrder = async (
       order.rejectedAt = new Date();
       order.cancelledBy = "Merchant";
       order.cancelledAt = new Date();
-      driver.activeOrder = null;
-      driver.isAvailable = true;
-      driver.workingStatus = "Available";
+      if (driver) {
+        driver.activeOrder = null;
+        driver.isAvailable = true;
+        driver.workingStatus = "Available";
+      }
 
       await order.save({ session });
-      await driver.save({ session });
+      if (driver) await driver.save({ session });
     });
   } finally {
     await session.endSession();
@@ -58,6 +60,17 @@ export const merchantRejectOrder = async (
 
   const driverId = order.driver ? order.driver.toString() : null;
   const customerId = order.customer ? order.customer.toString() : null;
+
+  if (order.customer) {
+    await createNotification({
+      targetId: order.customer,
+      targetType: "Customer",
+      type: "ORDER_REJECTED",
+      title: "Order rejected",
+      message: `Order #${order.orderNumber} was rejected by the store.`,
+      order: order._id,
+    });
+  }
 
   if (driverId) io.to(`driver:${driverId}`).emit("order:rejected");
   if (customerId) io.to(`customer:${customerId}`).emit("order:rejected");
@@ -69,21 +82,14 @@ export const merchantAcceptOrder = async (
   orderId: string,
   merchantId: string,
 ) => {
-  const isOrderValid = await validateMerchantOrder(orderId, merchantId);
-  if (!isOrderValid) {
-    throw new ConflictError("There is some error. Check the console");
-  }
-
-  const order = await Order.findById(orderId);
+  const order = await Order.findOne({ _id: orderId, merchant: merchantId });
 
   if (!order) {
     throw new NotFoundError("Order");
   }
 
-  if (order.merchant.toString() !== merchantId) {
-    throw new ConflictError(
-      "Order id provided is not equal to the order merchant Id",
-    );
+  if (order.status !== "Pending") {
+    throw new ConflictError("Only pending orders can be accepted");
   }
 
   order.merchantReceivedAt = new Date();
@@ -93,7 +99,9 @@ export const merchantAcceptOrder = async (
   await order.save();
 
   io.to(`customer:${order.customer.toString()}`).emit("order:merchantAccepted");
-  io.to(`driver:${order.driver?.toString()}`).emit("order:merchantAccepted");
+  if (order.driver) {
+    io.to(`driver:${order.driver.toString()}`).emit("order:merchantAccepted");
+  }
 
   return order;
 };
@@ -122,7 +130,9 @@ export const merchantPreparingOrder = async (
   io.to(`customer:${order.customer.toString()}`).emit(
     "order:merchantPreparing",
   );
-  io.to(`customer:${order.driver?.toString()}`).emit("order:merchantPreparing");
+  if (order.driver) {
+    io.to(`driver:${order.driver.toString()}`).emit("order:merchantPreparing");
+  }
 
   return order;
 };
@@ -142,16 +152,13 @@ export const merchantReadyOrder = async (
     throw new NotFoundError("Order");
   }
 
-  const driver = await Driver.findById(order.driver);
-  if (!driver) {
-    throw new NotFoundError("Driver");
-  }
-
   order.status = "ReadyForPickup";
   order.readyForPickupAt = new Date();
   await order.save();
 
-  io.to(`driver:${driver._id.toString()}`).emit("order:ready");
+  if (order.driver) {
+    io.to(`driver:${order.driver.toString()}`).emit("order:ready");
+  }
   io.to(`customer:${order.customer.toString()}`).emit("order:ready");
 
   return order;
@@ -207,6 +214,14 @@ export const merchantCancelOrder = async (
   }
 
   if (driver) io.to(`driver:${driver._id}`).emit("order:cancel");
+  await createNotification({
+    targetId: order.customer,
+    targetType: "Customer",
+    type: "ORDER_CANCELLED",
+    title: "Order cancelled",
+    message: `Order #${order.orderNumber} was cancelled by the store.`,
+    order: order._id,
+  });
   io.to(`customer:${order.customer}`).emit("order:cancel");
   io.to(`merchant:${merchantId}`).emit("order:cancel");
   return order;
@@ -227,16 +242,8 @@ const validateMerchantOrder = async (orderId: string, merchantId: string) => {
     throw new ConflictError("This order doesn't belong to this merchant");
   }
 
-  if (order.driver === null) {
-    throw new ConflictError("Order must have assigned driver first");
-  }
-
-  if (order.status !== "Pending") {
-    throw new ConflictError("Order's status should be 'Pending' first");
-  }
-
-  if (!order.acceptedAt) {
-    throw new ConflictError("Order must have assigned driver first");
+  if (order.status !== "Preparing") {
+    throw new ConflictError("Order must be preparing before it can be marked ready");
   }
 
   if (order.rejectedAt) {
@@ -257,10 +264,6 @@ const validateMerchantOrder = async (orderId: string, merchantId: string) => {
 
   if (order.deliveredAt) {
     throw new ConflictError("Order already picked up");
-  }
-
-  if (!order.driverAssignedAt) {
-    throw new ConflictError("Order must have assigned driver first");
   }
 
   if (order.payment.method !== "Cash" && !order.payment.transactionId) {
@@ -507,6 +510,206 @@ export const updateMerchantProfileService = async (
   await merchant.save();
 
   return merchant;
+};
+
+export const getMerchantAnalyticsService = async (
+  userId: string,
+  period: "7d" | "30d" | "90d",
+) => {
+  const merchant = await Merchant.findOne({ owner: userId }).select("_id");
+  if (!merchant) throw new NotFoundError("Merchant");
+
+  const days = Number(period.slice(0, -1));
+  const startDate = new Date();
+  startDate.setUTCDate(startDate.getUTCDate() - days + 1);
+  startDate.setUTCHours(0, 0, 0, 0);
+
+  const [result] = await Order.aggregate([
+    { $match: { merchant: merchant._id } },
+    {
+      $facet: {
+        orders: [
+          {
+            $match: {
+              $expr: {
+                $gte: [
+                  {
+                    $ifNull: [
+                      "$createdAt",
+                      { $ifNull: ["$acceptedAt", "$deliveredAt"] },
+                    ],
+                  },
+                  startDate,
+                ],
+              },
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              total: { $sum: 1 },
+              active: {
+                $sum: {
+                  $cond: [
+                    {
+                      $in: [
+                        "$status",
+                        ["Pending", "Preparing", "ReadyForPickup", "PickedUp"],
+                      ],
+                    },
+                    1,
+                    0,
+                  ],
+                },
+              },
+              completed: {
+                $sum: { $cond: [{ $eq: ["$status", "Delivered"] }, 1, 0] },
+              },
+              cancelled: {
+                $sum: {
+                  $cond: [
+                    {
+                      $in: [
+                        "$status",
+                        ["Cancelled", "Rejected", "NoDriverFound"],
+                      ],
+                    },
+                    1,
+                    0,
+                  ],
+                },
+              },
+            },
+          },
+        ],
+        revenue: [
+          {
+            $match: {
+              status: "Delivered",
+              deliveredAt: { $gte: startDate },
+            },
+          },
+          { $group: { _id: null, total: { $sum: "$pricing.subtotal" } } },
+        ],
+        trend: [
+          {
+            $match: {
+              status: "Delivered",
+              deliveredAt: { $gte: startDate },
+            },
+          },
+          {
+            $group: {
+              _id: {
+                $dateToString: { format: "%Y-%m-%d", date: "$deliveredAt" },
+              },
+              revenue: { $sum: "$pricing.subtotal" },
+              orders: { $sum: 1 },
+            },
+          },
+          { $sort: { _id: 1 } },
+        ],
+        topProducts: [
+          {
+            $match: {
+              status: "Delivered",
+              deliveredAt: { $gte: startDate },
+            },
+          },
+          { $unwind: "$items" },
+          {
+            $group: {
+              _id: "$items.product",
+              name: { $first: "$items.productName" },
+              quantity: { $sum: "$items.quantity" },
+              revenue: { $sum: "$items.subtotal" },
+            },
+          },
+          { $sort: { quantity: -1 } },
+          { $limit: 5 },
+        ],
+      },
+    },
+  ]);
+
+  const orderStats = result?.orders?.[0] ?? {
+    total: 0,
+    active: 0,
+    completed: 0,
+    cancelled: 0,
+  };
+  const revenue = result?.revenue?.[0]?.total ?? 0;
+
+  return {
+    period,
+    revenue,
+    averageOrderValue: orderStats.completed
+      ? revenue / orderStats.completed
+      : 0,
+    ...orderStats,
+    trend: result?.trend ?? [],
+    topProducts: result?.topProducts ?? [],
+  };
+};
+
+export const getMerchantDashboardService = async (userId: string) => {
+  const merchant = await Merchant.findOne({ owner: userId }).select(
+    "_id merchantName isOpen",
+  );
+  if (!merchant) throw new NotFoundError("Merchant");
+
+  const startOfDay = new Date();
+  const manilaTime = new Date(startOfDay.getTime() + 8 * 60 * 60 * 1000);
+  manilaTime.setUTCHours(0, 0, 0, 0);
+  startOfDay.setTime(manilaTime.getTime() - 8 * 60 * 60 * 1000);
+  const activeStatuses: IOrder["status"][] = [
+    "Pending",
+    "Preparing",
+    "ReadyForPickup",
+    "PickedUp",
+  ];
+
+  const [sales, todayOrders, activeOrders, pendingOrders, recentOrders] =
+    await Promise.all([
+      Order.aggregate([
+        {
+          $match: {
+            merchant: merchant._id,
+            status: "Delivered",
+            deliveredAt: { $gte: startOfDay },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            revenue: { $sum: "$pricing.subtotal" },
+          },
+        },
+      ]),
+      Order.countDocuments({
+        merchant: merchant._id,
+        createdAt: { $gte: startOfDay },
+      }),
+      Order.countDocuments({
+        merchant: merchant._id,
+        status: { $in: activeStatuses },
+      }),
+      Order.countDocuments({ merchant: merchant._id, status: "Pending" }),
+      Order.find({ merchant: merchant._id })
+        .select("orderNumber status pricing.total items.productName items.quantity createdAt")
+        .sort({ createdAt: -1, acceptedAt: -1 })
+        .limit(6)
+        .lean(),
+    ]);
+
+  return {
+    merchant,
+    todayRevenue: sales[0]?.revenue ?? 0,
+    todayOrders,
+    activeOrders,
+    pendingOrders,
+    recentOrders,
+  };
 };
 
 export const toggleMerchantFavoriteService = async (

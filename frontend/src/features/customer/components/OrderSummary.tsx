@@ -1,10 +1,11 @@
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { ArrowRight, Clock10, FileText, ShieldCheck } from "lucide-react"
-import type { OrderSummary } from "../types/order"
+import type { OrderSummary as OrderSummaryProps } from "../types/order"
 import { Button } from "@/components/ui/button"
 import { useAddCartNote } from "../hooks/useAddCartNote"
 import { useEffect, useRef, useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 function OrderSummary({
   subtotal,
@@ -15,7 +16,8 @@ function OrderSummary({
   customerNote,
   isMerchantOpen,
   cartId,
-}: OrderSummary) {
+}: OrderSummaryProps) {
+  const navigate = useNavigate()
   const [note, setNote] = useState(customerNote || "")
   const [noteStatus, setNoteStatus] = useState<"idle" | "saving" | "saved">(
     "idle"
@@ -99,6 +101,7 @@ function OrderSummary({
             <Button
               className={`flex w-full cursor-pointer flex-row items-center justify-center rounded-md py-6 text-base font-normal ${!isMerchantOpen ? "bg-muted-foreground/40" : ""}`}
               disabled={!isMerchantOpen}
+              onClick={() => navigate("/checkout/review")}
             >
               <span className="text-sm md:text-base lg:text-lg">
                 Proceed to checkout

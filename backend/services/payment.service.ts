@@ -14,6 +14,7 @@ import { driverMatching } from "./driver.service.js";
 import { ApiError } from "../utils/apiError.js";
 import type { CreateNotificationInput } from "../models/notification.model.js";
 import { createNotification } from "./notification.service.js";
+import { io } from "../server.js";
 
 export const createCheckoutService = async (userId: string) => {
   const preparedData = await prepareOrderData(userId);
@@ -148,13 +149,23 @@ export const handleSuccessfulPaymentService = async (
 
   await createNotification(notificationDataCustomer);
 
-  const order = await driverMatching(newOrder!._id.toString());
+  await createNotification({
+    targetId: newOrder.merchant,
+    targetType: "Merchant",
+    type: "NEW_ORDER",
+    title: "New order received",
+    message: `Order #${newOrder.orderNumber} is ready for your review.`,
+    order: newOrder._id,
+  });
+  io.to(`merchant:${newOrder.merchant.toString()}`).emit("order:new", {
+    orderId: newOrder._id.toString(),
+  });
 
-  if (!order) {
-    throw new NotFoundError("Order");
-  }
+  void driverMatching(newOrder._id.toString()).catch((error) => {
+    console.error("Driver matching failed", error);
+  });
 
-  return order;
+  return newOrder;
 };
 
 export const handleFailedPaymentService = async (paymentIntentId: string) => {

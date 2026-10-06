@@ -81,4 +81,5 @@ export const updateSchemaInput = addressSchema.partial({
 export const toggleIsDefaultInput = addressSchema.pick({ isDefault: true })
 
 export type AddressInput = z.infer<typeof addressSchema>
+export type AddressFormValues = AddressInput
 export type UpdateAddressInput = z.infer<typeof updateSchemaInput>

@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
 import { useAuth } from "./hooks/useAuth"
 import LoginPage from "./features/auth/pages/LoginPage"
@@ -25,6 +26,7 @@ import MerchantLayout from "./features/merchant/components/layout/MerchantLayout
 import MerchantOrdersPage from "./features/merchant/pages/MerchantOrdersPage"
 import MerchantMenuPage from "./features/merchant/pages/MerchantMenuPage"
 import MerchantSettingsPage from "./features/merchant/pages/MerchantSettingsPage"
+import MerchantNotificationsPage from "./features/merchant/pages/MerchantNotificationsPage"
 import MerchantSignupPage from "./features/auth/pages/MerchantSignupPage"
 import DriverSignupPage from "./features/auth/pages/DriverSignupPage"
 import AdminLayout from "./features/admin/components/AdminLayout"
@@ -32,14 +34,13 @@ import AdminDashboardPage from "./features/admin/pages/AdminDashboardPage"
 import AdminAnalyticsPage from "./features/admin/pages/AdminAnalyticsPage"
 import AdminResourcePage from "./features/admin/pages/AdminResourcePage"
 import { getRoleHomePath } from "@/utils/roleRoutes"
+import OrderReviewPage from "./features/customer/pages/OrderReviewPage"
+import OrderTrackingPage from "./features/customer/pages/OrderTrackingPage"
+import DriverDashboardPage from "./features/driver/pages/DriverDashboardPage"
 
-function MerchantSection({ title }: { title: string }) {
-  return (
-    <section className="p-6">
-      <h1 className="text-2xl font-semibold">{title}</h1>
-    </section>
-  )
-}
+const MerchantAnalyticsPage = lazy(
+  () => import("./features/merchant/pages/MerchantAnalyticsPage")
+)
 
 export function App() {
   const { isAuthenticated, isVerified, activeRole } = useAuth()
@@ -62,10 +63,22 @@ export function App() {
           <Route path="menu" element={<MerchantMenuPage />} />
           <Route
             path="analytics"
-            element={<MerchantSection title="Analytics" />}
+            element={
+              <Suspense
+                fallback={
+                  <p className="p-6 text-sm text-muted-foreground">
+                    Loading analytics…
+                  </p>
+                }
+              >
+                <MerchantAnalyticsPage />
+              </Suspense>
+            }
           />
+          <Route path="notifications" element={<MerchantNotificationsPage />} />
           <Route path="settings" element={<MerchantSettingsPage />} />
         </Route>
+        <Route path="/driver" element={<DriverDashboardPage />} />
         <Route element={<AuthLayout />}>
           <Route
             path="/login"
@@ -100,6 +113,26 @@ export function App() {
         </Route>
 
         <Route element={<CustomerLayout />}>
+          <Route
+            path="/checkout/review"
+            element={
+              isAuthenticated ? (
+                <OrderReviewPage />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/orders/:orderId"
+            element={
+              isAuthenticated ? (
+                <OrderTrackingPage />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
           <Route path="/register/merchant" element={<MerchantSignupPage />} />
           <Route path="/register/driver" element={<DriverSignupPage />} />
           <Route path="/" element={<Dashboard />} />

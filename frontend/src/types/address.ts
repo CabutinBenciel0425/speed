@@ -2,7 +2,7 @@ import type { User } from "./user"
 
 export interface Address {
   _id: string
-  user: User
+  user?: User
   label: AddressLabel
   recipientName?: string
   houseOrUnitNumber: string

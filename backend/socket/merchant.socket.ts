@@ -10,16 +10,25 @@ export async function joinMerchantRoom(socket: Socket) {
     owner: socket.user._id,
   });
 
-  if (!merchant) return;
+  if (!merchant) return null;
 
   socket.join(`merchant:${merchant._id}`);
+  return merchant._id.toString();
 }
 
-export function registerMerchantEvents(socket: Socket) {
+export function registerMerchantEvents(socket: Socket, merchantId: string) {
   socket.on("merchant:reject-order", async ({ orderId }) => {
-    await merchantRejectOrder(orderId, socket.user._id.toString());
+    try {
+      await merchantRejectOrder(orderId, merchantId);
+    } catch {
+      socket.emit("socket:error", { event: "merchant:reject-order", message: "Could not reject order" });
+    }
   });
   socket.on("merchant:ready-order", async ({ orderId }) => {
-    await merchantReadyOrder(orderId, socket.user._id.toString());
+    try {
+      await merchantReadyOrder(orderId, merchantId);
+    } catch {
+      socket.emit("socket:error", { event: "merchant:ready-order", message: "Could not mark order ready" });
+    }
   });
 }

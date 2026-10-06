@@ -1,6 +1,6 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import type { Request, Response } from "express";
-import { NotFoundError } from "../utils/errors.js";
+import { ConflictError, NotFoundError } from "../utils/errors.js";
 import type { DriverUpdateInput } from "../schemas/driver.schema.js";
 import {
   deliveredOrderService,
@@ -62,8 +62,23 @@ export const toggleDriverAvailability = asyncHandler(
     }
 
     const driverProfile = await getDriverProfile(user._id.toString());
+    const isAvailable = req.body?.isAvailable;
 
-    driverProfile.isAvailable = !driverProfile.isAvailable;
+    if (typeof isAvailable !== "boolean") {
+      throw new ConflictError("isAvailable must be a boolean");
+    }
+    if (isAvailable && driverProfile.status !== "Operational") {
+      throw new ConflictError("Only operational drivers can go online");
+    }
+    if (driverProfile.activeOrder) {
+      throw new ConflictError("Complete your active delivery before changing availability");
+    }
+    if (!['Offline', 'Available'].includes(driverProfile.workingStatus)) {
+      throw new ConflictError("Availability cannot change during an active delivery");
+    }
+
+    driverProfile.isAvailable = isAvailable;
+    driverProfile.workingStatus = isAvailable ? "Available" : "Offline";
 
     await driverProfile.save();
 
@@ -108,9 +123,9 @@ export const getCurrentOrder = asyncHandler(
 
     const currentOrder = await Order.findOne({
       driver: driverProfile._id,
-      status: { $in: ["Preparing", "ReadyForPickup", "PickedUp"] },
+      status: { $in: ["Pending", "Preparing", "ReadyForPickup", "PickedUp"] },
     })
-      .populate<"user">("user")
+      .populate("customer", "firstName lastName phoneNumber")
       .populate<"merchant">("merchant");
 
     if (!currentOrder) {

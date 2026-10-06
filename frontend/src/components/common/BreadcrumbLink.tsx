@@ -7,12 +7,12 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { NavLink } from "react-router-dom"
-import type { BreadcrumbLinkComponent } from "../types/PropTypes"
+import type { BreadcrumbLinkComponent as BreadcrumbLinkProps } from "../types/PropTypes"
 
 function BreadcrumbLinkComponent({
   pages,
   currentPage,
-}: BreadcrumbLinkComponent) {
+}: BreadcrumbLinkProps) {
   return (
     <Breadcrumb className="">
       <BreadcrumbList>

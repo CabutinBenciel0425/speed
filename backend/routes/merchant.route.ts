@@ -2,6 +2,8 @@ import { Router, type RequestHandler } from "express";
 import { merchantOnly, protectRoute } from "../middlewares/auth.middleware.js";
 import {
   getMerchantDetails,
+  getMerchantAnalytics,
+  getMerchantDashboard,
   getMerchantProducts,
   getMerchantProfile,
   getMerchants,
@@ -60,6 +62,18 @@ merchantRouter.get(
 merchantRouter.get("/favorites", protectRoute, getMerchantFavorites);
 
 //merchant routes
+merchantRouter.get(
+  "/dashboard",
+  protectRoute,
+  merchantOnly,
+  getMerchantDashboard,
+);
+merchantRouter.get(
+  "/analytics",
+  protectRoute,
+  merchantOnly,
+  getMerchantAnalytics,
+);
 merchantRouter.get("/me", protectRoute, merchantOnly, getMyMerchant);
 merchantRouter.get(
   "/:merchantId/profile",
@@ -109,7 +123,5 @@ merchantRouter.patch(
   merchantOnly,
   cancelMerchantOrder,
 );
-
-//TODO: GET merchant stats
 
 export default merchantRouter;

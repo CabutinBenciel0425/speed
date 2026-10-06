@@ -5,8 +5,9 @@ import type {
 } from "../models/notification.model.js";
 import Notification from "../models/notification.model.js";
 import { ConflictError } from "../utils/errors.js";
-import type { ValidUserRoleInput } from "../schemas/user.schema.js";
 import mongoose from "mongoose";
+
+type NotificationTargetType = CreateNotificationInput["targetType"];
 
 export const createNotification = async ({
   targetId,
@@ -33,7 +34,10 @@ export const createNotification = async ({
     "NEW_ORDER",
     "ORDER_CANCELLED",
     "DRIVER_ASSIGNED",
+    "DRIVER_ARRIVED",
     "DRIVER_PICKED_UP",
+    "ORDER_DELIVERED",
+    "NO_DRIVER_FOUND",
   ];
   const driverTypes = ["NEW_DELIVERY_OFFER", "ORDER_CANCELLED"];
 
@@ -70,18 +74,30 @@ export const createNotification = async ({
 
 export const getNotificationsService = async (
   id: string,
-  targetType: string,
+  targetType: NotificationTargetType,
 ) => {
   return await Notification.find({
     targetId: id,
     targetType,
-  } as QueryFilter<INotification>);
+  } as QueryFilter<INotification>)
+    .sort({ createdAt: -1 })
+    .limit(100);
 };
+
+export const getUnreadNotificationCountService = async (
+  id: string,
+  targetType: NotificationTargetType,
+) =>
+  Notification.countDocuments({
+    targetId: id,
+    targetType,
+    isRead: false,
+  } as QueryFilter<INotification>);
 
 export const getNotificationService = async (
   notificationId: string,
   id: string,
-  targetType: ValidUserRoleInput,
+  targetType: NotificationTargetType,
 ) => {
   return await Notification.findOne({
     _id: notificationId,
@@ -93,7 +109,7 @@ export const getNotificationService = async (
 export const readNotificationService = async (
   notificationId: string,
   id: string,
-  targetType: ValidUserRoleInput,
+  targetType: NotificationTargetType,
 ) => {
   return await Notification.findOneAndUpdate(
     {
@@ -108,7 +124,7 @@ export const readNotificationService = async (
 
 export const readAllNotificationService = async (
   id: string,
-  targetType: ValidUserRoleInput,
+  targetType: NotificationTargetType,
 ) => {
   return await Notification.updateMany(
     {
@@ -123,7 +139,7 @@ export const readAllNotificationService = async (
 export const deleteNotificationService = async (
   notificationId: string,
   id: string,
-  targetType: ValidUserRoleInput,
+  targetType: NotificationTargetType,
 ) => {
   return await Notification.findOneAndDelete({
     _id: notificationId,
@@ -134,7 +150,7 @@ export const deleteNotificationService = async (
 
 export const deleteAllNotificationService = async (
   id: string,
-  targetType: ValidUserRoleInput,
+  targetType: NotificationTargetType,
 ) => {
   return await Notification.deleteMany({
     targetId: new mongoose.Types.ObjectId(id),

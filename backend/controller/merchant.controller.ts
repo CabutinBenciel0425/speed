@@ -4,8 +4,11 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import type { Request, Response } from "express";
 import { buildQuery } from "../utils/buildQuery.js";
 import { NotFoundError, UnauthorizedError } from "../utils/errors.js";
+import { ApiError } from "../utils/apiError.js";
 import {
   getMerchantFavoritesService,
+  getMerchantAnalyticsService,
+  getMerchantDashboardService,
   getMerchantProductsService,
   getMerchantsService,
   merchantAcceptOrder,
@@ -33,6 +36,29 @@ export const getMyMerchant = asyncHandler(
     const merchant = await Merchant.findOne({ owner: req.user._id });
     if (!merchant) throw new NotFoundError("Merchant");
     res.status(200).json({ success: true, data: merchant });
+  },
+);
+
+export const getMerchantAnalytics = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.user) throw new UnauthorizedError("Unauthorized user");
+    const period = req.query.period ?? "30d";
+    if (period !== "7d" && period !== "30d" && period !== "90d") {
+      throw new ApiError(400, "Period must be 7d, 30d, or 90d");
+    }
+    const data = await getMerchantAnalyticsService(
+      req.user._id.toString(),
+      period,
+    );
+    res.status(200).json({ success: true, data });
+  },
+);
+
+export const getMerchantDashboard = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.user) throw new UnauthorizedError("Unauthorized user");
+    const data = await getMerchantDashboardService(req.user._id.toString());
+    res.status(200).json({ success: true, data });
   },
 );
 

@@ -15,7 +15,8 @@ export interface INotification extends Document {
     | "ORDER_CANCELLED"
     | "NO_DRIVER_FOUND"
     | "NEW_ORDER"
-    | "NEW_DELIVERY_OFFER";
+    | "NEW_DELIVERY_OFFER"
+    | "DRIVER_PICKED_UP";
   title: string;
   message: string;
   order: Types.ObjectId | null;
@@ -60,6 +61,7 @@ const notificationSchema = new Schema<INotification>(
         "NO_DRIVER_FOUND",
         "NEW_ORDER",
         "NEW_DELIVERY_OFFER",
+        "DRIVER_PICKED_UP",
       ],
     },
     title: {

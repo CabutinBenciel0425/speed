@@ -71,10 +71,12 @@ export const addItemToCart = async (
       ],
       deliveryAddress: {
         address: address._id,
+        houseOrUnitNumber: address.houseOrUnitNumber,
         street: address.street,
         barangay: address.barangay,
         city: address.city,
-        province: address.province,
+        province: address.province ?? "",
+        region: address.region,
         location: {
           coordinates: address.location.coordinates,
         },
@@ -95,6 +97,7 @@ export const addItemToCart = async (
 
     await updatedCart.save();
     await updatedCart.populate("items.product");
+
     return updatedCart;
   }
 
@@ -339,7 +342,10 @@ export const recalculateCart = async (userId: string) => {
     throw new NotFoundError("Merchant Coordinates");
   }
 
-  const defaultAddress = await Address.findOne({ user: userId });
+  const defaultAddress = await Address.findOne({
+    user: userId,
+    isDefault: true,
+  });
 
   if (!defaultAddress) {
     throw new NotFoundError("Address");
@@ -411,6 +417,16 @@ export const recalculateCart = async (userId: string) => {
 
   cart.estimatedPreparationTime = cartPreparationTime;
   cart.estimatedDeliveryTime = cartDeliveryTime;
+  cart.deliveryAddress = {
+    address: defaultAddress._id,
+    houseOrUnitNumber: defaultAddress.houseOrUnitNumber,
+    street: defaultAddress.street,
+    barangay: defaultAddress.barangay,
+    city: defaultAddress.city,
+    province: defaultAddress.province ?? "",
+    region: defaultAddress.region,
+    location: { type: "Point", coordinates: defaultAddressCoords },
+  };
 
   await cart.save();
 

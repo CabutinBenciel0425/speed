@@ -26,6 +26,7 @@ import notificationRouter from "./routes/notification.route.js";
 import cors from "cors";
 import searchRouter from "./routes/search.route.js";
 import qs from "qs";
+import { registerSocketHandlers } from "./socket/socket.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -44,6 +45,7 @@ export const io = new Server(server, {
   },
 });
 io.use(socketAuth);
+registerSocketHandlers(io);
 app.use(morgan("dev"));
 app.post(
   "/api/v1/payment/webhook",

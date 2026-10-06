@@ -11,16 +11,15 @@ import { buildQuery } from "../utils/buildQuery.js";
 export const createOrderForCOD = asyncHandler(
   async (req: Request, res: Response) => {
     const user = req.user;
-
     if (!user) {
       throw new NotFoundError("User");
     }
 
-    const newPayment = await createOrderForCODService(user._id.toString());
+    const order = await createOrderForCODService(user._id.toString());
 
     res.status(201).json({
       success: true,
-      data: newPayment,
+      data: order,
     });
   },
 );
@@ -120,6 +119,13 @@ export const getOrder = asyncHandler(async (req: Request, res: Response) => {
   if (order.customer.toString() !== user._id.toString()) {
     throw new UnauthorizedError("This order does not belong to this user");
   }
+
+  await order.populate({
+    path: "driver",
+    select: `avatar vehicleType plateNumber user${order.status === "PickedUp" ? " currentLocation" : ""}`,
+    populate: { path: "user", select: "firstName lastName phoneNumber" },
+  });
+  await order.populate("merchant", "merchantName");
 
   res.status(200).json({
     success: true,

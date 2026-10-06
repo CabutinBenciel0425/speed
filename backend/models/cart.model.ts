@@ -12,10 +12,12 @@ export interface ICart extends Document {
   ];
   deliveryAddress: {
     address: Types.ObjectId;
+    houseOrUnitNumber: string;
     street: string;
     barangay: string;
     city: string;
-    province: string;
+    province?: string;
+    region: string;
     location: {
       type: string;
       coordinates: number[];
@@ -69,6 +71,10 @@ const cartSchema = new Schema<ICart>({
       ref: "Address",
       required: true,
     },
+    houseOrUnitNumber: {
+      type: String,
+      required: true,
+    },
     street: {
       type: String,
       required: true,
@@ -82,6 +88,9 @@ const cartSchema = new Schema<ICart>({
       required: true,
     },
     province: {
+      type: String,
+    },
+    region: {
       type: String,
       required: true,
     },

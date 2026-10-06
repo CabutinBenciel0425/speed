@@ -5,11 +5,21 @@ import {
   deleteNotifications,
   getNotification,
   getNotifications,
+  getUnreadNotificationCount,
   readAllNotifications,
   readNotification,
 } from "../controller/notification.controller.js";
 
 const notificationRouter = Router();
+
+notificationRouter.get("/me", protectRoute, getNotifications);
+notificationRouter.get("/me/unread-count", protectRoute, getUnreadNotificationCount);
+notificationRouter.patch("/me/read-all", protectRoute, readAllNotifications);
+notificationRouter.patch(
+  "/me/:notificationId/read",
+  protectRoute,
+  readNotification,
+);
 
 notificationRouter.get("/:id", protectRoute, getNotifications);
 

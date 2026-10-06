@@ -9,20 +9,33 @@ export const socketAuth = async (
   next: (err?: Error) => void,
 ) => {
   try {
-    const token = socket.handshake.auth.token;
+    const token =
+      socket.handshake.auth.token ??
+      socket.handshake.headers.cookie
+        ?.split(";")
+        .map((cookie) => cookie.trim())
+        .find((cookie) => cookie.startsWith("accessToken="))
+        ?.slice("accessToken=".length);
 
     const activeRole: ValidUserRoleInput = socket.handshake.auth.activeRole;
 
-    if (!token) return next(new Error("Unauthorized"));
+    if (!token || !activeRole || !ACCESS_TOKEN_SECRET_KEY) {
+      return next(new Error("Unauthorized"));
+    }
 
     const payload = jwt.verify(
       token,
       ACCESS_TOKEN_SECRET_KEY as string,
-    ) as JwtPayload;
+    ) as JwtPayload & { userId?: string; activeRole?: ValidUserRoleInput };
+
+    if (
+      typeof payload.userId !== "string" ||
+      payload.activeRole !== activeRole
+    ) return next(new Error("Unauthorized"));
 
     const user = await User.findById(payload.userId);
 
-    if (!user) return next(new Error("Unauthorized"));
+    if (!user || user.isDeleted) return next(new Error("Unauthorized"));
 
     if (!user.role.includes(activeRole)) return next(new Error("Unauthorized"));
 

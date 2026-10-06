@@ -18,10 +18,14 @@ export interface IOrder extends Document {
   ];
   deliveryAddress: {
     address: Types.ObjectId;
+    recipientName: string;
+    phoneNumber: string;
+    houseOrUnitNumber: string;
     street: string;
     barangay: string;
     city: string;
-    province: string;
+    province?: string;
+    region: string;
     location: {
       type: string;
       coordinates: number[];
@@ -49,11 +53,13 @@ export interface IOrder extends Document {
     | "Cancelled"
     | "Rejected"
     | "NoDriverFound";
+  driverMatchingStatus: "Searching" | "Assigned" | "NoDriverFound";
   customerNote: string;
   estimatedPreparationTime: number;
   estimatedDeliveryTime: number;
   driverAssignedAt?: Date;
   acceptedAt?: Date;
+  driverHeadingToMerchantAt?: Date;
   merchantReceivedAt?: Date;
   preparingAt?: Date;
   driverArrivedAtMerchantAt?: Date;
@@ -66,227 +72,245 @@ export interface IOrder extends Document {
   cancellationReason: string;
 }
 
-const orderSchema = new Schema<IOrder>({
-  customer: {
-    type: mongoose.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  merchant: {
-    type: mongoose.Types.ObjectId,
-    ref: "Merchant",
-    required: true,
-  },
-  driver: {
-    type: mongoose.Types.ObjectId,
-    ref: "Driver",
-    default: null,
-  },
-  orderNumber: {
-    type: String,
-    required: true,
-  },
-  items: [
-    {
-      product: {
+const orderSchema = new Schema<IOrder>(
+  {
+    customer: {
+      type: mongoose.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    merchant: {
+      type: mongoose.Types.ObjectId,
+      ref: "Merchant",
+      required: true,
+    },
+    driver: {
+      type: mongoose.Types.ObjectId,
+      ref: "Driver",
+      default: null,
+    },
+    orderNumber: {
+      type: String,
+      required: true,
+    },
+    items: [
+      {
+        product: {
+          type: mongoose.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+        productName: {
+          type: String,
+          required: true,
+        },
+        image: {
+          type: String,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          default: 1,
+          min: [1, "The minimum quantity should be atleast 1"],
+        },
+        unitPrice: {
+          type: Number,
+          required: true,
+        },
+        subtotal: {
+          type: Number,
+          required: true,
+        },
+        notes: {
+          type: String,
+        },
+      },
+    ],
+    deliveryAddress: {
+      address: {
         type: mongoose.Types.ObjectId,
-        ref: "Product",
+        ref: "Address",
         required: true,
       },
-      productName: {
+      recipientName: { type: String, required: true },
+      phoneNumber: { type: String, required: true },
+      houseOrUnitNumber: { type: String, required: true },
+      street: {
         type: String,
         required: true,
       },
-      image: {
+      barangay: {
+        type: String,
+        required: true,
+      },
+      city: {
+        type: String,
+        required: true,
+      },
+      province: {
         type: String,
       },
-      quantity: {
-        type: Number,
-        required: true,
-        default: 1,
-        min: [1, "The minimum quantity should be atleast 1"],
-      },
-      unitPrice: {
-        type: Number,
+      region: {
+        type: String,
         required: true,
       },
+      location: {
+        type: {
+          type: String,
+          enum: ["Point"],
+          default: "Point",
+        },
+        coordinates: {
+          type: [Number],
+          required: true,
+          index: "2dsphere",
+          validate: {
+            validator: function (v: number[] | undefined): v is number[] {
+              if (!v) return false;
+              if (v.length !== 2) return false;
+
+              const lng = v[0];
+              const lat = v[1];
+
+              return (
+                typeof lng === "number" &&
+                typeof lat === "number" &&
+                lng >= -180 &&
+                lng <= 180 &&
+                lat >= -90 &&
+                lat <= 90
+              );
+            },
+            message:
+              "Coordinates must be [longitude latitude] with valid ranges",
+          },
+        },
+      },
+    },
+    payment: {
+      paymentId: {
+        type: mongoose.Types.ObjectId,
+        default: null,
+      },
+      method: {
+        type: String,
+        required: true,
+        enum: ["Cash", "QRPh"],
+      },
+      status: {
+        type: String,
+        required: true,
+        enum: ["Pending", "Paid", "Cancelled"],
+        default: "Pending",
+      },
+      transactionId: {
+        type: String,
+        required: function (this: any) {
+          return this.status === "Paid";
+        },
+        message: "Transaction id is required when the payment status is 'PAID'",
+        default: null,
+      },
+    },
+    pricing: {
       subtotal: {
         type: Number,
         required: true,
       },
-      notes: {
-        type: String,
-      },
-    },
-  ],
-  deliveryAddress: {
-    address: {
-      type: mongoose.Types.ObjectId,
-      ref: "Address",
-      required: true,
-    },
-    street: {
-      type: String,
-      required: true,
-    },
-    barangay: {
-      type: String,
-      required: true,
-    },
-    city: {
-      type: String,
-      required: true,
-    },
-    province: {
-      type: String,
-      required: true,
-    },
-    location: {
-      type: {
-        type: String,
-        enum: ["Point"],
-        default: "Point",
-      },
-      coordinates: {
-        type: [Number],
+      serviceFee: {
+        type: Number,
         required: true,
-        index: "2dsphere",
-        validate: {
-          validator: function (v: number[] | undefined): v is number[] {
-            if (!v) return false;
-            if (v.length !== 2) return false;
-
-            const lng = v[0];
-            const lat = v[1];
-
-            return (
-              typeof lng === "number" &&
-              typeof lat === "number" &&
-              lng >= -180 &&
-              lng <= 180 &&
-              lat >= -90 &&
-              lat <= 90
-            );
-          },
-          message: "Coordinates must be [longitude latitude] with valid ranges",
-        },
+        default: 0,
       },
-    },
-  },
-  payment: {
-    paymentId: {
-      type: mongoose.Types.ObjectId,
-      default: null,
-    },
-    method: {
-      type: String,
-      required: true,
-      enum: ["Cash", "QRPh"],
+      discount: {
+        type: Number,
+        required: true,
+        default: 0,
+      },
+      deliveryFee: {
+        type: Number,
+        required: true,
+        default: 0,
+      },
+      total: {
+        type: Number,
+        required: true,
+      },
     },
     status: {
       type: String,
       required: true,
-      enum: ["Pending", "Paid", "Cancelled"],
+      enum: [
+        "Pending",
+        "Preparing",
+        "ReadyForPickup",
+        "PickedUp",
+        "Delivered",
+        "Cancelled",
+        "Rejected",
+        "NoDriverFound",
+      ],
       default: "Pending",
     },
-    transactionId: {
+    driverMatchingStatus: {
       type: String,
-      required: function (this: any) {
-        return this.status === "Paid";
-      },
-      message: "Transaction id is required when the payment status is 'PAID'",
-      default: null,
+      enum: ["Searching", "Assigned", "NoDriverFound"],
+      default: "Searching",
     },
-  },
-  pricing: {
-    subtotal: {
+    customerNote: {
+      type: String,
+    },
+    estimatedPreparationTime: {
       type: Number,
       required: true,
     },
-    serviceFee: {
-      type: Number,
-      required: true,
-      default: 0,
-    },
-    discount: {
-      type: Number,
-      required: true,
-      default: 0,
-    },
-    deliveryFee: {
-      type: Number,
-      required: true,
-      default: 0,
-    },
-    total: {
+    estimatedDeliveryTime: {
       type: Number,
       required: true,
     },
+    acceptedAt: {
+      type: Date,
+    },
+    driverHeadingToMerchantAt: {
+      type: Date,
+    },
+    driverAssignedAt: {
+      type: Date,
+    },
+    merchantReceivedAt: {
+      type: Date,
+    },
+    preparingAt: {
+      type: Date,
+    },
+    driverArrivedAtMerchantAt: {
+      type: Date,
+    },
+    readyForPickupAt: {
+      type: Date,
+    },
+    pickedUpAt: {
+      type: Date,
+    },
+    deliveredAt: {
+      type: Date,
+    },
+    rejectedAt: {
+      type: Date,
+    },
+    cancelledAt: {
+      type: Date,
+    },
+    cancelledBy: {
+      type: String,
+      enum: ["Customer", "Merchant", "Admin"],
+    },
+    cancellationReason: {
+      type: String,
+    },
   },
-  status: {
-    type: String,
-    required: true,
-    enum: [
-      "Pending",
-      "Preparing",
-      "ReadyForPickup",
-      "PickedUp",
-      "Delivered",
-      "Cancelled",
-      "Rejected",
-      "NoDriverFound",
-    ],
-    default: "Pending",
-  },
-  customerNote: {
-    type: String,
-  },
-  estimatedPreparationTime: {
-    type: Number,
-    required: true,
-  },
-  estimatedDeliveryTime: {
-    type: Number,
-    required: true,
-  },
-  acceptedAt: {
-    type: Date,
-  },
-  driverAssignedAt: {
-    type: Date,
-  },
-  merchantReceivedAt: {
-    type: Date,
-  },
-  preparingAt: {
-    type: Date,
-  },
-  driverArrivedAtMerchantAt: {
-    type: Date,
-  },
-  readyForPickupAt: {
-    type: Date,
-  },
-  pickedUpAt: {
-    type: Date,
-  },
-  deliveredAt: {
-    type: Date,
-  },
-  rejectedAt: {
-    type: Date,
-  },
-  cancelledAt: {
-    type: Date,
-  },
-  cancelledBy: {
-    type: String,
-    enum: ["Customer", "Merchant", "Admin"],
-  },
-  cancellationReason: {
-    type: String,
-  },
-});
+  { timestamps: true },
+);
 
 orderSchema.index({
   status: 1,
