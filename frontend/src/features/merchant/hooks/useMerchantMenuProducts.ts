@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { isAxiosError } from "axios"
 import axios from "@/lib/axios"
 import type { Product } from "@/features/customer/types/products"
 import { toast } from "sonner"
+import { apiErrorMessage } from "../utils/apiErrorMessage"
 
 type ProductListResponse = {
   data: { products: Product[] }
@@ -11,20 +11,24 @@ type ProductListResponse = {
 
 async function fetchMerchantProducts(
   merchantId: string,
-  categoryId: string,
+  categoryId: string
 ): Promise<Product[]> {
-  const params = new URLSearchParams({ page: "1", limit: "50", sort: "-createdAt" })
+  const params = new URLSearchParams({
+    page: "1",
+    limit: "50",
+    sort: "-createdAt",
+  })
   if (categoryId) params.set("category", categoryId)
 
   const firstPage = await axios.get<ProductListResponse>(
-    `/merchant/${merchantId}/merchant/products?${params.toString()}`,
+    `/merchant/${merchantId}/merchant/products?${params.toString()}`
   )
   const products = firstPage.data.data.products
 
   for (let page = 2; page <= firstPage.data.pagination.pages; page += 1) {
     params.set("page", String(page))
     const { data } = await axios.get<ProductListResponse>(
-      `/merchant/${merchantId}/merchant/products?${params.toString()}`,
+      `/merchant/${merchantId}/merchant/products?${params.toString()}`
     )
     products.push(...data.data.products)
   }
@@ -34,25 +38,13 @@ async function fetchMerchantProducts(
 
 export function useMerchantMenuProducts(
   merchantId: string | undefined,
-  categoryId: string,
+  categoryId: string
 ) {
   return useQuery({
     queryKey: ["merchantMenuProducts", merchantId, categoryId],
     queryFn: () => fetchMerchantProducts(merchantId!, categoryId),
     enabled: Boolean(merchantId),
   })
-}
-
-type SaveMerchantProductInput = {
-  payload: FormData
-  productId?: string
-}
-
-const apiErrorMessage = (error: unknown, fallback: string) => {
-  if (isAxiosError<{ message?: string }>(error)) {
-    return error.response?.data?.message ?? fallback
-  }
-  return fallback
 }
 
 export function useMerchantProductActions(merchantId: string | undefined) {
@@ -62,26 +54,11 @@ export function useMerchantProductActions(merchantId: string | undefined) {
       queryKey: ["merchantMenuProducts", merchantId],
     })
 
-  const saveProduct = useMutation({
-    mutationFn: ({ payload, productId }: SaveMerchantProductInput) => {
-      if (!merchantId) throw new Error("Merchant profile is unavailable")
-      return productId
-        ? axios.patch(`/product/${merchantId}/${productId}`, payload)
-        : axios.post(`/product/${merchantId}`, payload)
-    },
-    onSuccess: (_response, variables) => {
-      toast.success(variables.productId ? "Product updated" : "Product added")
-      void invalidateProducts()
-    },
-    onError: (error) =>
-      toast.error(apiErrorMessage(error, "Could not save this product.")),
-  })
-
   const toggleAvailability = useMutation({
     mutationFn: (productId: string) => {
       if (!merchantId) throw new Error("Merchant profile is unavailable")
       return axios.patch(
-        `/product/${merchantId}/${productId}/availability/status`,
+        `/product/${merchantId}/${productId}/availability/status`
       )
     },
     onSuccess: () => {
@@ -89,7 +66,9 @@ export function useMerchantProductActions(merchantId: string | undefined) {
       void invalidateProducts()
     },
     onError: (error) =>
-      toast.error(apiErrorMessage(error, "Could not update product availability.")),
+      toast.error(
+        apiErrorMessage(error, "Could not update product availability.")
+      ),
   })
 
   const deleteProduct = useMutation({
@@ -105,5 +84,5 @@ export function useMerchantProductActions(merchantId: string | undefined) {
       toast.error(apiErrorMessage(error, "Could not delete this product.")),
   })
 
-  return { saveProduct, toggleAvailability, deleteProduct }
+  return { toggleAvailability, deleteProduct }
 }

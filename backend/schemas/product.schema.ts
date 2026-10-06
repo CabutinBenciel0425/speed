@@ -15,7 +15,7 @@ const formStringArray = z.preprocess((value) => {
 }, z.array(z.string()));
 
 export const productSchema = z.object({
-  category: z.string(),
+  category: z.string().regex(/^[\da-f]{24}$/i, "Choose a valid category"),
   name: z.string().min(2, "Product name must be atleast 2 characters long"),
   description: z.string().optional(),
   price: z.coerce.number().min(0).max(100000),

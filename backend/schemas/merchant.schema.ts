@@ -1,8 +1,22 @@
 import { z } from "zod";
 
+const parseJsonField = (value: unknown) => {
+  if (typeof value !== "string") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
+};
+
+const formBoolean = z.preprocess(
+  (value) => (typeof value === "string" ? value === "true" : value),
+  z.boolean(),
+);
+
 const dayHoursSchema = z
   .object({
-    isOpen: z.coerce.boolean().default(false),
+    isOpen: formBoolean.default(false),
     openHour: z.coerce.number().min(0).max(23).optional(),
     openMinute: z.coerce.number().min(0).max(59).optional(),
     closeHour: z.coerce.number().min(0).max(23).optional(),
@@ -67,19 +81,32 @@ export const merchantSchema = z.object({
     .string()
     .min(1, "Phone number is required")
     .regex(/^(\+63|0)[0-9]{10}$/, "Invalid Philippine phone number format"),
-  address: z.object({
-    location: z
-      .object({
-        type: z.enum(["Point"]).default("Point"),
-        coordinates: z.array(z.coerce.number()),
-      })
-      .optional(),
-    street: z.string().min(1, "Street is required"),
-    barangay: z.string().min(1, "Barangay is required"),
-    city: z.string().min(1, "City is required"),
-    province: z.string().min(1, "Province is required"),
-  }),
-  operatingHours: operatingHoursSchema,
+  address: z.preprocess(
+    parseJsonField,
+    z.object({
+      location: z
+        .object({
+          type: z.enum(["Point"]).default("Point"),
+          coordinates: z
+            .array(z.coerce.number())
+            .length(2, "Location must include longitude and latitude")
+            .refine(
+              ([longitude, latitude]) =>
+                longitude! >= -180 &&
+                longitude! <= 180 &&
+                latitude! >= -90 &&
+                latitude! <= 90,
+              "Enter a valid map location",
+            ),
+        })
+        .optional(),
+      street: z.string().min(1, "Street is required"),
+      barangay: z.string().min(1, "Barangay is required"),
+      city: z.string().min(1, "City is required"),
+      province: z.string().min(1, "Province is required"),
+    }),
+  ),
+  operatingHours: z.preprocess(parseJsonField, operatingHoursSchema),
   minimumOrder: z.coerce.number().min(1),
   status: z.enum(["Pending", "Operating", "Closed"]).default("Pending"),
 });

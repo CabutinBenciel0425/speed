@@ -52,6 +52,9 @@ export const createNewProduct = async (
 
   const newProduct = new Product({
     merchant: existingMerchant._id,
+    merchantName: existingMerchant.merchantName,
+    merchantLogo: existingMerchant.logo,
+    merchantLocation: existingMerchant.address.location,
     category: payload.category,
     name: payload.name,
     image: cloudinaryImageUrl,
@@ -81,31 +84,31 @@ export const updateProductDetails = async (
     throw new NotFoundError("Product");
   }
 
-  if (payload.category) {
+  if (payload.category !== undefined) {
     product.category = new Types.ObjectId(payload.category.toString());
   }
 
-  if (payload.name) {
+  if (payload.name !== undefined) {
     product.name = payload.name;
   }
 
-  if (payload.description) {
+  if (payload.description !== undefined) {
     product.description = payload.description;
   }
 
-  if (payload.price) {
+  if (payload.price !== undefined) {
     product.price = payload.price;
   }
 
-  if (payload.preparationTime) {
+  if (payload.preparationTime !== undefined) {
     product.preparationTime = payload.preparationTime;
   }
 
-  if (payload.ingredients) {
+  if (payload.ingredients !== undefined) {
     product.ingredients = payload.ingredients;
   }
 
-  if (payload.tags) {
+  if (payload.tags !== undefined) {
     product.tags = payload.tags;
   }
 

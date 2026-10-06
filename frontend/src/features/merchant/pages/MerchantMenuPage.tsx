@@ -16,6 +16,9 @@ import {
   useMerchantProductActions,
 } from "../hooks/useMerchantMenuProducts"
 
+import { useUpdateMerchantProduct } from "../hooks/useUpdateMerchantProduct"
+import { useAddMerchantProduct } from "../hooks/useAddMerchantProduct"
+
 function MerchantMenuPage() {
   const { categories } = useCategories()
   const {
@@ -29,8 +32,9 @@ function MerchantMenuPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const productsQuery = useMerchantMenuProducts(merchant?._id, categoryId)
   const allProductsQuery = useMerchantMenuProducts(merchant?._id, "")
+  const addProductMutation = useAddMerchantProduct(merchant?._id)
+  const updateProductMutation = useUpdateMerchantProduct(merchant?._id)
   const {
-    saveProduct: saveProductMutation,
     toggleAvailability: toggleAvailabilityMutation,
     deleteProduct: deleteProductMutation,
   } = useMerchantProductActions(merchant?._id)
@@ -141,18 +145,22 @@ function MerchantMenuPage() {
         }}
         product={editingProduct}
         categories={categoryList}
-        isSaving={saveProductMutation.isPending}
-        onSave={(payload, productId) =>
-          saveProductMutation.mutate(
-            { payload, productId },
-            {
-              onSuccess: () => {
-                setDialogOpen(false)
-                setEditingProduct(null)
-              },
-            }
-          )
+        isSaving={
+          addProductMutation.isPending || updateProductMutation.isPending
         }
+        onSave={(payload, productId) => {
+          const options = {
+            onSuccess: () => {
+              setDialogOpen(false)
+              setEditingProduct(null)
+            },
+          }
+          if (productId) {
+            updateProductMutation.mutate({ productId, payload }, options)
+          } else {
+            addProductMutation.mutate(payload, options)
+          }
+        }}
       />
 
       <section className="space-y-4">

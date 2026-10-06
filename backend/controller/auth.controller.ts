@@ -44,6 +44,11 @@ import type { DriverInput } from "../schemas/driver.schema.js";
 import { getProductFavoritesService } from "../services/product.service.js";
 import { getMerchantFavoritesService } from "../services/merchant.service.js";
 
+const clearAuthCookies = (res: Response) => {
+  res.clearCookie("accessToken", { path: "/" });
+  res.clearCookie("refreshToken", { path: "/" });
+};
+
 export const customerSignup = asyncHandler(
   async (req: Request, res: Response) => {
     const body: SignupInput = req.body;
@@ -187,8 +192,7 @@ export const selectRole = asyncHandler(async (req: Request, res: Response) => {
 export const logout = asyncHandler(async (req: Request, res: Response) => {
   await logoutUser(req);
 
-  res.clearCookie("refreshToken");
-  res.clearCookie("accessToken");
+  clearAuthCookies(res);
 
   res.status(200).json({
     success: true,
@@ -226,7 +230,8 @@ export const recreateAccessToken = asyncHandler(
   async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken;
 
-    if (!refreshToken) {
+    if (typeof refreshToken !== "string" || !refreshToken) {
+      clearAuthCookies(res);
       throw new ApiError(401, "No refresh token provided.");
     }
 
@@ -237,24 +242,55 @@ export const recreateAccessToken = asyncHandler(
       );
     }
 
-    const decoded = jwt.verify(
-      refreshToken,
-      REFRESH_TOKEN_SECRET_KEY,
-    ) as JwtPayload;
+    let decoded: JwtPayload;
+    try {
+      decoded = jwt.verify(
+        refreshToken,
+        REFRESH_TOKEN_SECRET_KEY,
+      ) as JwtPayload;
+    } catch {
+      clearAuthCookies(res);
+      throw new UnauthorizedError("Invalid or expired refresh token");
+    }
 
-    const storedToken = await redisClient.get(
-      `refresh_token:${decoded.userId}-${decoded.activeRole}`,
-    );
+    const userId = decoded.userId;
+    const activeRole = decoded.activeRole;
+    const validRoles: ValidUserRoleInput[] = [
+      "Customer",
+      "Merchant",
+      "Driver",
+      "Admin",
+    ];
+    if (
+      typeof userId !== "string" ||
+      typeof activeRole !== "string" ||
+      !validRoles.includes(activeRole as ValidUserRoleInput)
+    ) {
+      clearAuthCookies(res);
+      throw new UnauthorizedError("Invalid refresh token payload");
+    }
+
+    const tokenKey = `refresh_token:${userId}-${activeRole}`;
+
+    const storedToken = await redisClient.get(tokenKey);
 
     if (!storedToken || storedToken !== refreshToken) {
-      res.clearCookie("refreshToken");
-      res.clearCookie("accessToken");
+      clearAuthCookies(res);
       throw new ApiError(401, "Invalid refresh token");
     }
 
+    const user = await User.findById(userId);
+    if (!user || !user.role.includes(activeRole)) {
+      await redisClient.del(tokenKey);
+      clearAuthCookies(res);
+      throw new UnauthorizedError(
+        "The user or role for this session is invalid",
+      );
+    }
+
     const newAccessToken = createAccessToken(
-      decoded.userId,
-      decoded.activeRole,
+      userId,
+      activeRole as ValidUserRoleInput,
     );
     setAccessToken(res, newAccessToken);
 

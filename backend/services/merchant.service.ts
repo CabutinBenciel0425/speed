@@ -432,7 +432,7 @@ export const updateMerchantProfileService = async (
   const merchant = await Merchant.findOne({
     owner: userId,
     _id: merchantId,
-  }).populate("owner");
+  });
 
   if (!merchant) {
     throw new NotFoundError("Merchant");
@@ -503,24 +503,10 @@ export const updateMerchantProfileService = async (
     updateData.banner = cloudinaryImageUrl;
   }
 
-  const updatedMerchant = await Merchant.findByIdAndUpdate(
-    merchant._id,
-    {
-      $set: updateData,
-    },
-    {
-      new: true,
-      runValidators: true,
-    },
-  );
+  merchant.set(updateData);
+  await merchant.save();
 
-  if (!updatedMerchant) {
-    throw new ConflictError(
-      "Cannot update the details. Please try again later",
-    );
-  }
-
-  return updatedMerchant;
+  return merchant;
 };
 
 export const toggleMerchantFavoriteService = async (

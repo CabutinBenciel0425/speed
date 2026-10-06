@@ -24,6 +24,9 @@ import MerchantDashboard from "./features/merchant/pages/MerchantDashboard"
 import MerchantLayout from "./features/merchant/components/layout/MerchantLayout"
 import MerchantOrdersPage from "./features/merchant/pages/MerchantOrdersPage"
 import MerchantMenuPage from "./features/merchant/pages/MerchantMenuPage"
+import MerchantSettingsPage from "./features/merchant/pages/MerchantSettingsPage"
+import MerchantSignupPage from "./features/auth/pages/MerchantSignupPage"
+import DriverSignupPage from "./features/auth/pages/DriverSignupPage"
 import AdminLayout from "./features/admin/components/AdminLayout"
 import AdminDashboardPage from "./features/admin/pages/AdminDashboardPage"
 import AdminAnalyticsPage from "./features/admin/pages/AdminAnalyticsPage"
@@ -61,10 +64,7 @@ export function App() {
             path="analytics"
             element={<MerchantSection title="Analytics" />}
           />
-          <Route
-            path="settings"
-            element={<MerchantSection title="Settings" />}
-          />
+          <Route path="settings" element={<MerchantSettingsPage />} />
         </Route>
         <Route element={<AuthLayout />}>
           <Route
@@ -100,6 +100,8 @@ export function App() {
         </Route>
 
         <Route element={<CustomerLayout />}>
+          <Route path="/register/merchant" element={<MerchantSignupPage />} />
+          <Route path="/register/driver" element={<DriverSignupPage />} />
           <Route path="/" element={<Dashboard />} />
           <Route
             path="/verify-email"

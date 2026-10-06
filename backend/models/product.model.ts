@@ -127,12 +127,13 @@ const productSchema = new Schema<IProduct>(
   { timestamps: true },
 );
 
-productSchema.pre("save", async function (this: IProduct) {
+productSchema.pre("validate", async function (this: IProduct) {
   if (this.isNew || this.isModified("merchant")) {
     const merchant = await mongoose.model("Merchant").findById(this.merchant);
     if (merchant) {
       this.merchantName = merchant.merchantName;
       this.merchantLogo = merchant.logo;
+      this.merchantLocation = merchant.address.location;
     }
   }
 });
