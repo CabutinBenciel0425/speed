@@ -5,6 +5,7 @@ import axios from "@/lib/axios"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/useAuth"
 import { toast } from "sonner"
+import { MapPin, PhilippinePeso } from "lucide-react"
 
 type Merchant = { _id: string; merchantName: string }
 type OrderCustomer =
@@ -14,6 +15,15 @@ type OrderCustomer =
       phoneNumber?: string
     }
   | string
+type OrderStatus =
+  | "Pending"
+  | "Preparing"
+  | "ReadyForPickup"
+  | "PickedUp"
+  | "Delivered"
+  | "Cancelled"
+  | "Rejected"
+  | "NoDriverFound"
 type MerchantOrder = {
   _id: string
   orderNumber: string
@@ -33,7 +43,7 @@ type MerchantOrder = {
   }
   pricing: { total: number }
   payment: { method: string; status: string; transactionId?: string | null }
-  status: string
+  status: OrderStatus
   driver: { _id: string; workingStatus: string } | string | null
   acceptedAt?: string | null
   driverAssignedAt?: string | null
@@ -59,6 +69,10 @@ function MerchantOrdersPage() {
   const { user } = useAuth()
   const [searchParams] = useSearchParams()
   const focusedOrderId = searchParams.get("orderId")
+  const negativeStatus = ["Cancelled", "Rejected", "NoDriverFound"]
+  const isStatusNegative = (value: OrderStatus) => {
+    return negativeStatus.includes(value)
+  }
   const queryClient = useQueryClient()
   const merchantQuery = useQuery({
     queryKey: ["merchantProfile", user?.id],
@@ -130,7 +144,7 @@ function MerchantOrdersPage() {
         "Customer"
 
   return (
-    <main className="w-full p-6">
+    <main className="w-full p-6 xl:px-20">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">Orders</h1>
@@ -152,7 +166,7 @@ function MerchantOrdersPage() {
           No orders yet.
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="flex flex-col items-center justify-center space-y-4">
           {orders.map((order) => {
             const canRespond =
               order.status === "Pending" &&
@@ -174,13 +188,13 @@ function MerchantOrdersPage() {
               <article
                 key={order._id}
                 id={`order-${order._id}`}
-                className={`rounded-lg border bg-card p-5 ${
+                className={`max-w-200 rounded-lg border bg-card p-5 ${
                   order._id === focusedOrderId ? "ring-2 ring-primary/50" : ""
                 }`}
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <h2 className="font-semibold">
+                    <h2 className="font-semibold text-primary">
                       Order #{order.orderNumber}
                     </h2>
                     <p className="text-sm text-muted-foreground">
@@ -189,7 +203,9 @@ function MerchantOrdersPage() {
                         ` · ${new Date(order.createdAt).toLocaleString()}`}
                     </p>
                   </div>
-                  <span className="rounded-full bg-muted px-3 py-1 text-sm">
+                  <span
+                    className={`rounded-full px-3 py-1 text-sm ${isStatusNegative(order.status) ? "bg-red-200 text-red-700" : "bg-green-200 text-green-700"}`}
+                  >
                     {order.status}
                   </span>
                 </div>
@@ -213,14 +229,20 @@ function MerchantOrdersPage() {
                   ))}
                 </ul>
 
-                <div className="grid gap-1 text-sm text-muted-foreground sm:grid-cols-2">
-                  <p>
-                    Deliver to: {address.street}, {address.barangay},{" "}
-                    {address.city}, {address.province}
-                  </p>
-                  <p>
-                    Payment: {order.payment.method} · {order.payment.status}
-                  </p>
+                <div className="grid gap-1 text-sm text-muted-foreground sm:grid-cols-[1fr_2fr]">
+                  <div className="flex flex-row items-center justify-start gap-2">
+                    <MapPin className="size-6 shrink-0 text-primary" />
+                    <p>
+                      Deliver to: {address.street}, {address.barangay},{" "}
+                      {address.city}, {address.province}
+                    </p>
+                  </div>
+                  <div className="flex flex-row items-center justify-start gap-2">
+                    <PhilippinePeso className="size-6 text-primary" />
+                    <p>
+                      Payment: {order.payment.method} · {order.payment.status}
+                    </p>
+                  </div>
                   <p className="font-medium text-foreground">
                     Total: ₱{order.pricing.total.toFixed(2)}
                   </p>

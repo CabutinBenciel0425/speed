@@ -37,6 +37,8 @@ import { getRoleHomePath } from "@/utils/roleRoutes"
 import OrderReviewPage from "./features/customer/pages/OrderReviewPage"
 import OrderTrackingPage from "./features/customer/pages/OrderTrackingPage"
 import DriverDashboardPage from "./features/driver/pages/DriverDashboardPage"
+import CustomerNotificationsPage from "./features/customer/pages/CustomerNotificationPage"
+import CustomerOrdersPage from "./features/customer/pages/CustomerOrdersPage"
 
 const MerchantAnalyticsPage = lazy(
   () => import("./features/merchant/pages/MerchantAnalyticsPage")
@@ -182,6 +184,24 @@ export function App() {
           <Route
             path="/address"
             element={isAuthenticated ? <AddressPage /> : <Navigate to="/" />}
+          />
+
+          <Route
+            path="/notifications"
+            element={
+              isAuthenticated ? (
+                <CustomerNotificationsPage />
+              ) : (
+                <Navigate to="/" />
+              )
+            }
+          />
+
+          <Route
+            path="/orders"
+            element={
+              isAuthenticated ? <CustomerOrdersPage /> : <Navigate to="/" />
+            }
           />
         </Route>
       </Routes>

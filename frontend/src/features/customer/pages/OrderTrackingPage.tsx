@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
+import type { AxiosError } from "axios"
 import { io } from "socket.io-client"
 import { useParams, Link } from "react-router-dom"
 import {
@@ -8,6 +10,7 @@ import {
   Clock3,
   MapPin,
   PackageCheck,
+  RotateCcw,
   Store,
   TriangleAlert,
 } from "lucide-react"
@@ -216,6 +219,26 @@ function OrderTrackingPage() {
     }
   }, [isPickedUp, driver?.currentLocation?.coordinates])
 
+  const retrySearch = useMutation({
+    mutationFn: async () => {
+      const { data } = await axios.patch(
+        `/orders/${orderId}/retry-driver-search`
+      )
+      return data.data
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["customerOrder", orderId],
+      })
+      toast.success("Searching for a driver again")
+    },
+    onError: (error: AxiosError<{ message?: string }>) => {
+      toast.error(
+        error.response?.data?.message ?? "Could not restart the driver search."
+      )
+    },
+  })
+
   if (orderQuery.isLoading)
     return (
       <main className="mx-auto w-full max-w-4xl animate-pulse p-5 sm:p-8">
@@ -278,13 +301,32 @@ function OrderTrackingPage() {
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
           {isFailed ? "Order update" : stage}
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {isFailed
-            ? noDriverFound
-              ? "No driver was available for this order."
-              : `This order is ${order.status.toLowerCase()}.`
-            : `Updates for your order from ${merchantName}.`}
-        </p>
+        <div className="flex flex-row items-center justify-between">
+          <span className="mt-1 text-sm text-muted-foreground">
+            {isFailed
+              ? noDriverFound
+                ? "No driver was available for this order."
+                : `This order is ${order.status.toLowerCase()}.`
+              : `Updates for your order from ${merchantName}.`}
+          </span>
+          {noDriverFound && (
+            <Button
+              variant="ghost"
+              className="text-muted-foreground"
+              disabled={retrySearch.isPending}
+              onClick={() => retrySearch.mutate()}
+            >
+              <RotateCcw
+                className={retrySearch.isPending ? "animate-spin" : ""}
+              />
+              <span>
+                {retrySearch.isPending
+                  ? "Restarting…"
+                  : "Retry searching driver"}
+              </span>
+            </Button>
+          )}
+        </div>
       </header>
       {isFailed ? (
         <Card>
@@ -367,7 +409,7 @@ function OrderTrackingPage() {
               ].map(({ label, done, icon: Icon }) => (
                 <div
                   key={label}
-                  className="flex items-center gap-3 sm:flex-col sm:items-start"
+                  className="flex items-center justify-evenly gap-3 sm:flex-col"
                 >
                   <span
                     className={`grid size-9 place-items-center rounded-full ${done ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
@@ -386,9 +428,9 @@ function OrderTrackingPage() {
         </>
       )}
       <Card>
-        <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 px-12 py-4">
           <div>
-            <p className="font-medium">Delivery address</p>
+            <p className="mb-2 text-base font-medium">Delivery address</p>
             <p className="mt-1 text-sm text-muted-foreground">
               {order.deliveryAddress.recipientName}
               {order.deliveryAddress.phoneNumber

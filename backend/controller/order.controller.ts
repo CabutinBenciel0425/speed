@@ -4,6 +4,7 @@ import { NotFoundError, UnauthorizedError } from "../utils/errors.js";
 import {
   cancelOrderServiceCustomer,
   createOrderForCODService,
+  retryDriverSearchService,
 } from "../services/order.service.js";
 import Order from "../models/order.model.js";
 import { buildQuery } from "../utils/buildQuery.js";
@@ -151,6 +152,24 @@ export const cancelOrderCustomer = asyncHandler(
     res.status(200).json({
       success: true,
       data: cancelledOrder,
+    });
+  },
+);
+
+export const retryDriverSearch = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+    const orderId = req.params.orderId as string;
+
+    if (!user) {
+      throw new NotFoundError("User");
+    }
+
+    const order = await retryDriverSearchService(orderId, user._id.toString());
+
+    res.status(200).json({
+      success: true,
+      data: order,
     });
   },
 );

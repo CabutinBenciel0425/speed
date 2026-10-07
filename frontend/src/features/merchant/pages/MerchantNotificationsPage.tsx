@@ -136,7 +136,7 @@ function MerchantNotificationsPage() {
         </div>
       </header>
 
-      <Card className="shadow-sm">
+      <Card className="max-h-[75vh] overflow-y-scroll shadow-sm">
         <CardHeader>
           <CardTitle>Activity</CardTitle>
           <CardDescription>

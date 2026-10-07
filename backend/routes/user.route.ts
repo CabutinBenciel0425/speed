@@ -13,6 +13,7 @@ import {
   merchantSignup,
   driverSignup,
   selectRole,
+  getCustomerOrders,
   getFavoriteLists,
 } from "../controller/auth.controller.js";
 import { validate } from "../middlewares/validate.middleware.js";
@@ -94,5 +95,7 @@ userRoute.patch(
   validate(updateSchema),
   updateUserDetails,
 );
+
+userRoute.get("/:userId/orders", protectRoute, getCustomerOrders);
 
 userRoute.get("/favorites/results", protectRoute, getFavoriteLists);

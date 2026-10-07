@@ -91,7 +91,7 @@ function OrderReviewPage() {
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="space-y-5">
-          <Card>
+          <Card className="py-6">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="flex items-center gap-2">
                 <MapPin className="size-5 text-primary" /> Delivery details
@@ -129,7 +129,7 @@ function OrderReviewPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="py-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ShoppingBag className="size-5 text-primary" /> Items from{" "}
@@ -167,7 +167,7 @@ function OrderReviewPage() {
           </Card>
         </div>
 
-        <Card className="h-fit lg:sticky lg:top-5">
+        <Card className="h-fit py-6 lg:sticky lg:top-5">
           <CardHeader>
             <CardTitle>Payment summary</CardTitle>
           </CardHeader>

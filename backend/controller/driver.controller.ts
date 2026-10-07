@@ -71,10 +71,14 @@ export const toggleDriverAvailability = asyncHandler(
       throw new ConflictError("Only operational drivers can go online");
     }
     if (driverProfile.activeOrder) {
-      throw new ConflictError("Complete your active delivery before changing availability");
+      throw new ConflictError(
+        "Complete your active delivery before changing availability",
+      );
     }
-    if (!['Offline', 'Available'].includes(driverProfile.workingStatus)) {
-      throw new ConflictError("Availability cannot change during an active delivery");
+    if (!["Offline", "Available"].includes(driverProfile.workingStatus)) {
+      throw new ConflictError(
+        "Availability cannot change during an active delivery",
+      );
     }
 
     driverProfile.isAvailable = isAvailable;
@@ -179,7 +183,7 @@ export const headingToMerchant = asyncHandler(
   async (req: Request, res: Response) => {
     const user = req.user;
     const orderId = req.params.orderId as string;
-
+    console.log(orderId);
     if (!user) {
       throw new NotFoundError("User");
     }

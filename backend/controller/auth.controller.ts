@@ -43,6 +43,7 @@ import type { merchantInput } from "../schemas/merchant.schema.js";
 import type { DriverInput } from "../schemas/driver.schema.js";
 import { getProductFavoritesService } from "../services/product.service.js";
 import { getMerchantFavoritesService } from "../services/merchant.service.js";
+import Order from "../models/order.model.js";
 
 const clearAuthCookies = (res: Response) => {
   res.clearCookie("accessToken", { path: "/" });
@@ -383,6 +384,24 @@ export const updateUserDetails = asyncHandler(
       success: true,
       message: "User details successfully updated",
       data: updatedCustomer,
+    });
+  },
+);
+
+export const getCustomerOrders = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+
+    if (!user) throw new UnauthorizedError("Unauthorized user");
+
+    const orders = await Order.find({ customer: user._id })
+      .populate("merchant", "_id merchantName logo isOpen")
+      .populate("driver", "workingStatus")
+      .sort({ createdAt: -1 });
+    console.log(orders);
+    res.status(200).json({
+      success: true,
+      data: orders,
     });
   },
 );

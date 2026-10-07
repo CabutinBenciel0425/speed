@@ -1,5 +1,5 @@
-import mongoose, { type Types } from "mongoose";
-import Order from "../models/order.model.js";
+import mongoose, { type Types, type QueryFilter } from "mongoose";
+import Order, { type IOrder } from "../models/order.model.js";
 import Address from "../models/address.model.js";
 import { ConflictError, NotFoundError } from "../utils/errors.js";
 import Merchant from "../models/merchant.model.js";
@@ -315,6 +315,37 @@ export const cancelOrderServiceCustomer = async (
 
   io.to(`merchant:${merchant._id}`).emit("order:cancel");
   io.to(`customer:${order.customer}`).emit("order:cancel");
+
+  return order;
+};
+
+export const retryDriverSearchService = async (
+  orderId: string,
+  userId: string,
+) => {
+  const order = await Order.findOneAndUpdate(
+    {
+      _id: orderId,
+      customer: userId,
+      driver: null,
+      status: { $in: ["Pending", "Preparing", "ReadyForPickup"] },
+      driverMatchingStatus: "NoDriverFound",
+    } as QueryFilter<IOrder>,
+    { driverMatchingStatus: "Searching" },
+    { new: true },
+  );
+
+  if (!order) {
+    const existing = await Order.findOne({ _id: orderId, customer: userId });
+    if (!existing) throw new NotFoundError("Order");
+    throw new ConflictError(
+      "The driver search can't be restarted for this order",
+    );
+  }
+
+  void driverMatching(order._id.toString()).catch((error) => {
+    console.error("Driver matching retry failed", error);
+  });
 
   return order;
 };

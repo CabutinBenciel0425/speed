@@ -4,7 +4,22 @@ import { toast } from "sonner"
 
 export type MerchantNotification = {
   _id: string
-  type: string
+  targetId: string
+  targetType: "Customer" | "Merchant" | "Driver"
+  type:
+    | "PAYMENT_SUCCESS"
+    | "PAYMENT_FAILED"
+    | "PAYMENT_EXPIRED"
+    | "ORDER_ACCEPTED"
+    | "ORDER_REJECTED"
+    | "DRIVER_ASSIGNED"
+    | "DRIVER_ARRIVED"
+    | "ORDER_DELIVERED"
+    | "ORDER_CANCELLED"
+    | "NO_DRIVER_FOUND"
+    | "NEW_ORDER"
+    | "NEW_DELIVERY_OFFER"
+    | "DRIVER_PICKED_UP"
   title: string
   message: string
   order: string | null

@@ -261,4 +261,25 @@
   html {
     @apply font-sans;
   }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    border-radius: 20px;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    overflow: hidden;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #3c3b39;
+    border-radius: 10px;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #494745;
+  }
 }
