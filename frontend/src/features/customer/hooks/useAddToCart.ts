@@ -49,7 +49,6 @@ export const useAddToCart = ({
     },
     onError: (error: AxiosError<{ message: string }>) => {
       const message = error.response?.data?.message || ""
-      console.log(error)
       if (
         error.response?.status === 409 &&
         /cart contains items from another (restaurant|store)/i.test(message)

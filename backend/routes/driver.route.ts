@@ -45,7 +45,7 @@ driverRouter.get("/orders/current", protectRoute, driverOnly, getCurrentOrder);
 driverRouter.get("/orders/history", protectRoute, driverOnly, getOrderHistory);
 
 driverRouter.patch(
-  "/order/:orderId/heading-to-merchant",
+  "/orders/:orderId/heading-to-merchant",
   protectRoute,
   driverOnly,
   headingToMerchant,

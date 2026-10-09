@@ -28,9 +28,6 @@ const cleanup = async () => {
       {},
     );
 
-    // Runs against every merchant regardless of current status, since a merchant
-    // that used to be "Open" and later changed status could still be carrying
-    // stray fields the job's second updateMany never touches.
     const result = await Merchant.updateMany({}, { $unset: unsetObj });
 
     console.log(

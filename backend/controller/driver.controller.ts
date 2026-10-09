@@ -183,7 +183,9 @@ export const headingToMerchant = asyncHandler(
   async (req: Request, res: Response) => {
     const user = req.user;
     const orderId = req.params.orderId as string;
-    console.log(orderId);
+
+    console.log("DRIVER IS HEADING TO MERCHANT");
+
     if (!user) {
       throw new NotFoundError("User");
     }
@@ -203,7 +205,7 @@ export const headingToMerchant = asyncHandler(
 export const pickUpOrder = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
   const orderId = req.params.orderId as string;
-
+  console.log("DRIVER ORDERID", orderId);
   if (!user) {
     throw new NotFoundError("User");
   }

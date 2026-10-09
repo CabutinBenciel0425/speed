@@ -1,11 +1,12 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useSearchParams } from "react-router-dom"
+import { NavLink, useSearchParams } from "react-router-dom"
 import axios from "@/lib/axios"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/useAuth"
 import { toast } from "sonner"
 import { MapPin, PhilippinePeso } from "lucide-react"
+import { useMerchantReadyOrder } from "../hooks/useMerchantReadyOrder"
 
 type Merchant = { _id: string; merchantName: string }
 type OrderCustomer =
@@ -68,6 +69,7 @@ const fetchOrders = async (merchantId: string): Promise<MerchantOrder[]> => {
 function MerchantOrdersPage() {
   const { user } = useAuth()
   const [searchParams] = useSearchParams()
+  const [readyOrderId, setReadyOrderId] = useState("")
   const focusedOrderId = searchParams.get("orderId")
   const negativeStatus = ["Cancelled", "Rejected", "NoDriverFound"]
   const isStatusNegative = (value: OrderStatus) => {
@@ -119,6 +121,8 @@ function MerchantOrdersPage() {
     },
     onError: () => toast.error("Could not update the order. Please try again."),
   })
+
+  const { mutate: readyOrder } = useMerchantReadyOrder()
 
   if (merchantQuery.isLoading || ordersQuery.isLoading) {
     return (
@@ -183,129 +187,147 @@ function MerchantOrdersPage() {
               !terminalStatuses.includes(order.status) &&
               driverStatus !== "ArrivedAtMerchant" &&
               driverStatus !== "Delivering"
+            const canPickup =
+              order.status === "Preparing" &&
+              Boolean(
+                order.driver && order.acceptedAt && order.driverAssignedAt
+              ) &&
+              (order.payment.method === "Cash" ||
+                Boolean(order.payment.transactionId))
             const address = order.deliveryAddress
             return (
-              <article
-                key={order._id}
-                id={`order-${order._id}`}
-                className={`max-w-200 rounded-lg border bg-card p-5 ${
-                  order._id === focusedOrderId ? "ring-2 ring-primary/50" : ""
-                }`}
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <h2 className="font-semibold text-primary">
-                      Order #{order.orderNumber}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      {customerName(order.customer)}
-                      {order.createdAt &&
-                        ` · ${new Date(order.createdAt).toLocaleString()}`}
-                    </p>
-                  </div>
-                  <span
-                    className={`rounded-full px-3 py-1 text-sm ${isStatusNegative(order.status) ? "bg-red-200 text-red-700" : "bg-green-200 text-green-700"}`}
-                  >
-                    {order.status}
-                  </span>
-                </div>
-
-                <ul className="my-4 divide-y">
-                  {order.items.map((item, index) => (
-                    <li
-                      key={`${item.productName}-${index}`}
-                      className="flex justify-between gap-4 py-2 text-sm"
+              <NavLink to={`/orders/${order._id}`}>
+                <article
+                  key={order._id}
+                  id={`order-${order._id}`}
+                  className={`max-w-200 rounded-lg border bg-card p-5 ${
+                    order._id === focusedOrderId ? "ring-2 ring-primary/50" : ""
+                  }`}
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h2 className="font-semibold text-primary">
+                        Order #{order.orderNumber}
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        {customerName(order.customer)}
+                        {order.createdAt &&
+                          ` · ${new Date(order.createdAt).toLocaleString()}`}
+                      </p>
+                    </div>
+                    <span
+                      className={`rounded-full px-3 py-1 text-sm ${isStatusNegative(order.status) ? "bg-red-200 text-red-700" : "bg-green-200 text-green-700"}`}
                     >
-                      <span>
-                        {item.quantity} × {item.productName}
-                        {item.notes && (
-                          <span className="block text-muted-foreground">
-                            Note: {item.notes}
-                          </span>
-                        )}
-                      </span>
-                      <span>₱{item.subtotal.toFixed(2)}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="grid gap-1 text-sm text-muted-foreground sm:grid-cols-[1fr_2fr]">
-                  <div className="flex flex-row items-center justify-start gap-2">
-                    <MapPin className="size-6 shrink-0 text-primary" />
-                    <p>
-                      Deliver to: {address.street}, {address.barangay},{" "}
-                      {address.city}, {address.province}
-                    </p>
+                      {order.status}
+                    </span>
                   </div>
-                  <div className="flex flex-row items-center justify-start gap-2">
-                    <PhilippinePeso className="size-6 text-primary" />
-                    <p>
-                      Payment: {order.payment.method} · {order.payment.status}
-                    </p>
-                  </div>
-                  <p className="font-medium text-foreground">
-                    Total: ₱{order.pricing.total.toFixed(2)}
-                  </p>
-                </div>
 
-                {(canRespond || canCancel) && (
-                  <div className="mt-4 flex flex-wrap gap-2 border-t pt-4">
-                    {canRespond && (
-                      <>
-                        <Button
-                          disabled={actionMutation.isPending}
-                          onClick={() =>
-                            actionMutation.mutate({
-                              orderId: order._id,
-                              action: "accept",
-                            })
-                          }
-                        >
-                          Accept order
-                        </Button>
-                        <Button
-                          variant="outline"
-                          disabled={actionMutation.isPending}
-                          onClick={() =>
-                            actionMutation.mutate({
-                              orderId: order._id,
-                              action: "reject",
-                            })
-                          }
-                        >
-                          Reject order
-                        </Button>
-                      </>
-                    )}
-                    {canCancel && (
-                      <Button
-                        variant="destructive"
-                        disabled={actionMutation.isPending}
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              "Cancel this order? The customer will be notified."
-                            )
-                          ) {
-                            actionMutation.mutate({
-                              orderId: order._id,
-                              action: "cancel",
-                            })
-                          }
-                        }}
+                  <ul className="my-4 divide-y">
+                    {order.items.map((item, index) => (
+                      <li
+                        key={`${item.productName}-${index}`}
+                        className="flex justify-between gap-4 py-2 text-sm"
                       >
-                        Cancel order
-                      </Button>
-                    )}
+                        <span>
+                          {item.quantity} × {item.productName}
+                          {item.notes && (
+                            <span className="block text-muted-foreground">
+                              Note: {item.notes}
+                            </span>
+                          )}
+                        </span>
+                        <span>₱{item.subtotal.toFixed(2)}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="grid gap-1 text-sm text-muted-foreground sm:grid-cols-[1fr_2fr]">
+                    <div className="flex flex-row items-center justify-start gap-2">
+                      <MapPin className="size-6 shrink-0 text-primary" />
+                      <p>
+                        Deliver to: {address.street}, {address.barangay},{" "}
+                        {address.city}, {address.province}
+                      </p>
+                    </div>
+                    <div className="flex flex-row items-center justify-start gap-2">
+                      <PhilippinePeso className="size-6 text-primary" />
+                      <p>
+                        Payment: {order.payment.method} · {order.payment.status}
+                      </p>
+                    </div>
+                    <p className="font-medium text-foreground">
+                      Total: ₱{order.pricing.total.toFixed(2)}
+                    </p>
                   </div>
-                )}
-                {order.status === "Pending" && !canRespond && (
-                  <p className="mt-4 border-t pt-4 text-sm text-muted-foreground">
-                    Accept or reject becomes available after a driver has
-                    accepted the delivery and any online payment is confirmed.
-                  </p>
-                )}
-              </article>
+
+                  {(canRespond || canCancel) && (
+                    <div className="mt-4 flex flex-wrap gap-2 border-t pt-4">
+                      {canRespond && (
+                        <>
+                          <Button
+                            disabled={actionMutation.isPending}
+                            onClick={() =>
+                              actionMutation.mutate({
+                                orderId: order._id,
+                                action: "accept",
+                              })
+                            }
+                          >
+                            Accept order
+                          </Button>
+                          <Button
+                            variant="outline"
+                            disabled={actionMutation.isPending}
+                            onClick={() =>
+                              actionMutation.mutate({
+                                orderId: order._id,
+                                action: "reject",
+                              })
+                            }
+                          >
+                            Reject order
+                          </Button>
+                        </>
+                      )}
+                      {canCancel && (
+                        <Button
+                          variant="destructive"
+                          disabled={actionMutation.isPending}
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                "Cancel this order? The customer will be notified."
+                              )
+                            ) {
+                              actionMutation.mutate({
+                                orderId: order._id,
+                                action: "cancel",
+                              })
+                            }
+                          }}
+                        >
+                          Cancel order
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                  {canPickup && merchantId && (
+                    <Button
+                      onClick={() =>
+                        readyOrder({ merchantId, orderId: order._id })
+                      }
+                    >
+                      Ready for Pick up
+                    </Button>
+                  )}
+                  {order.status === "Pending" && !canRespond && (
+                    <p className="mt-4 border-t pt-4 text-sm text-muted-foreground">
+                      Accept or reject becomes available after a driver has
+                      accepted the delivery.
+                    </p>
+                  )}
+                </article>
+              </NavLink>
             )
           })}
         </div>

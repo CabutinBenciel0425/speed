@@ -339,7 +339,7 @@ export const retryDriverSearchService = async (
     const existing = await Order.findOne({ _id: orderId, customer: userId });
     if (!existing) throw new NotFoundError("Order");
     throw new ConflictError(
-      "The driver search can't be restarted for this order",
+      `Cannot retry driver search. Reason - ${existing.cancellationReason}`,
     );
   }
 

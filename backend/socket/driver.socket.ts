@@ -22,7 +22,10 @@ export function registerDriverEvents(socket: Socket, driverId: string) {
       await driverAcceptOffer(offerId, driverId);
       socket.emit("delivery:accepted", { offerId });
     } catch {
-      socket.emit("socket:error", { event: "delivery:accept", message: "Could not accept delivery offer" });
+      socket.emit("socket:error", {
+        event: "delivery:accept",
+        message: "Could not accept delivery offer. This offer is expired.",
+      });
     }
   });
 
@@ -30,7 +33,10 @@ export function registerDriverEvents(socket: Socket, driverId: string) {
     try {
       await driverDeclinedOffer(offerId, driverId);
     } catch {
-      socket.emit("socket:error", { event: "delivery:decline", message: "Could not decline delivery offer" });
+      socket.emit("socket:error", {
+        event: "delivery:decline",
+        message: "Could not decline delivery offer",
+      });
     }
   });
 }

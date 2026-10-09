@@ -39,6 +39,7 @@ import OrderTrackingPage from "./features/customer/pages/OrderTrackingPage"
 import DriverDashboardPage from "./features/driver/pages/DriverDashboardPage"
 import CustomerNotificationsPage from "./features/customer/pages/CustomerNotificationPage"
 import CustomerOrdersPage from "./features/customer/pages/CustomerOrdersPage"
+import OrderComponent from "./features/merchant/components/common/OrderComponent"
 
 const MerchantAnalyticsPage = lazy(
   () => import("./features/merchant/pages/MerchantAnalyticsPage")
@@ -63,6 +64,7 @@ export function App() {
           <Route path="dashboard" element={<MerchantDashboard />} />
           <Route path="orders" element={<MerchantOrdersPage />} />
           <Route path="menu" element={<MerchantMenuPage />} />
+          <Route path="orders/:orderId" element={<OrderComponent />} />
           <Route
             path="analytics"
             element={

@@ -98,15 +98,20 @@ export const updateCurrentLocationService = async (
     coordinates: driverCoords,
   };
 
+  console.log(driverCoords, merchantCoords);
+
   await driverProfile.save();
 
   if (!order || !merchantCoords) return driverProfile;
 
   if (order.status === "PickedUp") {
-    io.to(`customer:${order.customer.toString()}`).emit("driver:current-location", {
-      orderId: order._id.toString(),
-      coordinates: driverCoords,
-    });
+    io.to(`customer:${order.customer.toString()}`).emit(
+      "driver:current-location",
+      {
+        orderId: order._id.toString(),
+        coordinates: driverCoords,
+      },
+    );
   } else {
     const { distanceKm, durationMinutes } = await computeDistance(
       merchantCoords,
@@ -175,12 +180,12 @@ export const driverArrivedAtMerchant = async (
   orderId: string,
 ) => {
   const driverProfile = await getDriverProfile(userId);
+  console.log("DRIVER ARRIVED AT MERCHANT");
 
   const order = await Order.findOne({
     driver: driverProfile._id,
     _id: orderId,
-  } as QueryFilter<IOrder>)
-    .populate<"merchant">("merchant");
+  } as QueryFilter<IOrder>).populate<"merchant">("merchant");
 
   if (!order) {
     throw new NotFoundError("Order");
@@ -226,81 +231,78 @@ export const driverArrivedAtMerchant = async (
   return order;
 };
 
-export const pickUpOrderService = async (userId: string, orderId: string) => {
+export const pickUpOrderService = async (
+  userId: string,
+  orderId: string,
+): Promise<IOrder> => {
   const session = await mongoose.startSession();
-  const driverProfile = await getDriverProfile(userId);
 
-  const order = await Order.findOne({
-    driver: driverProfile._id,
-    _id: orderId,
-  } as QueryFilter<IOrder>)
-    .populate<"merchant">("merchant");
-
-  if (!order) {
-    throw new NotFoundError("Order");
-  }
-
-  const merchant = await Merchant.findById(order.merchant);
-  if (!merchant) {
-    throw new NotFoundError("Merchant");
-  }
-
-  const activeOrderId = driverProfile.activeOrder?.toString();
-  const isPaymentValid = isOrderPaymentValid(order);
-
-  if (driverProfile.status !== "Operational") {
-    throw new ConflictError("Driver is not in operational status yet");
-  }
-
-  if (driverProfile.workingStatus !== "HeadingToMerchant") {
-    throw new ConflictError(
-      "Driver cannot pick up the order unless driver status is heading to merchant or arrived at the merchant",
-    );
-  }
-
-  if (activeOrderId !== order._id.toString()) {
-    throw new ConflictError(
-      "Drivers active order id is not equal to the order id",
-    );
-  }
-
-  if (order.driver?.toString() !== driverProfile._id.toString()) {
-    throw new ConflictError(
-      "Order's driver id is not equal to the provided driver's id",
-    );
-  }
-
-  if (order.status !== "ReadyForPickup") {
-    throw new ConflictError("Order status must be ready to pick up");
-  }
-
-  if (!isPaymentValid) {
-    throw new ConflictError("Payment is not valid");
-  }
+  let order!: IOrder & { merchant: { _id: Types.ObjectId } };
+  let merchantId!: string;
 
   try {
     await session.withTransaction(async () => {
+      const driverProfile = await getDriverProfile(userId);
+
+      const foundOrder = await Order.findOne(
+        { driver: driverProfile._id, _id: orderId } as QueryFilter<IOrder>,
+        null,
+        { session },
+      ).populate<"merchant">("merchant");
+
+      if (!foundOrder) throw new NotFoundError("Order");
+      order = foundOrder;
+      if (!order.merchant) throw new NotFoundError("Merchant");
+
+      const isPaymentValid = isOrderPaymentValid(order);
+
+      if (driverProfile.status !== "Operational")
+        throw new ConflictError("Driver is not in operational status yet");
+
+      const allowed = ["HeadingToMerchant", "ArrivedAtMerchant"];
+      if (!allowed.includes(driverProfile.workingStatus))
+        throw new ConflictError(
+          "Driver must be heading to or arrived at the merchant",
+        );
+
+      if (driverProfile.activeOrder?.toString() !== order._id.toString())
+        throw new ConflictError(
+          "Driver's active order does not match the order id",
+        );
+
+      if (order.status !== "ReadyForPickup")
+        throw new ConflictError("Order status must be ready to pick up");
+
+      if (!isPaymentValid) throw new ConflictError("Payment is not valid");
+
       driverProfile.workingStatus = "Delivering";
       order.status = "PickedUp";
       order.pickedUpAt = new Date();
+
       await driverProfile.save({ session });
       await order.save({ session });
+
+      merchantId = order.merchant._id.toString();
     });
   } finally {
     await session.endSession();
   }
 
-  await createNotification({
-    targetId: order.merchant,
-    targetType: "Merchant",
-    type: "DRIVER_PICKED_UP",
-    title: "Order picked up",
-    message: `Order #${order.orderNumber} is on its way to the customer.`,
-    order: order._id,
-  });
+  try {
+    await createNotification({
+      targetId: order.merchant,
+      targetType: "Merchant",
+      type: "DRIVER_PICKED_UP",
+      title: "Order picked up",
+      message: `Order #${order.orderNumber} is on its way to the customer.`,
+      order: order._id,
+    });
 
-  io.to(`customer:${order.customer.toString()}`).emit("order:pickedUp");
-  io.to(`merchant:${merchant._id.toString()}`).emit("order:pickedUp");
+    io.to(`customer:${order.customer.toString()}`).emit("order:pickedUp");
+    io.to(`merchant:${merchantId}`).emit("order:pickedUp");
+  } catch (err) {
+    console.error("Post-pickup side effects failed", { orderId, err });
+  }
 
   return order;
 };
@@ -315,8 +317,7 @@ export const deliveredOrderService = async (
   const order = await Order.findOne({
     driver: driverProfile._id,
     _id: orderId,
-  } as QueryFilter<IOrder>)
-    .populate<"merchant">("merchant");
+  } as QueryFilter<IOrder>).populate<"merchant">("merchant");
 
   if (!order) {
     throw new NotFoundError("Order");
@@ -452,7 +453,9 @@ export const driverMatching = async (orderId: string) => {
   if (drivers.length === 0) {
     activeOrder.driverMatchingStatus = "NoDriverFound";
     await activeOrder.save();
-    io.to(`customer:${activeOrder.customer.toString()}`).emit("order:noDriverFound");
+    io.to(`customer:${activeOrder.customer.toString()}`).emit(
+      "order:noDriverFound",
+    );
 
     return activeOrder;
   }
@@ -500,7 +503,9 @@ export const driverMatching = async (orderId: string) => {
     ) {
       latestOrder.driverMatchingStatus = "NoDriverFound";
       await latestOrder.save();
-      io.to(`customer:${latestOrder.customer.toString()}`).emit("order:noDriverFound");
+      io.to(`customer:${latestOrder.customer.toString()}`).emit(
+        "order:noDriverFound",
+      );
     }
   }
 
@@ -711,7 +716,8 @@ export const driverAcceptOffer = async (offerId: string, driverId: string) => {
     targetType: "Customer",
     type: "DRIVER_ASSIGNED",
     title: "Driver assigned",
-    message: "A driver accepted your delivery and will pick up your order after the store prepares it.",
+    message:
+      "A driver accepted your delivery and will pick up your order after the store prepares it.",
     order: order._id,
   });
 
@@ -720,7 +726,10 @@ export const driverAcceptOffer = async (offerId: string, driverId: string) => {
   });
 };
 
-export const driverDeclinedOffer = async (offerId: string, driverId: string) => {
+export const driverDeclinedOffer = async (
+  offerId: string,
+  driverId: string,
+) => {
   const offer = await DeliveryOffer.findById(offerId);
 
   if (!offer) return;

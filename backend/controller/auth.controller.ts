@@ -398,7 +398,6 @@ export const getCustomerOrders = asyncHandler(
       .populate("merchant", "_id merchantName logo isOpen")
       .populate("driver", "workingStatus")
       .sort({ createdAt: -1 });
-    console.log(orders);
     res.status(200).json({
       success: true,
       data: orders,

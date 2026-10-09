@@ -99,7 +99,6 @@ function CustomerOrdersPage() {
   }
 
   const orders = ordersQuery.data ?? []
-  console.log(orders)
   return (
     <main className="w-full p-6 2xl:px-20">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">

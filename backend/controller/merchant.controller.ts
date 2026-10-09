@@ -104,7 +104,7 @@ export const acceptOrder = asyncHandler(async (req: Request, res: Response) => {
 
   res.status(200).json({
     success: true,
-    data: orders,
+    data: order,
   });
 });
 
@@ -135,7 +135,7 @@ export const readyOrder = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
   const merchantId = req.params.merchantId as string;
   const orderId = req.params.orderId as string;
-
+  console.log(merchantId, orderId);
   if (!merchantId) {
     throw new NotFoundError("Merchant id");
   }

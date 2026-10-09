@@ -109,10 +109,8 @@ function DriverDashboardPage() {
       orderId: string
       action: "heading-to-merchant" | "picked-up" | "delivered"
     }) => {
-      const path =
-        action === "heading-to-merchant"
-          ? `/driver/order/${orderId}/heading-to-merchant`
-          : `/driver/orders/${orderId}/${action}`
+      const path = `/driver/orders/${orderId}/${action}`
+
       return axios.patch(path)
     },
     onSuccess: () => {
