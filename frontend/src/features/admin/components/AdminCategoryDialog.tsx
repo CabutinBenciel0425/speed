@@ -35,6 +35,7 @@ export default function AdminCategoryDialog({
   const [displayOrder, setDisplayOrder] = useState("")
   useEffect(() => {
     if (!open) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setName(category?.name ?? "")
     setDescription(category?.description ?? "")
     setDisplayOrder(category ? String(category.displayOrder) : "")

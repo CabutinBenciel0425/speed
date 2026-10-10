@@ -27,6 +27,7 @@ import { Switch } from "@/components/ui/switch"
 import { useAuth } from "@/hooks/useAuth"
 import { useAuthStore } from "@/store/authStore"
 import axios from "@/lib/axios"
+import type { DeliveryOffer } from "@/features/merchant/store/offerStore"
 
 type DriverProfile = {
   _id: string
@@ -35,15 +36,7 @@ type DriverProfile = {
   workingStatus: string
   activeOrder?: string | null
 }
-type DeliveryOffer = {
-  offerId: string
-  merchantName: string
-  merchantAddress: { street?: string; barangay?: string; city?: string }
-  customerAddress?: { street?: string; barangay?: string; city?: string }
-  deliveryFee: number
-  estimatedDistance: number
-  estimatedDuration: number
-}
+
 type DriverOrder = {
   _id: string
   orderNumber: string

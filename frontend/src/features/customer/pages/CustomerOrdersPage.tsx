@@ -186,23 +186,27 @@ function CustomerOrdersPage() {
                   </div>
                 )}
 
-                <div className="grid gap-1 text-sm text-muted-foreground sm:grid-cols-[1fr_2fr]">
-                  <div className="flex flex-row items-center justify-start gap-2">
-                    <MapPin className="size-6 shrink-0 text-primary" />
-                    <p>
-                      Deliver to: {address.street}, {address.barangay},{" "}
-                      {address.city}, {address.province}
+                <div className="">
+                  <div className="mb-5 grid gap-1 text-sm text-muted-foreground sm:grid-cols-[1fr_2fr]">
+                    <div className="flex flex-row items-center justify-start gap-2">
+                      <MapPin className="size-6 shrink-0 text-primary" />
+                      <p>
+                        Deliver to: {address.street}, {address.barangay},{" "}
+                        {address.city}, {address.province}
+                      </p>
+                    </div>
+                    <div className="flex flex-row items-center justify-start gap-2">
+                      <PhilippinePeso className="size-6 text-primary" />
+                      <p>
+                        Payment: {order.payment.method} · {order.payment.status}
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">
+                      Total: ₱{order.pricing.total.toFixed(2)}
                     </p>
                   </div>
-                  <div className="flex flex-row items-center justify-start gap-2">
-                    <PhilippinePeso className="size-6 text-primary" />
-                    <p>
-                      Payment: {order.payment.method} · {order.payment.status}
-                    </p>
-                  </div>
-                  <p className="font-medium text-foreground">
-                    Total: ₱{order.pricing.total.toFixed(2)}
-                  </p>
                 </div>
               </article>
             )

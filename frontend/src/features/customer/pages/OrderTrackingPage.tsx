@@ -10,6 +10,7 @@ import {
   Clock3,
   MapPin,
   PackageCheck,
+  PackageXIcon,
   RotateCcw,
   Store,
   TriangleAlert,
@@ -26,6 +27,8 @@ import {
   useMap,
 } from "react-leaflet"
 import type { LatLngExpression } from "leaflet"
+import { useCancelOrder } from "../hooks/useCancelOrder"
+import CancelOrderModal from "@/components/common/CancelOrderModal"
 
 type Driver = {
   _id: string
@@ -56,6 +59,8 @@ type CustomerOrder = {
   merchant: string | { merchantName: string }
   items: Array<{ productName: string; quantity: number }>
   pricing: { total: number }
+  cancelledAt?: Date
+  cancelledBy?: string
 }
 
 function FollowDriver({ position }: { position: [number, number] }) {
@@ -147,11 +152,15 @@ function LiveMap({
 function OrderTrackingPage() {
   const { orderId } = useParams()
   const queryClient = useQueryClient()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [cancellationReason, setCancellationReason] = useState("")
   const activeRole = useAuthStore((state) => state.activeRole)
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const [liveLocation, setLiveLocation] = useState<[number, number] | null>(
     null
   )
+
+  const { mutate: cancelOrder } = useCancelOrder({ orderId: orderId ?? "" })
   const orderQuery = useQuery({
     queryKey: ["customerOrder", orderId],
     queryFn: async () => {
@@ -184,6 +193,7 @@ function OrderTrackingPage() {
         queryKey: ["customerOrder", orderId],
       })
     }
+
     socket.on("order:assigned", refresh)
     socket.on("driver:heading-to-merchant", refresh)
     socket.on("order:noDriverFound", refresh)
@@ -292,6 +302,12 @@ function OrderTrackingPage() {
   const isFailed =
     noDriverFound || ["Rejected", "Cancelled"].includes(order.status)
 
+  const handleCancelOrder = () => {
+    if (orderId) {
+      cancelOrder({ orderId, cancellationReason })
+    }
+  }
+  console.log(order)
   return (
     <main className="mx-auto w-full max-w-4xl space-y-5 p-4 sm:space-y-6 sm:p-8">
       <header>
@@ -313,8 +329,17 @@ function OrderTrackingPage() {
             <Button
               variant="ghost"
               className="text-muted-foreground"
-              disabled={retrySearch.isPending}
-              onClick={() => retrySearch.mutate()}
+              disabled={
+                retrySearch.isPending ||
+                order?.status === "Cancelled" ||
+                order.status === "Rejected"
+              }
+              onClick={() => {
+                if (!["NoDriverFound", "Pending"].includes(order?.status)) {
+                  return
+                }
+                retrySearch.mutate()
+              }}
             >
               <RotateCcw
                 className={retrySearch.isPending ? "animate-spin" : ""}
@@ -333,9 +358,11 @@ function OrderTrackingPage() {
           <CardContent className="flex flex-col items-center p-8 text-center">
             <TriangleAlert className="size-9 text-destructive" />
             <p className="mt-3 font-medium">
-              {noDriverFound
-                ? "We couldn’t find an available driver."
-                : `Your order was ${order.status.toLowerCase()}.`}
+              {order?.status === "Cancelled"
+                ? `This order was cancelled by - ${order.cancelledBy}`
+                : noDriverFound
+                  ? "We couldn’t find an available driver. "
+                  : `Your order was ${order.status.toLowerCase()}.`}
             </p>
             <Link
               to="/"
@@ -392,10 +419,15 @@ function OrderTrackingPage() {
                 <PackageCheck className="size-5 text-primary" /> Order progress
               </CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-3 sm:grid-cols-4">
+            <CardContent className="grid grid-cols-1 gap-3 sm:auto-cols-fr sm:grid-flow-col">
               {[
                 { label: "Order placed", done: true, icon: Check },
                 { label: "Driver assigned", done: Boolean(driver), icon: Bike },
+                {
+                  label: "Driver arrived at merchant",
+                  done: Boolean(order?.driverArrivedAtMerchantAt),
+                  icon: Bike,
+                },
                 {
                   label: "Picked up",
                   done: isPickedUp || order.status === "Delivered",
@@ -417,7 +449,7 @@ function OrderTrackingPage() {
                     <Icon className="size-4" />
                   </span>
                   <span
-                    className={`text-sm ${done ? "font-medium" : "text-muted-foreground"}`}
+                    className={`text-xs ${done ? "font-medium" : "text-muted-foreground"}`}
                   >
                     {label}
                   </span>
@@ -455,6 +487,32 @@ function OrderTrackingPage() {
           </Link>
         </CardContent>
       </Card>
+
+      {["Pending", "NoDriverFound"].includes(order?.status) &&
+        !order?.driverArrivedAtMerchantAt && (
+          <>
+            <div className="flex w-full items-center justify-end">
+              <Button
+                variant={"outline"}
+                className={"cursor-pointer"}
+                onClick={() => setIsModalOpen(true)}
+              >
+                <span>Cancel order</span>
+              </Button>
+            </div>
+
+            <CancelOrderModal
+              reason={cancellationReason}
+              onChangeReason={setCancellationReason}
+              open={isModalOpen}
+              onOpenChange={setIsModalOpen}
+              onConfirm={handleCancelOrder}
+              title="Cancel Order"
+              description="Are you sure you want to cancel this order? This action cannot be undone."
+              icon={<PackageXIcon size={20} />}
+            />
+          </>
+        )}
     </main>
   )
 }

@@ -52,7 +52,11 @@ function Navbar() {
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
-                    <Button size="lg" variant="outline" className="gap-2">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="hidden gap-2 xl:flex"
+                    >
                       <span className="hidden sm:inline">Join Speed</span>
                       <ChevronDown className="size-4" />
                     </Button>

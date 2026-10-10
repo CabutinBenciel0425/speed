@@ -41,7 +41,7 @@ function Merchant() {
               merchants.map((merchant) => (
                 <CarouselItem
                   key={merchant._id}
-                  className="basis-1/1 md:basis-1/2 xl:basis-1/4"
+                  className="basis-1/1 md:basis-1/2 xl:basis-1/3 2xl:basis-1/4"
                 >
                   <div className="px-5">
                     <MerchantCard merchant={merchant} />

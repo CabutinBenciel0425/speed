@@ -426,7 +426,8 @@ export const driverMatching = async (orderId: string) => {
     throw new NotFoundError("Order");
   }
   const matchableStatuses = ["Pending", "Preparing", "ReadyForPickup"];
-  if (!matchableStatuses.includes(order.status) || order.driver) return order;
+  if (!matchableStatuses.includes(order.status) || order.driver)
+    throw new ConflictError("Order status is not valid");
   order.driverMatchingStatus = "Searching";
   await order.save();
   const merchant = await Merchant.findById(order.merchant);

@@ -56,6 +56,7 @@ driverRouter.patch(
   driverOnly,
   pickUpOrder,
 );
+
 driverRouter.patch(
   "/orders/:orderId/delivered",
   protectRoute,
