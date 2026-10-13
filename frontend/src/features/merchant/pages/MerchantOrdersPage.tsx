@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { NavLink, useSearchParams } from "react-router-dom"
 import axios from "@/lib/axios"
@@ -69,7 +69,6 @@ const fetchOrders = async (merchantId: string): Promise<MerchantOrder[]> => {
 function MerchantOrdersPage() {
   const { user } = useAuth()
   const [searchParams] = useSearchParams()
-  const [readyOrderId, setReadyOrderId] = useState("")
   const focusedOrderId = searchParams.get("orderId")
   const negativeStatus = ["Cancelled", "Rejected", "NoDriverFound"]
   const isStatusNegative = (value: OrderStatus) => {
@@ -196,7 +195,7 @@ function MerchantOrdersPage() {
                 Boolean(order.payment.transactionId))
             const address = order.deliveryAddress
             return (
-              <NavLink to={`/orders/${order._id}`}>
+              <NavLink to={`${order._id}`}>
                 <article
                   key={order._id}
                   id={`order-${order._id}`}
@@ -266,24 +265,26 @@ function MerchantOrdersPage() {
                         <>
                           <Button
                             disabled={actionMutation.isPending}
-                            onClick={() =>
+                            onClick={(e) => {
+                              e.stopPropagation()
                               actionMutation.mutate({
                                 orderId: order._id,
                                 action: "accept",
                               })
-                            }
+                            }}
                           >
                             Accept order
                           </Button>
                           <Button
                             variant="outline"
                             disabled={actionMutation.isPending}
-                            onClick={() =>
+                            onClick={(e) => {
+                              e.stopPropagation()
                               actionMutation.mutate({
                                 orderId: order._id,
                                 action: "reject",
                               })
-                            }
+                            }}
                           >
                             Reject order
                           </Button>
@@ -293,7 +294,8 @@ function MerchantOrdersPage() {
                         <Button
                           variant="destructive"
                           disabled={actionMutation.isPending}
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation()
                             if (
                               window.confirm(
                                 "Cancel this order? The customer will be notified."

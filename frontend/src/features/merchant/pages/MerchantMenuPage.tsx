@@ -15,9 +15,9 @@ import {
   useMerchantMenuProducts,
   useMerchantProductActions,
 } from "../hooks/useMerchantMenuProducts"
-
 import { useUpdateMerchantProduct } from "../hooks/useUpdateMerchantProduct"
 import { useAddMerchantProduct } from "../hooks/useAddMerchantProduct"
+import { useDeleteProduct } from "../hooks/useDeleteProduct"
 
 function MerchantMenuPage() {
   const { categories } = useCategories()
@@ -29,11 +29,13 @@ function MerchantMenuPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const categoryId = searchParams.get("category") ?? ""
   const [dialogOpen, setDialogOpen] = useState(false)
+
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const productsQuery = useMerchantMenuProducts(merchant?._id, categoryId)
   const allProductsQuery = useMerchantMenuProducts(merchant?._id, "")
   const addProductMutation = useAddMerchantProduct(merchant?._id)
   const updateProductMutation = useUpdateMerchantProduct(merchant?._id)
+  const { mutate: deleteProduct } = useDeleteProduct()
   const {
     toggleAvailability: toggleAvailabilityMutation,
     deleteProduct: deleteProductMutation,
@@ -199,15 +201,14 @@ function MerchantMenuPage() {
             {products.map((product) => (
               <MerchantProductCard
                 key={product._id}
+                merchantId={merchant?._id}
                 product={product}
                 onEdit={openEditDialog}
                 onToggleAvailability={(item) =>
                   toggleAvailabilityMutation.mutate(item._id)
                 }
-                onDelete={(item) => {
-                  if (window.confirm(`Delete “${item.name}” from your menu?`)) {
-                    deleteProductMutation.mutate(item._id)
-                  }
+                onDelete={(merchantId, productId) => {
+                  deleteProduct({ merchantId, productId })
                 }}
                 isUpdating={
                   toggleAvailabilityMutation.isPending ||

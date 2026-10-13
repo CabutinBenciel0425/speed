@@ -11,7 +11,6 @@ const merchantReadyOrder = async ({
   merchantId: string
   orderId: string
 }) => {
-  console.log(merchantId, orderId)
   const { data } = await axios.patch(
     `/merchant/${merchantId}/orders/${orderId}/ready`
   )

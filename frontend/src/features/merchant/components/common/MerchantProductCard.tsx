@@ -14,22 +14,31 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import DeleteModal from "@/components/common/DeleteModal"
+import { useState } from "react"
 
 type MerchantProductCardProps = {
+  merchantId: string
   product: Product
   onEdit: (product: Product) => void
-  onDelete: (product: Product) => void
+  onDelete: (merchantId: string, productId: string) => void
   onToggleAvailability: (product: Product) => void
   isUpdating?: boolean
 }
 
 function MerchantProductCard({
+  merchantId,
   product,
   onEdit,
   onDelete,
   onToggleAvailability,
   isUpdating = false,
 }: MerchantProductCardProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const handleConfirmDelete = () => {
+    onDelete(merchantId, product._id)
+  }
   return (
     <Card className="mx-auto w-full max-w-2xs gap-3 overflow-visible border py-0 shadow-sm">
       <img
@@ -98,13 +107,18 @@ function MerchantProductCard({
             </DropdownMenuItem>
             <DropdownMenuItem
               variant="destructive"
-              onClick={() => onDelete(product)}
+              onClick={() => setIsModalOpen(true)}
             >
               <Trash2 /> Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      <DeleteModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        onConfirm={handleConfirmDelete}
+      />
     </Card>
   )
 }

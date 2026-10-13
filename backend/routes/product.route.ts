@@ -30,6 +30,13 @@ productRouter.get("/", getProducts);
 productRouter.post("/random-cart", getRandomFromMerchant);
 
 //merchant routes
+
+productRouter.delete(
+  "/:merchantId/:id",
+  protectRoute,
+  merchantOnly,
+  deleteProduct,
+);
 productRouter.post(
   "/:merchantId",
   protectRoute,
@@ -60,13 +67,6 @@ productRouter.patch(
   upload.single("image"),
   validate(productSchemaUpdate),
   updateProduct,
-);
-
-productRouter.delete(
-  "/:merchantId/:id",
-  protectRoute,
-  merchantOnly,
-  deleteProduct,
 );
 
 //customer routes

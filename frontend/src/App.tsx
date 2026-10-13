@@ -62,8 +62,8 @@ export function App() {
         <Route path="/merchant" element={<MerchantLayout />}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<MerchantDashboard />} />
-          <Route path="orders" element={<MerchantOrdersPage />} />
           <Route path="menu" element={<MerchantMenuPage />} />
+          <Route path="orders" element={<MerchantOrdersPage />} />
           <Route path="orders/:orderId" element={<OrderComponent />} />
           <Route
             path="analytics"

@@ -1,3 +1,5 @@
+import { format, isToday, isYesterday } from "date-fns"
+
 interface OperatingHours {
   isOpen: boolean
   openHour: number
@@ -35,4 +37,11 @@ export const formatOperatingHours = (hours: OperatingHours): string => {
   const open = formatTime(hours.openHour, hours.openMinute)
   const close = formatTime(hours.closeHour, hours.closeMinute)
   return `${open} – ${close}`
+}
+
+export const formatTimeAndDate = (date: Date | string | number): string => {
+  const d = date instanceof Date ? date : new Date(date)
+  if (isToday(d)) return format(d, "h:mm a")
+  if (isYesterday(d)) return `Yesterday ${format(d, "h:mm a")}`
+  return format(d, "EEEE, MMMM d yyyy - h:mm a")
 }

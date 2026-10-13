@@ -124,6 +124,8 @@ export const prepareOrderData = async (userId: string) => {
     "items.product",
   );
 
+  console.log(cart);
+
   if (!cart) {
     throw new NotFoundError("Cart");
   }

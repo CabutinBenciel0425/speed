@@ -117,16 +117,24 @@ export const getOrder = asyncHandler(async (req: Request, res: Response) => {
     throw new NotFoundError("Order");
   }
 
-  if (order.customer.toString() !== user._id.toString()) {
-    throw new UnauthorizedError("This order does not belong to this user");
+  const userRoles: ["Admin", "Customer", "Merchant", "Driver"] = [
+    "Admin",
+    "Customer",
+    "Merchant",
+    "Driver",
+  ];
+
+  if (req.userRole && !userRoles.includes(req.userRole)) {
+    throw new UnauthorizedError("Role is not recognized");
   }
 
   await order.populate({
     path: "driver",
-    select: `avatar vehicleType plateNumber user${order.status === "PickedUp" ? " currentLocation" : ""}`,
-    populate: { path: "user", select: "firstName lastName phoneNumber" },
+    select: `avatar vehicleType plateNumber user ${order.status === "PickedUp" ? " currentLocation" : ""}`,
+    populate: { path: "user", select: "firstName lastName phoneNumber avatar" },
   });
   await order.populate("merchant", "merchantName");
+  await order.populate("customer", "firstName lastName phoneNumber avatar");
 
   res.status(200).json({
     success: true,
