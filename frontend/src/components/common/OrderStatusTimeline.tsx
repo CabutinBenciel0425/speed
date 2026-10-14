@@ -6,7 +6,7 @@ import {
   getOrderStatusHeader,
   type OrderTimelineInput,
   type TimelineStep,
-} from "../../utils/orderTimeline"
+} from "../../features/merchant/utils/orderTimeline"
 
 function StepDot({ state }: { state: TimelineStep["state"] }) {
   if (state === "failed") {

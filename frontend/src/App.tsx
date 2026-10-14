@@ -40,6 +40,7 @@ import DriverDashboardPage from "./features/driver/pages/DriverDashboardPage"
 import CustomerNotificationsPage from "./features/customer/pages/CustomerNotificationPage"
 import CustomerOrdersPage from "./features/customer/pages/CustomerOrdersPage"
 import OrderComponent from "./features/merchant/components/common/OrderComponent"
+import CustomerOrderComponent from "./features/customer/components/CustomerOrderComponent"
 
 const MerchantAnalyticsPage = lazy(
   () => import("./features/merchant/pages/MerchantAnalyticsPage")
@@ -128,10 +129,21 @@ export function App() {
             }
           />
           <Route
-            path="/orders/:orderId"
+            path="/orders/tracking/:orderId"
             element={
               isAuthenticated ? (
                 <OrderTrackingPage />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+
+          <Route
+            path="/orders/:orderId"
+            element={
+              isAuthenticated ? (
+                <CustomerOrderComponent />
               ) : (
                 <Navigate to="/login" replace />
               )

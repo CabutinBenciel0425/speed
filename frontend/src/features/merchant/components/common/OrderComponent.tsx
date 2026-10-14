@@ -24,7 +24,7 @@ import { capitalizeFirstLetter } from "@/utils/capitalizeFirstLetter"
 import MapComponent from "@/features/customer/components/MapComponent"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
-import OrderStatusTimeline from "./OrderStatusTimeline"
+import OrderStatusTimeline from "../../../../components/common/OrderStatusTimeline"
 import { useMerchantReadyOrder } from "../../hooks/useMerchantReadyOrder"
 import { useActionMutation } from "../../hooks/useOrderActionMutation"
 
@@ -209,11 +209,26 @@ function OrderComponent() {
           <div className="flex flex-col gap-4 pt-4 md:flex-row md:items-center md:justify-between">
             <div className="flex min-w-0 flex-col gap-4">
               <div>
-                <p className="flex flex-row items-start gap-2">
+                <p className="mb-2 flex flex-row items-start gap-2">
                   <User className="size-6 shrink-0" />
-                  <span className="wrap-break-words text-base">
-                    {customerName}
-                  </span>
+                  <div className="flex flex-col items-center">
+                    <span className="wrap-break-words">
+                      <span className="text-sm text-muted-foreground">
+                        Customer name:
+                      </span>{" "}
+                      <span className="text-base">{customerName}</span>
+                    </span>
+                    {customerName !== data.deliveryAddress.recipientName && (
+                      <span className="wrap-break-words text-base">
+                        <span className="text-sm text-muted-foreground">
+                          Recipient name:
+                        </span>{" "}
+                        <span className="text-base">
+                          {data.deliveryAddress.recipientName}
+                        </span>
+                      </span>
+                    )}
+                  </div>
                 </p>
                 <p className="ml-8 text-xs text-muted-foreground">
                   {data.customer.phoneNumber}
@@ -449,73 +464,3 @@ function OrderComponent() {
 }
 
 export default OrderComponent
-
-// {(canRespond || canCancel) && (
-//   <div className="mt-4 flex flex-wrap gap-2 border-t pt-4">
-//     {canRespond && (
-//       <>
-//         <Button
-//           disabled={actionMutation.isPending}
-//           onClick={(e) => {
-//             e.stopPropagation()
-//             actionMutation.mutate({
-//               orderId: order._id,
-//               action: "accept",
-//             })
-//           }}
-//         >
-//           Accept order
-//         </Button>
-//         <Button
-//           variant="outline"
-//           disabled={actionMutation.isPending}
-//           onClick={(e) => {
-//             e.stopPropagation()
-//             actionMutation.mutate({
-//               orderId: order._id,
-//               action: "reject",
-//             })
-//           }}
-//         >
-//           Reject order
-//         </Button>
-//       </>
-//     )}
-//     {canCancel && (
-//       <Button
-//         variant="destructive"
-//         disabled={actionMutation.isPending}
-//         onClick={(e) => {
-//           e.stopPropagation()
-//           if (
-//             window.confirm(
-//               "Cancel this order? The customer will be notified."
-//             )
-//           ) {
-//             actionMutation.mutate({
-//               orderId: order._id,
-//               action: "cancel",
-//             })
-//           }
-//         }}
-//       >
-//         Cancel order
-//       </Button>
-//     )}
-//   </div>
-// )}
-// {canPickup && merchantId && (
-//   <Button
-//     onClick={() =>
-//       readyOrder({ merchantId, orderId: order._id })
-//     }
-//   >
-//     Ready for Pick up
-//   </Button>
-// )}
-// {order.status === "Pending" && !canRespond && (
-//   <p className="mt-4 border-t pt-4 text-sm text-muted-foreground">
-//     Accept or reject becomes available after a driver has
-//     accepted the delivery.
-//   </p>
-// )}

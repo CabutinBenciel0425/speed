@@ -36,7 +36,7 @@ function OrderReviewPage() {
     },
     onSuccess: async (order) => {
       await queryClient.invalidateQueries({ queryKey: ["cart"] })
-      navigate(`/orders/${order._id}`)
+      navigate(`/orders/tracking/${order._id}`)
     },
     onError: (error) => {
       console.log(error)

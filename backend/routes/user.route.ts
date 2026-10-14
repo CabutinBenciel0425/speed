@@ -15,6 +15,7 @@ import {
   selectRole,
   getCustomerOrders,
   getFavoriteLists,
+  getCustomerOrder,
 } from "../controller/auth.controller.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import {
@@ -97,5 +98,6 @@ userRoute.patch(
 );
 
 userRoute.get("/:userId/orders", protectRoute, getCustomerOrders);
+userRoute.get("/:userId/orders/:orderId", protectRoute, getCustomerOrder);
 
 userRoute.get("/favorites/results", protectRoute, getFavoriteLists);

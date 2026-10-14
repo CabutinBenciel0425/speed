@@ -17,9 +17,12 @@ import { Spinner } from "../ui/spinner"
 import { useAuth } from "@/hooks/useAuth"
 import { useToggleProductFavorite } from "@/features/customer/hooks/useToggleProductFavorite"
 import { useProductFavorite } from "@/features/customer/hooks/useProductFavorite"
+import { useExistingOrder } from "@/features/customer/hooks/useExistingOrder"
+import { toast } from "sonner"
 
 function ProductCard({ product }: { product: Product }) {
   const { isAuthenticated } = useAuth()
+  const { existingOrder } = useExistingOrder()
   const { mutate, isPending } = useAddToCart({
     product,
     quantity: 1,
@@ -37,8 +40,15 @@ function ProductCard({ product }: { product: Product }) {
   }
 
   const handleAddToCart = () => {
+    console.log("EXISTINGORDER", existingOrder)
+    if (existingOrder?.order !== null) {
+      toast.info("Please cancel first your existing order in Orders Page")
+      return
+    }
     mutate({ product, quantity: 1, notes: "" })
   }
+
+  console.log(existingOrder)
   return (
     <motion.div
       ref={ref}

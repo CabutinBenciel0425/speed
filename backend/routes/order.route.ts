@@ -6,9 +6,13 @@ import {
   createOrderForCOD,
   cancelOrderCustomer,
   retryDriverSearch,
+  existingOrder,
 } from "../controller/order.controller.js";
 
 const orderRouter = Router();
+
+//customer route
+orderRouter.get("/existing", protectRoute, existingOrder);
 
 orderRouter.post("/checkout/cod", protectRoute, createOrderForCOD);
 orderRouter.get("/", protectRoute, getOrders);

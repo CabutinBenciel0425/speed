@@ -152,6 +152,7 @@ export const cancelOrderCustomer = asyncHandler(
     if (!user) {
       throw new NotFoundError("User");
     }
+    console.log(orderId, cancellationReason);
     const cancelledOrder = await cancelOrderServiceCustomer(
       orderId,
       user._id.toString(),
@@ -179,6 +180,36 @@ export const retryDriverSearch = asyncHandler(
     res.status(200).json({
       success: true,
       data: order,
+    });
+  },
+);
+
+export const existingOrder = asyncHandler(
+  async (req: Request, res: Response) => {
+    console.log("You are here in Existing Order");
+    if (req.userRole !== "Customer") {
+      throw new UnauthorizedError("Unauthorized user");
+    }
+
+    if (!req.user) {
+      throw new UnauthorizedError("Not authenticated");
+    }
+
+    const order = await Order.findOne({
+      customer: req?.user._id,
+      status: {
+        $in: [
+          "NoDriverFound",
+          "Pending",
+          "PickedUp",
+          "Preparing",
+          "ReadyForPickup",
+        ],
+      },
+    });
+    return res.status(200).json({
+      success: true,
+      order,
     });
   },
 );

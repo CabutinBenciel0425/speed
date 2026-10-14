@@ -405,6 +405,25 @@ export const getCustomerOrders = asyncHandler(
   },
 );
 
+export const getCustomerOrder = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+    const orderId = req.params.orderId as string;
+
+    if (!user) throw new UnauthorizedError("Unauthorized user");
+
+    const order = await Order.findOne({ customer: user._id, _id: orderId })
+      .populate("customer", "_id firstName lastName avatar phoneNumber")
+      .populate("merchant", "_id merchantName logo isOpen")
+      .populate("driver", "workingStatus")
+      .sort({ createdAt: -1 });
+    res.status(200).json({
+      success: true,
+      data: order,
+    });
+  },
+);
+
 export const getFavoriteLists = asyncHandler(
   async (req: Request, res: Response) => {
     const user = req.user;
