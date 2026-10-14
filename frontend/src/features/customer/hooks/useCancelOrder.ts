@@ -10,7 +10,6 @@ export const cancelOrder = async ({
   orderId: string
   cancellationReason?: string
 }): Promise<CartResult> => {
-  console.log(cancellationReason)
   const { data } = await axios.patch(`/orders/${orderId}/cancel`, {
     cancellationReason: cancellationReason,
   })

@@ -234,6 +234,7 @@ function OrderTrackingPage() {
       const { data } = await axios.patch(
         `/orders/${orderId}/retry-driver-search`
       )
+      console.log(data)
       return data.data
     },
     onSuccess: async () => {
@@ -307,7 +308,7 @@ function OrderTrackingPage() {
       cancelOrder({ orderId, cancellationReason })
     }
   }
-  console.log(order)
+
   return (
     <main className="mx-auto w-full max-w-4xl space-y-5 p-4 sm:space-y-6 sm:p-8">
       <header>

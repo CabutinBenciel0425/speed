@@ -18,6 +18,7 @@ import { pendingOffers } from "../utils/offerWaiting.js";
 import Product from "../models/product.model.js";
 import { createNotification } from "./notification.service.js";
 import type { CreateNotificationInput } from "../models/notification.model.js";
+import { redisClient } from "../lib/redis.js";
 
 export const updateDriverProfile = async (
   { vehicleType, plateNumber, avatar }: UpdateDriverInputWithImage,
@@ -98,8 +99,6 @@ export const updateCurrentLocationService = async (
     coordinates: driverCoords,
   };
 
-  console.log(driverCoords, merchantCoords);
-
   await driverProfile.save();
 
   if (!order || !merchantCoords) return driverProfile;
@@ -129,30 +128,16 @@ export const headingToMerchantService = async (
   userId: string,
   orderId: string,
 ) => {
-  console.log("[HEADING] Service entered", { userId, orderId });
-
   const session = await mongoose.startSession();
 
   try {
     await session.withTransaction(async () => {
-      console.log("[HEADING] Transaction started");
-
       const driverProfile = await getDriverProfile(userId, session);
-      console.log("[HEADING] Driver profile loaded", {
-        driverProfileId: driverProfile._id.toString(),
-        status: driverProfile.status,
-        workingStatus: driverProfile.workingStatus,
-        activeOrder: driverProfile.activeOrder?.toString(),
-      });
 
       const order = await Order.findOne({
         driver: driverProfile._id,
         _id: orderId,
       }).session(session);
-
-      console.log("[HEADING] Order query completed", {
-        found: Boolean(order),
-      });
 
       if (!order) {
         throw new NotFoundError("Order");
@@ -160,16 +145,6 @@ export const headingToMerchantService = async (
 
       const activeOrderId = driverProfile.activeOrder?.toString();
       const isPaymentValid = isOrderPaymentValid(order);
-
-      console.log("[HEADING] Validating transition", {
-        driverStatus: driverProfile.status,
-        workingStatus: driverProfile.workingStatus,
-        activeOrder: driverProfile.activeOrder?.toString(),
-        orderId: order._id.toString(),
-        assignedDriver: order.driver?.toString(),
-        orderStatus: order.status,
-        isPaymentValid,
-      });
 
       if (
         driverProfile.status !== "Operational" ||
@@ -188,8 +163,7 @@ export const headingToMerchantService = async (
         driverProfile.save({ session }),
         order.save({ session }),
       ]);
-      console.log("DRIVERPROFILE", driverProfile);
-      console.log("ORDER", order);
+
       const notificationDataCustomer: CreateNotificationInput = {
         targetId: new Types.ObjectId(userId),
         targetType: "Customer",
@@ -217,7 +191,6 @@ export const driverArrivedAtMerchant = async (
   orderId: string,
 ) => {
   const driverProfile = await getDriverProfile(userId);
-  console.log("DRIVER ARRIVED AT MERCHANT");
 
   const order = await Order.findOne({
     driver: driverProfile._id,
@@ -467,6 +440,7 @@ export const isOrderPaymentValid = (order: IOrder) => {
 };
 
 export const driverMatching = async (orderId: string) => {
+  console.log("DRIVER MATCHING FN");
   const order = await Order.findById(orderId);
   if (!order) {
     throw new NotFoundError("Order");
@@ -487,7 +461,7 @@ export const driverMatching = async (orderId: string) => {
     number,
   ];
 
-  const drivers = await findNearestDrivers(merchantCoords);
+  const drivers = await findNearestDrivers(order.orderNumber, merchantCoords);
   const activeOrder = await Order.findById(orderId);
   if (
     !activeOrder ||
@@ -496,7 +470,7 @@ export const driverMatching = async (orderId: string) => {
   ) {
     return activeOrder;
   }
-
+  console.log("STILL IN DRIVER MATCHING FN");
   if (drivers.length === 0) {
     activeOrder.driverMatchingStatus = "NoDriverFound";
     await activeOrder.save();
@@ -506,10 +480,11 @@ export const driverMatching = async (orderId: string) => {
 
     return activeOrder;
   }
-
+  console.log("DRIVERSSSSSSSSSSS", drivers);
   let driverAccepted = false;
 
   for (const driver of drivers) {
+    console.log("SENDING OFFER1111111");
     const offer = await sendOffer(order._id.toString(), driver._id.toString());
 
     if (!offer) {
@@ -559,26 +534,39 @@ export const driverMatching = async (orderId: string) => {
   return await Order.findById(orderId);
 };
 
-export const findNearestDrivers = async (coordinates: [number, number]) => {
+export const findNearestDrivers = async (
+  orderNumber: string,
+  coordinates: [number, number],
+) => {
+  const redisKey = `retrySearchDriver:${orderNumber}`;
+
+  const retryCount = await redisClient.incr(redisKey);
+
+  if (retryCount === 1) {
+    await redisClient.expire(redisKey, 24 * 60 * 60); // 24h
+  }
+
+  const maxDistance = 5000 + (retryCount - 1) * 1000;
+
+  console.log(
+    `Order ${orderNumber} — attempt #${retryCount}, maxDistance=${maxDistance}m`,
+  );
+
   return Driver.find({
     status: "Operational",
     isAvailable: true,
     workingStatus: "Available",
-
     currentLocation: {
       $near: {
-        $geometry: {
-          type: "Point",
-          coordinates,
-        },
-
-        $maxDistance: 5000,
+        $geometry: { type: "Point", coordinates },
+        $maxDistance: maxDistance,
       },
     },
   }).limit(10);
 };
 
 export const sendOffer = async (orderId: string, driverId: string) => {
+  console.log("inside SENDING OFFER2222222");
   const order = await Order.findById(orderId);
   if (!order) {
     throw new NotFoundError("Order");

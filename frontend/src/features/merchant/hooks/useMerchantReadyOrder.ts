@@ -14,7 +14,7 @@ const merchantReadyOrder = async ({
   const { data } = await axios.patch(
     `/merchant/${merchantId}/orders/${orderId}/ready`
   )
-  console.log(data)
+
   return data
 }
 

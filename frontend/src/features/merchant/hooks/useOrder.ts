@@ -11,9 +11,14 @@ export function useOrder(orderId: string) {
     },
     staleTime: 20_000,
     refetchInterval: (query) =>
-      ["Delivered", "Rejected", "Cancelled"].includes(
-        query.state.data?.status ?? ""
-      )
+      [
+        "Preparing",
+        "ReadyForPickup",
+        "PickedUp",
+        "Delivered",
+        "Rejected",
+        "Cancelled",
+      ].includes(query.state.data?.status ?? "")
         ? false
         : 5000,
   })

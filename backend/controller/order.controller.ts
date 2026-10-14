@@ -146,7 +146,7 @@ export const cancelOrderCustomer = asyncHandler(
   async (req: Request, res: Response) => {
     const user = req.user;
     const orderId = req.params.orderId as string;
-    console.log(req.body);
+
     const { cancellationReason } = req.body;
 
     if (!user) {

@@ -124,8 +124,6 @@ export const prepareOrderData = async (userId: string) => {
     "items.product",
   );
 
-  console.log(cart);
-
   if (!cart) {
     throw new NotFoundError("Cart");
   }
@@ -339,6 +337,7 @@ export const retryDriverSearchService = async (
 
   if (!order) {
     const existing = await Order.findOne({ _id: orderId, customer: userId });
+    console.log("EXISTINGGGGGGGGG", existing);
     if (!existing) throw new NotFoundError("Order");
     throw new ConflictError(
       `Cannot retry driver search. Reason - ${existing.cancellationReason}`,

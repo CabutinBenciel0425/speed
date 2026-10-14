@@ -141,7 +141,7 @@ function MerchantOrdersPage() {
           {orders.map((order) => {
             const address = order.deliveryAddress
             return (
-              <NavLink to={`${order._id}`} key={order._id}>
+              <NavLink to={`/merchant/orders/${order._id}`} key={order._id}>
                 <article
                   key={order._id}
                   id={`order-${order._id}`}

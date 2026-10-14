@@ -52,7 +52,7 @@ function OrderComponent() {
     data.deliveryAddress?.location?.coordinates?.[1] ?? 0,
     data.deliveryAddress?.location?.coordinates?.[0] ?? 0,
   ]
-  console.log(data)
+
   return (
     <div className="flex w-full flex-col items-start gap-5 px-4 pb-10 sm:px-6 xl:flex-row xl:px-10">
       <div className="flex w-full min-w-0 flex-col gap-4 xl:max-w-5xl xl:flex-1">
@@ -337,7 +337,21 @@ function OrderComponent() {
       <div className="flex w-full flex-col items-stretch gap-4 xl:mt-15 xl:w-104 xl:shrink-0 2xl:w-lg">
         <OrderStatusTimeline order={data} />
 
-        {data.status === "Pending" && (
+        {!data.driver &&
+          !data.driverAssignedAt &&
+          !data.cancelledAt &&
+          !data.rejectedAt && (
+            <Card className="w-full divide-y px-2">
+              <CardHeader>
+                <CardTitle className="py-2 text-base text-muted-foreground">
+                  Action buttons will show after a driver has accepted this
+                  order.
+                </CardTitle>
+              </CardHeader>
+            </Card>
+          )}
+
+        {data.status === "Pending" && data.driver && data.driverAssignedAt && (
           <Card className="w-full divide-y px-2">
             <CardHeader>
               <CardTitle className="py-2 text-base font-semibold">
@@ -365,13 +379,15 @@ function OrderComponent() {
                 </Button>
                 <Button
                   className="flex-1 cursor-pointer rounded-md py-5 text-base sm:py-6 sm:text-lg"
-                  onClick={() =>
+                  disabled={Boolean(!data.driver || !data.driverAssignedAt)}
+                  onClick={() => {
+                    if (!data.driver || !data.driverAssignedAt) return
                     actionMutation({
                       merchantId,
                       orderId: orderId ?? "",
                       action: "accept",
                     })
-                  }
+                  }}
                 >
                   Accept
                 </Button>

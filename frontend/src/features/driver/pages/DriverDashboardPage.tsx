@@ -147,11 +147,7 @@ function DriverDashboardPage() {
       void queryClient.invalidateQueries({ queryKey: ["driverProfile"] })
     }
     socket.on("order:merchantAccepted", refreshOrder)
-    socket.on("driver:arrived-at-merchant", () => {
-      console.log("Driver arrival event received")
-
-      refreshOrder()
-    })
+    socket.on("driver:arrived-at-merchant", refreshOrder)
     socket.on("order:ready", refreshOrder)
     socket.on("order:cancel", refreshOrder)
     socket.on("socket:error", ({ message }: { message?: string }) =>
@@ -236,7 +232,7 @@ function DriverDashboardPage() {
       { enableHighAccuracy: true, timeout: 12000 }
     )
   }
-
+  console.log(offers)
   return (
     <main className="mx-auto w-full max-w-4xl space-y-5 p-4 sm:space-y-6 sm:p-8">
       <header>

@@ -15,7 +15,6 @@ const deleteProduct = async ({
   merchantId: string
   productId: string
 }): Promise<DeleteProductResponse> => {
-  console.log(merchantId, productId)
   const { data } = await axios.delete(`/product/${merchantId}/${productId}`)
   return data
 }
