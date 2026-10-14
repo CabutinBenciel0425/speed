@@ -2,22 +2,24 @@ import type { Driver } from "./driver"
 import type { User } from "./user"
 
 export interface Order {
-  createdAt: Date
+  _id: string
+  createdAt: string
   customer: User
-  merchant: string
+  merchant: {
+    merchantName: string
+    _id: string
+  }
   driver: Driver | null
   orderNumber: string
-  items: [
-    {
-      product: string
-      productName: string
-      image?: string
-      quantity: number
-      unitPrice: number
-      subtotal: number
-      notes: string
-    },
-  ]
+  items: {
+    product: string
+    productName: string
+    image?: string
+    quantity: number
+    unitPrice: number
+    subtotal: number
+    notes?: string
+  }[]
   deliveryAddress: {
     address: string
     recipientName: string
@@ -59,17 +61,17 @@ export interface Order {
   customerNote: string
   estimatedPreparationTime: number
   estimatedDeliveryTime: number
-  driverAssignedAt?: Date
-  acceptedAt?: Date
-  driverHeadingToMerchantAt?: Date
-  merchantReceivedAt?: Date
-  preparingAt?: Date
-  driverArrivedAtMerchantAt?: Date
-  readyForPickupAt?: Date
-  pickedUpAt?: Date
-  deliveredAt?: Date
-  rejectedAt?: Date
-  cancelledAt?: Date
-  cancelledBy: "Customer" | "Merchant" | "Admin"
-  cancellationReason: string
+  driverAssignedAt?: string
+  acceptedAt?: string
+  driverHeadingToMerchantAt?: string
+  merchantReceivedAt?: string
+  preparingAt?: string
+  driverArrivedAtMerchantAt?: string
+  readyForPickupAt?: string
+  pickedUpAt?: string
+  deliveredAt?: string
+  rejectedAt?: string
+  cancelledAt?: string
+  cancelledBy?: "Customer" | "Merchant" | "Admin"
+  cancellationReason?: string
 }

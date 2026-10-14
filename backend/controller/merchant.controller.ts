@@ -135,6 +135,7 @@ export const readyOrder = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
   const merchantId = req.params.merchantId as string;
   const orderId = req.params.orderId as string;
+  // const { paymentCost } = req.body;
 
   if (!merchantId) {
     throw new NotFoundError("Merchant id");

@@ -42,10 +42,12 @@ function MapComponent({
   position,
   onLocationChange,
   active,
+  height,
 }: {
   position: [number, number] | null
-  onLocationChange: (position: [number, number]) => void
+  onLocationChange?: (position: [number, number]) => void
   active: boolean
+  height?: string
 }) {
   const initialPosition: [number, number] = [14.577997, 121.036213]
 
@@ -54,10 +56,12 @@ function MapComponent({
       <MapContainer
         center={initialPosition}
         zoom={11.25}
-        style={{ height: "400px", width: "100%" }}
+        style={{ height: `${height ? height : "400px"}`, width: "100%" }}
       >
         <MapSizeController active={active} />
-        <MapClickHandler onLocationChange={onLocationChange} />
+        {onLocationChange && (
+          <MapClickHandler onLocationChange={onLocationChange} />
+        )}
 
         {position && (
           <>

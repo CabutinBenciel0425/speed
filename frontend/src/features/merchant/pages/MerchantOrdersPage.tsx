@@ -1,12 +1,11 @@
 import { useEffect } from "react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { NavLink, useSearchParams } from "react-router-dom"
 import axios from "@/lib/axios"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/useAuth"
-import { toast } from "sonner"
+
 import { MapPin, PhilippinePeso } from "lucide-react"
-import { useMerchantReadyOrder } from "../hooks/useMerchantReadyOrder"
 
 type Merchant = { _id: string; merchantName: string }
 type OrderCustomer =
@@ -52,8 +51,6 @@ type MerchantOrder = {
   createdAt?: string
 }
 
-const terminalStatuses = ["Delivered", "PickedUp", "Cancelled", "Rejected"]
-
 const fetchMerchant = async (): Promise<Merchant> => {
   const { data } = await axios.get<{ data: Merchant }>("/merchant/me")
   return data.data
@@ -74,7 +71,7 @@ function MerchantOrdersPage() {
   const isStatusNegative = (value: OrderStatus) => {
     return negativeStatus.includes(value)
   }
-  const queryClient = useQueryClient()
+
   const merchantQuery = useQuery({
     queryKey: ["merchantProfile", user?.id],
     queryFn: fetchMerchant,
@@ -93,35 +90,6 @@ function MerchantOrdersPage() {
       .getElementById(`order-${focusedOrderId}`)
       ?.scrollIntoView({ behavior: "smooth", block: "center" })
   }, [focusedOrderId, ordersQuery.data])
-
-  const actionMutation = useMutation({
-    mutationFn: async ({
-      orderId,
-      action,
-    }: {
-      orderId: string
-      action: "accept" | "reject" | "cancel"
-    }) => {
-      if (!merchantId) throw new Error("Merchant profile is unavailable")
-      const { data } = await axios.patch(
-        `/merchant/${merchantId}/orders/${orderId}/${action}`,
-        action === "cancel"
-          ? { cancellationReason: "Cancelled by merchant" }
-          : undefined
-      )
-      return data
-    },
-    onSuccess: (_data, variables) => {
-      toast.success(`Order ${variables.action}ed`)
-      void queryClient.invalidateQueries({
-        queryKey: ["merchantOrders", merchantId],
-      })
-      void queryClient.invalidateQueries({ queryKey: ["merchantDashboard"] })
-    },
-    onError: () => toast.error("Could not update the order. Please try again."),
-  })
-
-  const { mutate: readyOrder } = useMerchantReadyOrder()
 
   if (merchantQuery.isLoading || ordersQuery.isLoading) {
     return (
@@ -171,31 +139,31 @@ function MerchantOrdersPage() {
       ) : (
         <div className="flex flex-col items-center justify-center space-y-4">
           {orders.map((order) => {
-            const canRespond =
-              order.status === "Pending" &&
-              Boolean(
-                order.driver && order.acceptedAt && order.driverAssignedAt
-              ) &&
-              (order.payment.method === "Cash" ||
-                Boolean(order.payment.transactionId))
-            const driverStatus =
-              typeof order.driver === "object" && order.driver
-                ? order.driver.workingStatus
-                : undefined
-            const canCancel =
-              !terminalStatuses.includes(order.status) &&
-              driverStatus !== "ArrivedAtMerchant" &&
-              driverStatus !== "Delivering"
-            const canPickup =
-              order.status === "Preparing" &&
-              Boolean(
-                order.driver && order.acceptedAt && order.driverAssignedAt
-              ) &&
-              (order.payment.method === "Cash" ||
-                Boolean(order.payment.transactionId))
+            // const canRespond =
+            //   order.status === "Pending" &&
+            //   Boolean(
+            //     order.driver && order.acceptedAt && order.driverAssignedAt
+            //   ) &&
+            //   (order.payment.method === "Cash" ||
+            //     Boolean(order.payment.transactionId))
+            // const driverStatus =
+            //   typeof order.driver === "object" && order.driver
+            //     ? order.driver.workingStatus
+            //     : undefined
+            // const canCancel =
+            //   !terminalStatuses.includes(order.status) &&
+            //   driverStatus !== "ArrivedAtMerchant" &&
+            //   driverStatus !== "Delivering"
+            // const canPickup =
+            //   order.status === "Preparing" &&
+            //   Boolean(
+            //     order.driver && order.acceptedAt && order.driverAssignedAt
+            //   ) &&
+            //   (order.payment.method === "Cash" ||
+            //     Boolean(order.payment.transactionId))
             const address = order.deliveryAddress
             return (
-              <NavLink to={`${order._id}`}>
+              <NavLink to={`${order._id}`} key={order._id}>
                 <article
                   key={order._id}
                   id={`order-${order._id}`}
@@ -258,76 +226,6 @@ function MerchantOrdersPage() {
                       Total: ₱{order.pricing.total.toFixed(2)}
                     </p>
                   </div>
-
-                  {(canRespond || canCancel) && (
-                    <div className="mt-4 flex flex-wrap gap-2 border-t pt-4">
-                      {canRespond && (
-                        <>
-                          <Button
-                            disabled={actionMutation.isPending}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              actionMutation.mutate({
-                                orderId: order._id,
-                                action: "accept",
-                              })
-                            }}
-                          >
-                            Accept order
-                          </Button>
-                          <Button
-                            variant="outline"
-                            disabled={actionMutation.isPending}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              actionMutation.mutate({
-                                orderId: order._id,
-                                action: "reject",
-                              })
-                            }}
-                          >
-                            Reject order
-                          </Button>
-                        </>
-                      )}
-                      {canCancel && (
-                        <Button
-                          variant="destructive"
-                          disabled={actionMutation.isPending}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            if (
-                              window.confirm(
-                                "Cancel this order? The customer will be notified."
-                              )
-                            ) {
-                              actionMutation.mutate({
-                                orderId: order._id,
-                                action: "cancel",
-                              })
-                            }
-                          }}
-                        >
-                          Cancel order
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                  {canPickup && merchantId && (
-                    <Button
-                      onClick={() =>
-                        readyOrder({ merchantId, orderId: order._id })
-                      }
-                    >
-                      Ready for Pick up
-                    </Button>
-                  )}
-                  {order.status === "Pending" && !canRespond && (
-                    <p className="mt-4 border-t pt-4 text-sm text-muted-foreground">
-                      Accept or reject becomes available after a driver has
-                      accepted the delivery.
-                    </p>
-                  )}
                 </article>
               </NavLink>
             )

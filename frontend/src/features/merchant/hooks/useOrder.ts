@@ -10,6 +10,11 @@ export function useOrder(orderId: string) {
       return data.data
     },
     staleTime: 20_000,
-    refetchInterval: 30_000,
+    refetchInterval: (query) =>
+      ["Delivered", "Rejected", "Cancelled"].includes(
+        query.state.data?.status ?? ""
+      )
+        ? false
+        : 5000,
   })
 }

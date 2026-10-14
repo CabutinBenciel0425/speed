@@ -24,7 +24,10 @@ export const merchantRejectOrder = async (
   merchantId: string,
 ) => {
   const session = await mongoose.startSession();
-  const order = await Order.findOne({ _id: orderId, merchant: merchantId }).session(session);
+  const order = await Order.findOne({
+    _id: orderId,
+    merchant: merchantId,
+  }).session(session);
   if (!order) {
     throw new NotFoundError("Order");
   }
@@ -152,6 +155,12 @@ export const merchantReadyOrder = async (
     throw new NotFoundError("Order");
   }
 
+  // if (order.pricing.total !== paymentCost) {
+  //   throw new ConflictError(
+  //     "Payment should be equal to the order's total price.",
+  //   );
+  // }
+
   order.status = "ReadyForPickup";
   order.readyForPickupAt = new Date();
   await order.save();
@@ -243,7 +252,9 @@ const validateMerchantOrder = async (orderId: string, merchantId: string) => {
   }
 
   if (order.status !== "Preparing") {
-    throw new ConflictError("Order must be preparing before it can be marked ready");
+    throw new ConflictError(
+      "Order must be preparing before it can be marked ready",
+    );
   }
 
   if (order.rejectedAt) {
@@ -696,7 +707,9 @@ export const getMerchantDashboardService = async (userId: string) => {
       }),
       Order.countDocuments({ merchant: merchant._id, status: "Pending" }),
       Order.find({ merchant: merchant._id })
-        .select("orderNumber status pricing.total items.productName items.quantity createdAt")
+        .select(
+          "orderNumber status pricing.total items.productName items.quantity createdAt",
+        )
         .sort({ createdAt: -1, acceptedAt: -1 })
         .limit(6)
         .lean(),
