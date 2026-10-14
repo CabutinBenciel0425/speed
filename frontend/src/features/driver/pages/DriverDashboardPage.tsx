@@ -49,6 +49,7 @@ type DriverOrder = {
     | string
   customer?: { firstName?: string; lastName?: string }
   deliveryAddress?: { street: string; barangay: string; city: string }
+  driverArrivedAtMerchantAt?: string
 }
 
 function DriverDashboardPage() {
@@ -146,6 +147,11 @@ function DriverDashboardPage() {
       void queryClient.invalidateQueries({ queryKey: ["driverProfile"] })
     }
     socket.on("order:merchantAccepted", refreshOrder)
+    socket.on("driver:arrived-at-merchant", () => {
+      console.log("Driver arrival event received")
+
+      refreshOrder()
+    })
     socket.on("order:ready", refreshOrder)
     socket.on("order:cancel", refreshOrder)
     socket.on("socket:error", ({ message }: { message?: string }) =>
@@ -374,20 +380,49 @@ function DriverDashboardPage() {
                 pickup after it’s accepted.
               </p>
             )}
-            {currentOrder.status === "Preparing" && (
+            {currentOrder.status === "Preparing" &&
+              profile?.workingStatus === "Assigned" && (
+                <Button
+                  className="w-full sm:w-auto"
+                  onClick={() =>
+                    orderAction.mutate({
+                      orderId: currentOrder._id,
+                      action: "heading-to-merchant",
+                    })
+                  }
+                  disabled={orderAction.isPending}
+                >
+                  <MapPin className="size-4" /> Head to store
+                </Button>
+              )}
+            {profile?.workingStatus === "HeadingToMerchant" && (
               <Button
                 className="w-full sm:w-auto"
-                onClick={() =>
-                  orderAction.mutate({
-                    orderId: currentOrder._id,
-                    action: "heading-to-merchant",
-                  })
-                }
-                disabled={orderAction.isPending}
+                variant={"outline"}
+                disabled={!!profile?.workingStatus}
               >
-                <MapPin className="size-4" /> Head to store
+                <MapPin className="size-4" /> Heading to Merchant
               </Button>
             )}
+
+            {profile?.workingStatus === "ArrivedAtMerchant" &&
+              currentOrder.driverArrivedAtMerchantAt &&
+              currentOrder.status === "Preparing" && (
+                <Button
+                  className="w-full sm:w-auto"
+                  variant={"outline"}
+                  disabled={
+                    !!(
+                      profile?.workingStatus === "ArrivedAtMerchant" &&
+                      currentOrder.driverArrivedAtMerchantAt &&
+                      currentOrder.status === "Preparing"
+                    )
+                  }
+                >
+                  <MapPin className="size-4" /> Arrived at Merchant
+                </Button>
+              )}
+
             {currentOrder.status === "ReadyForPickup" &&
               profile?.workingStatus === "ArrivedAtMerchant" && (
                 <Button

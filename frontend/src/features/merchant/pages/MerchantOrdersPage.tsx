@@ -139,28 +139,6 @@ function MerchantOrdersPage() {
       ) : (
         <div className="flex flex-col items-center justify-center space-y-4">
           {orders.map((order) => {
-            // const canRespond =
-            //   order.status === "Pending" &&
-            //   Boolean(
-            //     order.driver && order.acceptedAt && order.driverAssignedAt
-            //   ) &&
-            //   (order.payment.method === "Cash" ||
-            //     Boolean(order.payment.transactionId))
-            // const driverStatus =
-            //   typeof order.driver === "object" && order.driver
-            //     ? order.driver.workingStatus
-            //     : undefined
-            // const canCancel =
-            //   !terminalStatuses.includes(order.status) &&
-            //   driverStatus !== "ArrivedAtMerchant" &&
-            //   driverStatus !== "Delivering"
-            // const canPickup =
-            //   order.status === "Preparing" &&
-            //   Boolean(
-            //     order.driver && order.acceptedAt && order.driverAssignedAt
-            //   ) &&
-            //   (order.payment.method === "Cash" ||
-            //     Boolean(order.payment.transactionId))
             const address = order.deliveryAddress
             return (
               <NavLink to={`${order._id}`} key={order._id}>

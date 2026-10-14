@@ -129,50 +129,87 @@ export const headingToMerchantService = async (
   userId: string,
   orderId: string,
 ) => {
-  const driverProfile = await getDriverProfile(userId);
+  console.log("[HEADING] Service entered", { userId, orderId });
 
-  const order = await Order.findOne({
-    driver: driverProfile._id,
-    _id: orderId,
-  } as QueryFilter<IOrder>);
+  const session = await mongoose.startSession();
 
-  if (!order) {
-    throw new NotFoundError("Order");
+  try {
+    await session.withTransaction(async () => {
+      console.log("[HEADING] Transaction started");
+
+      const driverProfile = await getDriverProfile(userId, session);
+      console.log("[HEADING] Driver profile loaded", {
+        driverProfileId: driverProfile._id.toString(),
+        status: driverProfile.status,
+        workingStatus: driverProfile.workingStatus,
+        activeOrder: driverProfile.activeOrder?.toString(),
+      });
+
+      const order = await Order.findOne({
+        driver: driverProfile._id,
+        _id: orderId,
+      }).session(session);
+
+      console.log("[HEADING] Order query completed", {
+        found: Boolean(order),
+      });
+
+      if (!order) {
+        throw new NotFoundError("Order");
+      }
+
+      const activeOrderId = driverProfile.activeOrder?.toString();
+      const isPaymentValid = isOrderPaymentValid(order);
+
+      console.log("[HEADING] Validating transition", {
+        driverStatus: driverProfile.status,
+        workingStatus: driverProfile.workingStatus,
+        activeOrder: driverProfile.activeOrder?.toString(),
+        orderId: order._id.toString(),
+        assignedDriver: order.driver?.toString(),
+        orderStatus: order.status,
+        isPaymentValid,
+      });
+
+      if (
+        driverProfile.status !== "Operational" ||
+        driverProfile.workingStatus !== "Assigned" ||
+        activeOrderId !== order._id.toString() ||
+        order.driver?.toString() !== driverProfile._id.toString() ||
+        !["Preparing", "ReadyForPickup"].includes(order.status) ||
+        !isPaymentValid
+      ) {
+        throw new ConflictError("This order is not ready for pickup yet");
+      }
+
+      driverProfile.workingStatus = "HeadingToMerchant";
+      order.driverHeadingToMerchantAt = new Date();
+      await Promise.all([
+        driverProfile.save({ session }),
+        order.save({ session }),
+      ]);
+      console.log("DRIVERPROFILE", driverProfile);
+      console.log("ORDER", order);
+      const notificationDataCustomer: CreateNotificationInput = {
+        targetId: new Types.ObjectId(userId),
+        targetType: "Customer",
+        type: "DRIVER_ASSIGNED",
+        title: "Driver heading to the store",
+        message: "Your driver is heading to the store.",
+        order: order._id,
+        isRead: false,
+      };
+
+      await createNotification(notificationDataCustomer);
+
+      io.to(`customer:${userId}`).emit("driver:heading-to-merchant");
+    });
+  } catch (error) {
+    console.error("[HEADING] Service failed", error);
+    throw error;
+  } finally {
+    await session.endSession();
   }
-
-  const activeOrderId = driverProfile.activeOrder?.toString();
-  const isPaymentValid = isOrderPaymentValid(order);
-
-  if (
-    driverProfile.status !== "Operational" ||
-    driverProfile.workingStatus !== "Assigned" ||
-    activeOrderId !== order._id.toString() ||
-    order.driver?.toString() !== driverProfile._id.toString() ||
-    !["Preparing", "ReadyForPickup"].includes(order.status) ||
-    !isPaymentValid
-  ) {
-    throw new ConflictError("This order is not ready for pickup yet");
-  }
-
-  driverProfile.workingStatus = "HeadingToMerchant";
-  order.driverHeadingToMerchantAt = new Date();
-  await Promise.all([driverProfile.save(), order.save()]);
-
-  const notificationDataCustomer: CreateNotificationInput = {
-    targetId: new Types.ObjectId(userId),
-    targetType: "Customer",
-    type: "DRIVER_ASSIGNED",
-    title: "Driver heading to the store",
-    message: "Your driver is heading to the store.",
-    order: order._id,
-    isRead: false,
-  };
-
-  await createNotification(notificationDataCustomer);
-
-  io.to(`customer:${userId}`).emit("driver:heading-to-merchant");
-
-  return order;
 };
 
 export const driverArrivedAtMerchant = async (
@@ -227,6 +264,11 @@ export const driverArrivedAtMerchant = async (
   io.to(`customer:${order.customer.toString()}`).emit(
     "driver:arrived-at-merchant",
   );
+  if (order.driver) {
+    io.to(`driver:${order.driver.toString()}`).emit(
+      "driver:arrived-at-merchant",
+    );
+  }
 
   return order;
 };
@@ -399,11 +441,15 @@ export const deliveredOrderService = async (
   return order;
 };
 
-export const getDriverProfile = async (userId: string) => {
-  const driver = await Driver.findOne({ user: userId }).populate(
+export const getDriverProfile = async (
+  userId: string,
+  session?: mongoose.ClientSession,
+) => {
+  const query = Driver.findOne({ user: userId }).populate(
     "user",
     "firstName lastName email phoneNumber avatar",
   );
+  const driver = await (session ? query.session(session) : query);
 
   if (!driver) {
     throw new NotFoundError("Driver");
