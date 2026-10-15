@@ -66,7 +66,7 @@ function CustomerOrderComponent() {
       cancelOrder({ orderId, cancellationReason })
     }
   }
-  //   const canCancelOrder = !order.driverArrivedAtMerchantAt
+  console.log(order)
   return (
     <div className="flex w-full flex-col items-start gap-5 px-4 pb-10 sm:px-6 xl:flex-row xl:px-10">
       <div className="flex w-full min-w-0 flex-col gap-4 xl:max-w-7xl xl:flex-1">
@@ -371,7 +371,12 @@ function CustomerOrderComponent() {
             <Card className="w-full divide-y px-2">
               <CardHeader>
                 <CardTitle className="py-2 text-base font-semibold">
-                  Retry Searching for driver or cancel this order
+                  {order.driverMatchingStatus === "NoDriverFound"
+                    ? "Retry Searching for driver or cancel this order"
+                    : order.driverMatchingStatus === "Assigned" &&
+                        !order.preparingAt
+                      ? "Merchant is reviewing your order. Once accepted, driver can go to the merchant's location."
+                      : "Once driver has arrived at the merchant location, you cannot cancel this order anymore."}
                 </CardTitle>
               </CardHeader>
 
@@ -395,11 +400,20 @@ function CustomerOrderComponent() {
                   >
                     Cancel this order
                   </Button>
-                  <Button className="flex-1 cursor-pointer rounded-md py-5 text-base sm:py-6 sm:text-lg">
-                    <NavLink to={`/orders/tracking/${orderId}`}>
-                      Retry searching
-                    </NavLink>
-                  </Button>
+                  {order.driverMatchingStatus === "NoDriverFound" && (
+                    <Button className="flex-1 cursor-pointer rounded-md py-5 text-base sm:py-6 sm:text-lg">
+                      <NavLink to={`/orders/tracking/${orderId}`}>
+                        Retry searching
+                      </NavLink>
+                    </Button>
+                  )}
+                  {order.driverMatchingStatus === "Searching" && (
+                    <Button className="flex-1 cursor-pointer rounded-md py-5 text-base sm:py-6 sm:text-lg">
+                      <NavLink to={`/orders/tracking/${orderId}`}>
+                        Order Tracking Page
+                      </NavLink>
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>

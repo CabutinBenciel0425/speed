@@ -40,15 +40,9 @@ function ProductCard({ product }: { product: Product }) {
   }
 
   const handleAddToCart = () => {
-    console.log("EXISTINGORDER", existingOrder)
-    if (existingOrder?.order !== null) {
-      toast.info("Please cancel first your existing order in Orders Page")
-      return
-    }
     mutate({ product, quantity: 1, notes: "" })
   }
 
-  console.log(existingOrder)
   return (
     <motion.div
       ref={ref}
@@ -108,7 +102,15 @@ function ProductCard({ product }: { product: Product }) {
         {isAuthenticated && (
           <PressButton
             className="absolute right-3 bottom-3 h-7 w-7 rounded-full bg-primary font-bold text-white shadow-lg md:right-4 md:bottom-4 lg:right-5 lg:bottom-5 lg:h-9 lg:w-9"
-            onClick={handleAddToCart}
+            onClick={() => {
+              if (existingOrder?.order !== null) {
+                toast.info(
+                  "Please cancel first your existing order in Orders Page"
+                )
+                return
+              }
+              handleAddToCart()
+            }}
             disabled={!isAuthenticated || isPending}
           >
             {isPending ? <Spinner /> : <Plus />}

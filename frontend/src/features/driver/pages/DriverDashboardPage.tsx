@@ -148,8 +148,22 @@ function DriverDashboardPage() {
     }
     socket.on("order:merchantAccepted", refreshOrder)
     socket.on("driver:arrived-at-merchant", refreshOrder)
-    socket.on("order:ready", refreshOrder)
-    socket.on("order:cancel", refreshOrder)
+    socket.on("order:ready", () => {
+      console.log("ORDER IS READY FOR PICK UP")
+      toast.info("Order is ready for pick up")
+      refreshOrder()
+    })
+    socket.on("order:cancel", () => {
+      console.log("ORDER IS CANCELLED")
+      toast.warning("Order has been cancelled")
+      refreshOrder()
+    })
+
+    socket.on("order:rejected", () => {
+      console.log("ORDER IS REJECTED")
+      toast.warning("Order has been rejected")
+      refreshOrder()
+    })
     socket.on("socket:error", ({ message }: { message?: string }) =>
       toast.error(message ?? "A driver action failed.")
     )
@@ -232,7 +246,7 @@ function DriverDashboardPage() {
       { enableHighAccuracy: true, timeout: 12000 }
     )
   }
-  console.log(offers)
+
   return (
     <main className="mx-auto w-full max-w-4xl space-y-5 p-4 sm:space-y-6 sm:p-8">
       <header>
@@ -373,10 +387,10 @@ function DriverDashboardPage() {
             {currentOrder.status === "Pending" && (
               <p className="rounded-lg border p-3 text-sm text-muted-foreground">
                 The store is reviewing this order. You’ll be able to head to
-                pickup after it’s accepted.
+                store location after it’s accepted.
               </p>
             )}
-            {currentOrder.status === "Preparing" &&
+            {["Preparing", "ReadyForPickup"].includes(currentOrder.status) &&
               profile?.workingStatus === "Assigned" && (
                 <Button
                   className="w-full sm:w-auto"
@@ -391,7 +405,7 @@ function DriverDashboardPage() {
                   <MapPin className="size-4" /> Head to store
                 </Button>
               )}
-            {profile?.workingStatus === "HeadingToMerchant" && (
+            {/* {profile?.workingStatus === "HeadingToMerchant" && (
               <Button
                 className="w-full sm:w-auto"
                 variant={"outline"}
@@ -399,7 +413,7 @@ function DriverDashboardPage() {
               >
                 <MapPin className="size-4" /> Heading to Merchant
               </Button>
-            )}
+            )} */}
 
             {profile?.workingStatus === "ArrivedAtMerchant" &&
               currentOrder.driverArrivedAtMerchantAt &&

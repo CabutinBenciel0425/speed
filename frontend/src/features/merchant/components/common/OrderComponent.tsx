@@ -27,16 +27,22 @@ import { Button } from "@/components/ui/button"
 import OrderStatusTimeline from "../../../../components/common/OrderStatusTimeline"
 import { useMerchantReadyOrder } from "../../hooks/useMerchantReadyOrder"
 import { useActionMutation } from "../../hooks/useOrderActionMutation"
+import { useState } from "react"
 
 function OrderComponent() {
   const { orderId } = useParams()
   const { data, isLoading, isError } = useOrder(orderId || "")
+  const [action, setAction] = useState<"accept" | "cancel" | "reject">("accept")
   const merchantId = data?.merchant._id ?? ""
   const { mutate: readyOrder } = useMerchantReadyOrder()
   const { mutate: actionMutation } = useActionMutation({
     merchantId,
     orderId: orderId || "",
+    action,
   })
+  const [loading, setLoading] = useState<"reject" | "cancel" | "accept" | null>(
+    null
+  )
 
   if (isLoading)
     return <p className="p-5 text-muted-foreground">Loading order…</p>
@@ -382,21 +388,25 @@ function OrderComponent() {
                 <Button
                   className="flex-1 cursor-pointer rounded-md border-primary py-4 text-base text-primary hover:text-primary sm:py-6 sm:text-lg"
                   variant="outline"
-                  onClick={() =>
+                  onClick={() => {
+                    setLoading("reject")
+                    setAction("reject")
                     actionMutation({
                       merchantId,
                       orderId: orderId ?? "",
                       action: "reject",
                     })
-                  }
+                  }}
                 >
-                  Reject
+                  {loading === "reject" ? "Rejecting..." : "Reject"}
                 </Button>
                 <Button
                   className="flex-1 cursor-pointer rounded-md py-5 text-base sm:py-6 sm:text-lg"
                   disabled={Boolean(!data.driver || !data.driverAssignedAt)}
                   onClick={() => {
                     if (!data.driver || !data.driverAssignedAt) return
+                    setLoading("accept")
+                    setAction("accept")
                     actionMutation({
                       merchantId,
                       orderId: orderId ?? "",
@@ -404,7 +414,7 @@ function OrderComponent() {
                     })
                   }}
                 >
-                  Accept
+                  {loading === "accept" ? "Accepting..." : "Accept"}
                 </Button>
               </div>
             </CardContent>
@@ -434,15 +444,17 @@ function OrderComponent() {
                   className="flex-1 cursor-pointer rounded-md border-primary py-4 text-base text-primary hover:text-primary sm:py-6 sm:text-lg"
                   disabled={!!data.driverArrivedAtMerchantAt}
                   variant="outline"
-                  onClick={() =>
+                  onClick={() => {
+                    setLoading("cancel")
+                    setAction("cancel")
                     actionMutation({
                       merchantId,
                       orderId: orderId ?? "",
                       action: "cancel",
                     })
-                  }
+                  }}
                 >
-                  Cancel
+                  {loading === "cancel" ? "Cancelling..." : "Cancel"}
                 </Button>
                 <Button
                   className="flex-1 cursor-pointer rounded-md py-5 text-base sm:py-6 sm:text-lg"

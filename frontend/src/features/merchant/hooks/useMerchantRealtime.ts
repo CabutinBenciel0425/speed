@@ -19,6 +19,7 @@ export function useMerchantRealtime() {
     })
     const refreshOrders = () => {
       void queryClient.invalidateQueries({ queryKey: ["merchantOrders"] })
+      void queryClient.invalidateQueries({ queryKey: ["merchantOrder"] })
       void queryClient.invalidateQueries({ queryKey: ["merchantDashboard"] })
       void queryClient.invalidateQueries({
         queryKey: ["merchantNotifications"],

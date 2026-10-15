@@ -230,8 +230,8 @@ export const driverArrivedAtMerchant = async (
       order: order._id,
     });
   }
-
-  io.to(`merchant:${order.merchant.toString()}`).emit(
+  console.log(order);
+  io.to(`merchant:${order.merchant._id.toString()}`).emit(
     "driver:arrived-at-merchant",
   );
   io.to(`customer:${order.customer.toString()}`).emit(
@@ -410,6 +410,7 @@ export const deliveredOrderService = async (
   });
 
   io.to(`customer:${order.customer.toString()}`).emit("order:delivered");
+  io.to(`merchant:${order.merchant._id.toString()}`).emit("order:delivered");
 
   return order;
 };
@@ -440,7 +441,6 @@ export const isOrderPaymentValid = (order: IOrder) => {
 };
 
 export const driverMatching = async (orderId: string) => {
-  console.log("DRIVER MATCHING FN");
   const order = await Order.findById(orderId);
   if (!order) {
     throw new NotFoundError("Order");
@@ -470,7 +470,7 @@ export const driverMatching = async (orderId: string) => {
   ) {
     return activeOrder;
   }
-  console.log("STILL IN DRIVER MATCHING FN");
+
   if (drivers.length === 0) {
     activeOrder.driverMatchingStatus = "NoDriverFound";
     await activeOrder.save();
@@ -480,11 +480,10 @@ export const driverMatching = async (orderId: string) => {
 
     return activeOrder;
   }
-  console.log("DRIVERSSSSSSSSSSS", drivers);
+
   let driverAccepted = false;
 
   for (const driver of drivers) {
-    console.log("SENDING OFFER1111111");
     const offer = await sendOffer(order._id.toString(), driver._id.toString());
 
     if (!offer) {
@@ -548,10 +547,6 @@ export const findNearestDrivers = async (
 
   const maxDistance = 5000 + (retryCount - 1) * 1000;
 
-  console.log(
-    `Order ${orderNumber} — attempt #${retryCount}, maxDistance=${maxDistance}m`,
-  );
-
   return Driver.find({
     status: "Operational",
     isAvailable: true,
@@ -566,7 +561,6 @@ export const findNearestDrivers = async (
 };
 
 export const sendOffer = async (orderId: string, driverId: string) => {
-  console.log("inside SENDING OFFER2222222");
   const order = await Order.findById(orderId);
   if (!order) {
     throw new NotFoundError("Order");

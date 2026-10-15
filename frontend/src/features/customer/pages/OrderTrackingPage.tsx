@@ -198,11 +198,20 @@ function OrderTrackingPage() {
     socket.on("driver:heading-to-merchant", refresh)
     socket.on("order:noDriverFound", refresh)
     socket.on("order:merchantAccepted", refresh)
-    socket.on("order:ready", refresh)
+    socket.on("order:ready", () => {
+      toast.info("Order is ready. Get ready to dig in")
+      refresh()
+    })
     socket.on("order:pickedUp", refresh)
     socket.on("order:delivered", refresh)
-    socket.on("order:cancel", refresh)
-    socket.on("order:rejected", refresh)
+    socket.on("order:cancel", () => {
+      toast.warning("Order was cancelled")
+      refresh()
+    })
+    socket.on("order:rejected", () => {
+      toast.warning("Order was rejected")
+      refresh()
+    })
     socket.on("driver:arrived-at-merchant", refresh)
     socket.on(
       "driver:current-location",
@@ -234,7 +243,7 @@ function OrderTrackingPage() {
       const { data } = await axios.patch(
         `/orders/${orderId}/retry-driver-search`
       )
-      console.log(data)
+
       return data.data
     },
     onSuccess: async () => {

@@ -60,8 +60,6 @@ export const merchantRejectOrder = async (
   } finally {
     await session.endSession();
   }
-
-  const driverId = order.driver ? order.driver.toString() : null;
   const customerId = order.customer ? order.customer.toString() : null;
 
   if (order.customer) {
@@ -73,10 +71,20 @@ export const merchantRejectOrder = async (
       message: `Order #${order.orderNumber} was rejected by the store.`,
       order: order._id,
     });
+    io.to(`customer:${customerId}`).emit("order:rejected");
   }
 
-  if (driverId) io.to(`driver:${driverId}`).emit("order:rejected");
-  if (customerId) io.to(`customer:${customerId}`).emit("order:rejected");
+  if (driver) {
+    await createNotification({
+      targetId: order.customer,
+      targetType: "Driver",
+      type: "ORDER_REJECTED",
+      title: "Order rejected",
+      message: `Order #${order.orderNumber} was rejected by the store.`,
+      order: order._id,
+    });
+    io.to(`driver:${driver._id.toString()}`).emit("order:rejected");
+  }
 
   return order;
 };
@@ -155,12 +163,6 @@ export const merchantReadyOrder = async (
     throw new NotFoundError("Order");
   }
 
-  // if (order.pricing.total !== paymentCost) {
-  //   throw new ConflictError(
-  //     "Payment should be equal to the order's total price.",
-  //   );
-  // }
-
   order.status = "ReadyForPickup";
   order.readyForPickupAt = new Date();
   await order.save();
@@ -222,7 +224,17 @@ export const merchantCancelOrder = async (
     await session.endSession();
   }
 
-  if (driver) io.to(`driver:${driver._id}`).emit("order:cancel");
+  if (driver) {
+    await createNotification({
+      targetId: driver._id,
+      targetType: "Driver",
+      type: "ORDER_CANCELLED",
+      title: "Order cancelled",
+      message: `Order #${order.orderNumber} was cancelled by the store.`,
+      order: order._id,
+    });
+    io.to(`driver:${driver._id}`).emit("order:cancel");
+  }
   await createNotification({
     targetId: order.customer,
     targetType: "Customer",
@@ -231,8 +243,10 @@ export const merchantCancelOrder = async (
     message: `Order #${order.orderNumber} was cancelled by the store.`,
     order: order._id,
   });
+
   io.to(`customer:${order.customer}`).emit("order:cancel");
   io.to(`merchant:${merchantId}`).emit("order:cancel");
+  // io.to(`driver:${merchantId}`).emit("order:cancel");
   return order;
 };
 

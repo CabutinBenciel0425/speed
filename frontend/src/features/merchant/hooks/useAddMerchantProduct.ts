@@ -18,7 +18,6 @@ export function useAddMerchantProduct(merchantId: string | undefined) {
       })
     },
     onError: (error) => {
-      console.log(error)
       toast.error(apiErrorMessage(error, "Could not add this product."))
     },
   })

@@ -1,11 +1,15 @@
-import { useEffect } from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useEffect, useRef } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { NavLink, useSearchParams } from "react-router-dom"
 import axios from "@/lib/axios"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/useAuth"
 
 import { MapPin, PhilippinePeso } from "lucide-react"
+import type { Socket } from "socket.io-client"
+import { useAuthStore } from "@/store/authStore"
+import { io } from "socket.io-client"
+import { toast } from "sonner"
 
 type Merchant = { _id: string; merchantName: string }
 type OrderCustomer =
@@ -64,9 +68,12 @@ const fetchOrders = async (merchantId: string): Promise<MerchantOrder[]> => {
 }
 
 function MerchantOrdersPage() {
-  const { user } = useAuth()
+  const { isAuthenticated, user } = useAuth()
+  const activeRoleState = useAuthStore((state) => state.activeRole)
+  const queryClient = useQueryClient()
   const [searchParams] = useSearchParams()
   const focusedOrderId = searchParams.get("orderId")
+  const socketRef = useRef<Socket | null>(null)
   const negativeStatus = ["Cancelled", "Rejected", "NoDriverFound"]
   const isStatusNegative = (value: OrderStatus) => {
     return negativeStatus.includes(value)
@@ -84,6 +91,49 @@ function MerchantOrdersPage() {
     enabled: Boolean(merchantId),
     refetchInterval: 30_000,
   })
+
+  useEffect(() => {
+    if (!isAuthenticated || activeRoleState !== "Merchant") return
+    const socket = io(
+      import.meta.env.DEV ? "http://localhost:5050" : undefined,
+      { withCredentials: true, auth: { activeRole: activeRoleState } }
+    )
+    socketRef.current = socket
+
+    const refreshOrder = () => {
+      void queryClient.invalidateQueries({ queryKey: ["merchantDashboard"] })
+      void queryClient.invalidateQueries({ queryKey: ["merchantOrders"] })
+      void queryClient.invalidateQueries({ queryKey: ["merchantOrder"] })
+    }
+    socket.on("order:merchantAccepted", refreshOrder)
+    socket.on("driver:arrived-at-merchant", refreshOrder)
+    socket.on("order:ready", () => {
+      console.log("ORDER READY")
+      refreshOrder()
+    })
+    socket.on("order:pickedUp", () => {
+      console.log("ORDER PICKEDUP")
+      refreshOrder()
+    })
+    socket.on("order:delivered", () => {
+      console.log("ORDER DELIVERED")
+      refreshOrder()
+    })
+    socket.on("order:cancel", () => {
+      console.log("ORDER CANCELLED")
+      refreshOrder()
+    })
+    socket.on("order:rejected", refreshOrder)
+
+    socket.on("socket:error", ({ message }: { message?: string }) =>
+      toast.error(message ?? "A driver action failed.")
+    )
+    return () => {
+      socket.disconnect()
+      socketRef.current = null
+    }
+  }, [activeRoleState, isAuthenticated, queryClient])
+
   useEffect(() => {
     if (!focusedOrderId || !ordersQuery.data) return
     document
@@ -113,7 +163,7 @@ function MerchantOrdersPage() {
       ? "Customer"
       : `${customer.firstName ?? ""} ${customer.lastName ?? ""}`.trim() ||
         "Customer"
-
+  console.log(orders)
   return (
     <main className="w-full p-6 xl:px-20">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">

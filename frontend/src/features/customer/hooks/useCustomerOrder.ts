@@ -17,7 +17,12 @@ export const useCustomerOrder = (orderId: string) => {
     queryKey: ["customerOrder", orderId],
     queryFn: () => fetchCustomerOrder(orderId!),
     enabled: Boolean(orderId),
-    refetchInterval: 30_000,
+    refetchInterval: (query) =>
+      ["Delivered", "Rejected", "Cancelled"].includes(
+        query.state.data?.status ?? ""
+      )
+        ? false
+        : 5000,
   })
 
   return { order, isLoading, error }

@@ -25,19 +25,24 @@ const actionMutation = async ({
 export const useActionMutation = ({
   merchantId,
   orderId,
+  action,
 }: {
   merchantId: string
   orderId: string
+  action: "accept" | "reject" | "cancel"
 }) => {
   return useMutation({
     mutationFn: actionMutation,
     onSuccess: (_data, variables) => {
       toast.success(`Order ${variables.action}ed`)
       void queryClient.invalidateQueries({
-        queryKey: ["merchantOrders", merchantId, orderId],
+        queryKey: ["merchantOrders", merchantId, orderId, action],
       })
       void queryClient.invalidateQueries({
-        queryKey: ["merchantDashboard", merchantId, orderId],
+        queryKey: ["merchantDashboard"],
+      })
+      void queryClient.invalidateQueries({
+        queryKey: ["merchantOrder"],
       })
     },
     onError: () => toast.error("Could not update the order. Please try again."),

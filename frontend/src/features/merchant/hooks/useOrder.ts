@@ -4,21 +4,16 @@ import type { Order } from "@/types/order"
 
 export function useOrder(orderId: string) {
   return useQuery({
-    queryKey: ["order", orderId],
+    queryKey: ["merchantOrder", orderId],
     queryFn: async () => {
       const { data } = await axios.get<{ data: Order }>(`/orders/${orderId}`)
       return data.data
     },
-    staleTime: 20_000,
+    staleTime: 10_000,
     refetchInterval: (query) =>
-      [
-        "Preparing",
-        "ReadyForPickup",
-        "PickedUp",
-        "Delivered",
-        "Rejected",
-        "Cancelled",
-      ].includes(query.state.data?.status ?? "")
+      ["Delivered", "Rejected", "Cancelled"].includes(
+        query.state.data?.status ?? ""
+      )
         ? false
         : 5000,
   })

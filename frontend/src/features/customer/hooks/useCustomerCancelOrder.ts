@@ -34,7 +34,6 @@ export const useCustomerCancelOrder = (orderId: string) => {
       queryClient.invalidateQueries({ queryKey: ["existingOrder"] })
     },
     onError: (error: AxiosError) => {
-      console.log(error)
       const message =
         (error.response?.data as { message?: string } | undefined)?.message ||
         "Failed to cancel this order"

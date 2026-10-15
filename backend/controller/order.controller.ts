@@ -152,7 +152,7 @@ export const cancelOrderCustomer = asyncHandler(
     if (!user) {
       throw new NotFoundError("User");
     }
-    console.log(orderId, cancellationReason);
+
     const cancelledOrder = await cancelOrderServiceCustomer(
       orderId,
       user._id.toString(),
@@ -186,7 +186,6 @@ export const retryDriverSearch = asyncHandler(
 
 export const existingOrder = asyncHandler(
   async (req: Request, res: Response) => {
-    console.log("You are here in Existing Order");
     if (req.userRole !== "Customer") {
       throw new UnauthorizedError("Unauthorized user");
     }

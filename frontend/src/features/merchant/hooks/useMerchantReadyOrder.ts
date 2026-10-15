@@ -24,6 +24,12 @@ export const useMerchantReadyOrder = () => {
     mutationFn: merchantReadyOrder,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["merchantOrders"] })
+      void queryClient.invalidateQueries({
+        queryKey: ["merchantDashboard"],
+      })
+      void queryClient.invalidateQueries({
+        queryKey: ["merchantOrder"],
+      })
       toast.success(`Order is ready to pick up`)
     },
     onError: () => {

@@ -39,7 +39,11 @@ export const createNotification = async ({
     "ORDER_DELIVERED",
     "NO_DRIVER_FOUND",
   ];
-  const driverTypes = ["NEW_DELIVERY_OFFER", "ORDER_CANCELLED"];
+  const driverTypes = [
+    "NEW_DELIVERY_OFFER",
+    "ORDER_CANCELLED",
+    "ORDER_REJECTED",
+  ];
 
   if (targetType === "Customer" && !customerTypes.includes(type)) {
     throw new ConflictError(

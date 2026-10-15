@@ -301,6 +301,14 @@ export const cancelOrderServiceCustomer = async (
   }
 
   if (driver) {
+    await createNotification({
+      targetId: driver._id,
+      targetType: "Driver",
+      type: "ORDER_CANCELLED",
+      title: "Order cancelled",
+      message: `Order #${order.orderNumber} was cancelled by the customer.`,
+      order: order._id,
+    });
     io.to(`driver:${driver._id}`).emit("order:cancel");
   }
 
@@ -337,7 +345,7 @@ export const retryDriverSearchService = async (
 
   if (!order) {
     const existing = await Order.findOne({ _id: orderId, customer: userId });
-    console.log("EXISTINGGGGGGGGG", existing);
+
     if (!existing) throw new NotFoundError("Order");
     throw new ConflictError(
       `Cannot retry driver search. Reason - ${existing.cancellationReason}`,
