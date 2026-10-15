@@ -28,6 +28,8 @@ import OrderStatusTimeline from "../../../../components/common/OrderStatusTimeli
 import { useMerchantReadyOrder } from "../../hooks/useMerchantReadyOrder"
 import { useActionMutation } from "../../hooks/useOrderActionMutation"
 import { useState } from "react"
+import { DialogTrigger } from "@/components/ui/dialog"
+import PickupConfirmationModal from "./PickupConfirmationModal"
 
 function OrderComponent() {
   const { orderId } = useParams()
@@ -466,6 +468,37 @@ function OrderComponent() {
                 >
                   Ready for Pick up
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {data.status === "ReadyForPickup" && (
+          <Card className="w-full divide-y px-2">
+            <CardHeader>
+              <CardTitle className="py-2 text-base font-semibold"></CardTitle>
+            </CardHeader>
+
+            <CardContent className="flex flex-col gap-3 pt-3">
+              <CardDescription>
+                You can switch from "Ready for Pick up" to "Picked up" status.
+              </CardDescription>
+              {!!data.driverArrivedAtMerchantAt && (
+                <CardDescription>
+                  Driver has arrived at merchant. Order cannot be cancel
+                </CardDescription>
+              )}
+              <div className="w-full">
+                <PickupConfirmationModal
+                  dialogTrigger={
+                    <DialogTrigger>
+                      <Button className="flex-1 cursor-pointer rounded-md py-5 text-base sm:py-6 sm:text-lg">
+                        Confirm Pick up
+                      </Button>
+                    </DialogTrigger>
+                  }
+                  order={data}
+                />
               </div>
             </CardContent>
           </Card>

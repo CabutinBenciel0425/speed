@@ -21,26 +21,27 @@ function PickupConfirmationModal({
   return (
     <Dialog>
       {dialogTrigger}
-      <DialogHeader>
-        <p>Confirm Pickup & Payment</p>
-        <p>Order #{order.orderNumber}</p>
-      </DialogHeader>
+
       <DialogContent
         showCloseButton={false}
-        className="divide-y duration-300 data-open:zoom-in-100 data-open:slide-in-from-bottom-8 data-closed:zoom-out-100 data-closed:slide-out-to-bottom-8 [[data-slot=dialog-overlay]:has(~_&)]:duration-300"
+        className="z-1100 divide-y duration-300 data-open:zoom-in-100 data-open:slide-in-from-bottom-8 data-closed:zoom-out-100 data-closed:slide-out-to-bottom-8 [[data-slot=dialog-overlay]:has(~_&)]:duration-300"
       >
+        <DialogHeader>
+          <p>Confirm Pickup & Payment</p>
+          <p>Order #{order.orderNumber}</p>
+        </DialogHeader>
         <OrderDetailSummary order={order} />
+        <DialogFooter>
+          <Label>
+            <Checkbox />
+            <span>I received ₱230.00 from the driver</span>
+          </Label>
+          <div>
+            <Button>Cancel</Button>
+            <Button>Confirm Pickup</Button>
+          </div>
+        </DialogFooter>
       </DialogContent>
-      <DialogFooter>
-        <Label>
-          <Checkbox />
-          <span>I received ₱230.00 from the driver</span>
-        </Label>
-        <div>
-          <Button>Cancel</Button>
-          <Button>Confirm Pickup</Button>
-        </div>
-      </DialogFooter>
     </Dialog>
   )
 }

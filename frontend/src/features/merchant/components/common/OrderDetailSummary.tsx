@@ -1,5 +1,7 @@
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import type { Order } from "@/types/order"
-import { Dot } from "lucide-react"
+import { Banknote, Dot, QrCode } from "lucide-react"
 
 function OrderDetailSummary({ order }: { order: Order }) {
   return (
@@ -47,19 +49,26 @@ function OrderDetailSummary({ order }: { order: Order }) {
 
       {/*Payment Method*/}
       <div>
-        <h2>Driver</h2>
+        <h2>Payment</h2>
         <div>
-          <img src={order.driver?.avatar} alt={order.driver?.user.firstName} />
           <div>
-            <p>
-              {order.driver?.user.firstName} {order.driver?.user.lastName}
-            </p>
-            <p>
-              <span>{order.driver?.vehicleType}</span>
-              <Dot />
-              <span>{order.driver?.plateNumber}</span>
-            </p>
+            <span>
+              <Banknote />
+              <span>Cash</span>
+            </span>
+            <span>
+              <QrCode />
+              <span>QRPh</span>
+            </span>
           </div>
+          {order.payment.method === "QRPh" && (
+            <div>
+              <Label>
+                Reference #:
+                <Input placeholder="Enter reference number" />
+              </Label>
+            </div>
+          )}
         </div>
       </div>
     </div>
