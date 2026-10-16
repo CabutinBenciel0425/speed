@@ -17,6 +17,7 @@ import {
   merchantRejectOrder,
   toggleMerchantFavoriteService,
   updateMerchantProfileService,
+  merchantPickedupOrder,
 } from "../services/merchant.service.js";
 import type { merchantUpdateInput } from "../schemas/merchant.schema.js";
 import MerchantFavorite from "../models/merchantFavorite.model.js";
@@ -154,6 +155,31 @@ export const readyOrder = asyncHandler(async (req: Request, res: Response) => {
     data: order,
   });
 });
+
+export const pickedupOrder = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+    const merchantId = req.params.merchantId as string;
+    const orderId = req.params.orderId as string;
+
+    if (!merchantId) {
+      throw new NotFoundError("Merchant id");
+    }
+
+    if (!orderId) {
+      throw new NotFoundError("Order id");
+    }
+
+    if (!user) throw new UnauthorizedError("Unauthorized user");
+    await requireOwnedMerchant(user._id.toString(), merchantId);
+    const order = await merchantPickedupOrder(orderId, merchantId);
+
+    res.status(200).json({
+      success: true,
+      data: order,
+    });
+  },
+);
 
 export const cancelMerchantOrder = asyncHandler(
   async (req: Request, res: Response) => {

@@ -50,6 +50,8 @@ type DriverOrder = {
   customer?: { firstName?: string; lastName?: string }
   deliveryAddress?: { street: string; barangay: string; city: string }
   driverArrivedAtMerchantAt?: string
+  driverConfirmPickedUpAt?: string
+  merchantConfirmPickedUpAt?: string
 }
 
 function DriverDashboardPage() {
@@ -111,7 +113,11 @@ function DriverDashboardPage() {
       void queryClient.invalidateQueries({ queryKey: ["driverCurrentOrder"] })
       void queryClient.invalidateQueries({ queryKey: ["driverProfile"] })
     },
-    onError: () => toast.error("That delivery update could not be saved."),
+    onError: (error) =>
+      toast.error(
+        (error as any)?.response?.data?.message ??
+          "That delivery update could not be saved."
+      ),
   })
 
   useEffect(() => {
@@ -432,22 +438,34 @@ function DriverDashboardPage() {
                   <MapPin className="size-4" /> Arrived at Merchant
                 </Button>
               )}
-
             {currentOrder.status === "ReadyForPickup" &&
-              profile?.workingStatus === "ArrivedAtMerchant" && (
-                <Button
-                  className="w-full sm:w-auto"
-                  onClick={() =>
-                    orderAction.mutate({
-                      orderId: currentOrder._id,
-                      action: "picked-up",
-                    })
-                  }
-                  disabled={orderAction.isPending}
-                >
-                  <Store className="size-4" /> Confirm pickup
-                </Button>
-              )}
+              profile?.workingStatus === "ArrivedAtMerchant" &&
+              (currentOrder.driverConfirmPickedUpAt ? (
+                <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock3 className="size-4" />
+                  You confirmed the pickup. Waiting for the store to confirm.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {currentOrder.merchantConfirmPickedUpAt && (
+                    <p className="text-sm text-muted-foreground">
+                      The store already confirmed the handover.
+                    </p>
+                  )}
+                  <Button
+                    className="w-full sm:w-auto"
+                    onClick={() =>
+                      orderAction.mutate({
+                        orderId: currentOrder._id,
+                        action: "picked-up",
+                      })
+                    }
+                    disabled={orderAction.isPending}
+                  >
+                    <Store className="size-4" /> Confirm pickup
+                  </Button>
+                </div>
+              ))}
             {currentOrder.status === "PickedUp" && (
               <Button
                 className="w-full sm:w-auto"
@@ -465,7 +483,7 @@ function DriverDashboardPage() {
             {profile?.workingStatus === "HeadingToMerchant" && (
               <p className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock3 className="size-4" />
-                Location is updating while you travel to pickup.
+                Location is updating while you travel to merchant.
               </p>
             )}
           </CardContent>

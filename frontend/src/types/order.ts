@@ -68,7 +68,8 @@ export interface Order {
   preparingAt?: string
   driverArrivedAtMerchantAt?: string
   readyForPickupAt?: string
-  pickedUpAt?: string
+  merchantConfirmPickedUpAt?: string
+  driverConfirmPickedUpAt?: string
   deliveredAt?: string
   rejectedAt?: string
   cancelledAt?: string

@@ -34,7 +34,10 @@ import PickupConfirmationModal from "./PickupConfirmationModal"
 function OrderComponent() {
   const { orderId } = useParams()
   const { data, isLoading, isError } = useOrder(orderId || "")
-  const [action, setAction] = useState<"accept" | "cancel" | "reject">("accept")
+  const [isPickedupModalOpen, setIsPickedupModalOpen] = useState(false)
+  const [action, setAction] = useState<
+    "accept" | "cancel" | "reject" | "picked-up"
+  >("accept")
   const merchantId = data?.merchant._id ?? ""
   const { mutate: readyOrder } = useMerchantReadyOrder()
   const { mutate: actionMutation } = useActionMutation({
@@ -42,9 +45,9 @@ function OrderComponent() {
     orderId: orderId || "",
     action,
   })
-  const [loading, setLoading] = useState<"reject" | "cancel" | "accept" | null>(
-    null
-  )
+  const [loading, setLoading] = useState<
+    "reject" | "cancel" | "accept" | "picked-up" | null
+  >(null)
 
   if (isLoading)
     return <p className="p-5 text-muted-foreground">Loading order…</p>
@@ -373,7 +376,6 @@ function OrderComponent() {
               </CardHeader>
             </Card>
           )}
-
         {data.status === "Pending" && data.driver && data.driverAssignedAt && (
           <Card className="w-full divide-y px-2">
             <CardHeader>
@@ -422,7 +424,6 @@ function OrderComponent() {
             </CardContent>
           </Card>
         )}
-
         {data.status === "Preparing" && (
           <Card className="w-full divide-y px-2">
             <CardHeader>
@@ -472,34 +473,66 @@ function OrderComponent() {
             </CardContent>
           </Card>
         )}
-
         {data.status === "ReadyForPickup" && (
           <Card className="w-full divide-y px-2">
             <CardHeader>
-              <CardTitle className="py-2 text-base font-semibold"></CardTitle>
+              <CardTitle className="py-2 text-base font-semibold">
+                Pick up Confirmation
+              </CardTitle>
             </CardHeader>
 
             <CardContent className="flex flex-col gap-3 pt-3">
-              <CardDescription>
-                You can switch from "Ready for Pick up" to "Picked up" status.
-              </CardDescription>
-              {!!data.driverArrivedAtMerchantAt && (
+              {data.merchantConfirmPickedUpAt ? (
                 <CardDescription>
-                  Driver has arrived at merchant. Order cannot be cancel
+                  You confirmed the handover. Waiting for the driver to confirm
+                  the pickup.
                 </CardDescription>
+              ) : (
+                <>
+                  <CardDescription>
+                    {data.driverConfirmPickedUpAt
+                      ? "The driver already confirmed the pickup. Confirm to complete the handover."
+                      : 'You can switch from "Ready for Pick up" to "Picked up" status.'}
+                  </CardDescription>
+                  {!!data.driverArrivedAtMerchantAt && (
+                    <CardDescription>
+                      Driver has arrived at merchant. Order cannot be cancelled.
+                    </CardDescription>
+                  )}
+                  <div className="w-full">
+                    <PickupConfirmationModal
+                      dialogTrigger={
+                        <DialogTrigger>
+                          <Button className="flex-1 cursor-pointer rounded-md py-5 text-base sm:py-6 sm:text-lg">
+                            Confirm Pick up
+                          </Button>
+                        </DialogTrigger>
+                      }
+                      order={data}
+                      onHandleClick={() => {
+                        if (!data.driver || !data.readyForPickupAt) return
+                        setLoading("picked-up")
+                        setAction("picked-up")
+
+                        actionMutation(
+                          {
+                            merchantId,
+                            orderId: orderId ?? "",
+                            action: "picked-up",
+                          },
+                          {
+                            onSuccess: () => {
+                              setIsPickedupModalOpen(false)
+                            },
+                          }
+                        )
+                      }}
+                      open={isPickedupModalOpen}
+                      onOpenChange={setIsPickedupModalOpen}
+                    />
+                  </div>
+                </>
               )}
-              <div className="w-full">
-                <PickupConfirmationModal
-                  dialogTrigger={
-                    <DialogTrigger>
-                      <Button className="flex-1 cursor-pointer rounded-md py-5 text-base sm:py-6 sm:text-lg">
-                        Confirm Pick up
-                      </Button>
-                    </DialogTrigger>
-                  }
-                  order={data}
-                />
-              </div>
             </CardContent>
           </Card>
         )}

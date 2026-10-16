@@ -102,22 +102,15 @@ function CustomerOrdersPage() {
     }
     socket.on("order:merchantAccepted", refreshOrder)
     socket.on("driver:arrived-at-merchant", refreshOrder)
-    socket.on("order:ready", () => {
-      console.log("ORDER READY")
+    socket.on("order:ready", refreshOrder)
+    socket.on("order:pickedUp", refreshOrder)
+    socket.on("order:pickupConfirmation", () => {
+      toast.info("The store confirmed the handover")
       refreshOrder()
     })
-    socket.on("order:pickedUp", () => {
-      console.log("ORDER PICKEDUP")
-      refreshOrder()
-    })
-    socket.on("order:delivered", () => {
-      console.log("ORDER DELIVERED")
-      refreshOrder()
-    })
-    socket.on("order:cancel", () => {
-      console.log("ORDER CANCELLED")
-      refreshOrder()
-    })
+    socket.on("order:pickedUp", refreshOrder)
+    socket.on("order:delivered", refreshOrder)
+    socket.on("order:cancel", refreshOrder)
     socket.on("order:rejected", refreshOrder)
 
     socket.on("socket:error", ({ message }: { message?: string }) =>

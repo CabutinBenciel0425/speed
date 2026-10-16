@@ -152,7 +152,7 @@ export const merchantReadyOrder = async (
   orderId: string,
   merchantId: string,
 ) => {
-  const isOrderValid = await validateMerchantOrder(orderId, merchantId);
+  const isOrderValid = await validateMerchantOrderReady(orderId, merchantId);
 
   if (!isOrderValid) {
     throw new ConflictError("There is some error. Check the console");
@@ -171,6 +171,86 @@ export const merchantReadyOrder = async (
     io.to(`driver:${order.driver.toString()}`).emit("order:ready");
   }
   io.to(`customer:${order.customer.toString()}`).emit("order:ready");
+
+  return order;
+};
+
+export const merchantPickedupOrder = async (
+  orderId: string,
+  merchantId: string,
+) => {
+  const session = await mongoose.startSession();
+  let order!: IOrder;
+  let bothConfirmed = false;
+
+  try {
+    await session.withTransaction(async () => {
+      const foundOrder = await Order.findOne({
+        _id: orderId,
+        merchant: merchantId,
+      }).session(session);
+
+      if (!foundOrder) throw new NotFoundError("Order");
+      order = foundOrder;
+
+      if (!order.driver) {
+        throw new ConflictError("No driver is assigned to this order");
+      }
+      if (order.status !== "ReadyForPickup") {
+        throw new ConflictError(
+          "Order must be ready for pick up before marking it as picked up",
+        );
+      }
+      if (order.merchantConfirmPickedUpAt) {
+        throw new ConflictError(
+          "You already confirmed this pickup. Waiting for the driver",
+        );
+      }
+      if (
+        order.rejectedAt ||
+        order.cancelledAt ||
+        order.cancelledBy ||
+        order.deliveredAt
+      ) {
+        throw new ConflictError("Order is already closed");
+      }
+      if (order.payment.method !== "Cash" && !order.payment.transactionId) {
+        throw new ConflictError(
+          "Order payment method is not cash but no transaction id found",
+        );
+      }
+
+      order.merchantConfirmPickedUpAt = new Date();
+      bothConfirmed = Boolean(order.driverConfirmPickedUpAt);
+
+      if (bothConfirmed) {
+        order.status = "PickedUp";
+
+        const driver = await Driver.findById(order.driver).session(session);
+        if (driver) {
+          driver.workingStatus = "Delivering";
+          await driver.save({ session });
+        }
+      }
+
+      await order.save({ session });
+    });
+  } finally {
+    await session.endSession();
+  }
+
+  const customerId = order.customer.toString();
+  const driverId = order.driver?.toString();
+
+  if (bothConfirmed) {
+    io.to(`customer:${customerId}`).emit("order:pickedUp");
+    io.to(`merchant:${merchantId}`).emit("order:pickedUp");
+    if (driverId) io.to(`driver:${driverId}`).emit("order:pickedUp");
+  } else if (driverId) {
+    io.to(`driver:${driverId}`).emit("order:pickupConfirmation", {
+      by: "Merchant",
+    });
+  }
 
   return order;
 };
@@ -250,7 +330,10 @@ export const merchantCancelOrder = async (
   return order;
 };
 
-const validateMerchantOrder = async (orderId: string, merchantId: string) => {
+const validateMerchantOrderReady = async (
+  orderId: string,
+  merchantId: string,
+) => {
   const order = await Order.findById(orderId);
   if (!order) {
     throw new NotFoundError("Order");
@@ -267,7 +350,7 @@ const validateMerchantOrder = async (orderId: string, merchantId: string) => {
 
   if (order.status !== "Preparing") {
     throw new ConflictError(
-      "Order must be preparing before it can be marked ready",
+      "Order status must be 'Preparing' before switching into 'ReadyForPickup' ",
     );
   }
 
@@ -281,10 +364,6 @@ const validateMerchantOrder = async (orderId: string, merchantId: string) => {
 
   if (order.cancelledAt) {
     throw new ConflictError("Order is cancelled already");
-  }
-
-  if (order.pickedUpAt) {
-    throw new ConflictError("Order already picked up");
   }
 
   if (order.deliveredAt) {

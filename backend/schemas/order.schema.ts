@@ -51,7 +51,6 @@ export const orderSchema = z.object({
   driverArrivedAtMerchantAt: z.date(),
   preparingAt: z.date(),
   readyForPickupAt: z.date(),
-  pickedUpAt: z.date(),
   deliveredAt: z.date(),
   rejectedAt: z.date(),
   cancelledAt: z.date(),

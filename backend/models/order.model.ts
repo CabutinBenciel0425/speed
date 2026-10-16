@@ -64,7 +64,8 @@ export interface IOrder extends Document {
   preparingAt?: Date;
   driverArrivedAtMerchantAt?: Date;
   readyForPickupAt?: Date;
-  pickedUpAt?: Date;
+  merchantConfirmPickedUpAt?: Date;
+  driverConfirmPickedUpAt?: Date;
   deliveredAt?: Date;
   rejectedAt?: Date;
   cancelledAt?: Date;
@@ -289,7 +290,10 @@ const orderSchema = new Schema<IOrder>(
     readyForPickupAt: {
       type: Date,
     },
-    pickedUpAt: {
+    merchantConfirmPickedUpAt: {
+      type: Date,
+    },
+    driverConfirmPickedUpAt: {
       type: Date,
     },
     deliveredAt: {

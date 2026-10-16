@@ -17,6 +17,7 @@ import {
   getMerchantFavoriteStatus,
   getMyMerchant,
   cancelMerchantOrder,
+  pickedupOrder,
 } from "../controller/merchant.controller.js";
 import { upload } from "../middlewares/upload.middleware.js";
 import { validate } from "../middlewares/validate.middleware.js";
@@ -117,6 +118,14 @@ merchantRouter.patch(
   merchantOnly,
   readyOrder,
 );
+
+merchantRouter.patch(
+  "/:merchantId/orders/:orderId/picked-up",
+  protectRoute,
+  merchantOnly,
+  pickedupOrder,
+);
+
 merchantRouter.patch(
   "/:merchantId/orders/:orderId/cancel",
   protectRoute,

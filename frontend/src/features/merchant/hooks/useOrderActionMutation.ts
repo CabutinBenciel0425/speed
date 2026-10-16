@@ -10,8 +10,9 @@ const actionMutation = async ({
 }: {
   merchantId: string
   orderId: string
-  action: "accept" | "reject" | "cancel"
+  action: "accept" | "reject" | "cancel" | "picked-up"
 }) => {
+  console.log(action)
   if (!merchantId) throw new Error("Merchant profile is unavailable")
   const { data } = await axios.patch(
     `/merchant/${merchantId}/orders/${orderId}/${action}`,
@@ -29,12 +30,14 @@ export const useActionMutation = ({
 }: {
   merchantId: string
   orderId: string
-  action: "accept" | "reject" | "cancel"
+  action: "accept" | "reject" | "cancel" | "picked-up"
 }) => {
   return useMutation({
     mutationFn: actionMutation,
     onSuccess: (_data, variables) => {
-      toast.success(`Order ${variables.action}ed`)
+      toast.success(
+        `Order ${variables.action === "picked-up" ? "picked up" : `${action}ed`}`
+      )
       void queryClient.invalidateQueries({
         queryKey: ["merchantOrders", merchantId, orderId, action],
       })

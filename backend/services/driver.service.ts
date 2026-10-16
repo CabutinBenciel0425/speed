@@ -254,10 +254,11 @@ export const pickUpOrderService = async (
 
   let order!: IOrder & { merchant: { _id: Types.ObjectId } };
   let merchantId!: string;
+  let bothConfirmed = false;
 
   try {
     await session.withTransaction(async () => {
-      const driverProfile = await getDriverProfile(userId);
+      const driverProfile = await getDriverProfile(userId, session);
 
       const foundOrder = await Order.findOne(
         { driver: driverProfile._id, _id: orderId } as QueryFilter<IOrder>,
@@ -269,15 +270,18 @@ export const pickUpOrderService = async (
       order = foundOrder;
       if (!order.merchant) throw new NotFoundError("Merchant");
 
-      const isPaymentValid = isOrderPaymentValid(order);
+      if (order.driverConfirmPickedUpAt) {
+        throw new ConflictError(
+          "You already confirmed the pickup. Waiting for the store",
+        );
+      }
 
       if (driverProfile.status !== "Operational")
         throw new ConflictError("Driver is not in operational status yet");
 
-      const allowed = ["HeadingToMerchant", "ArrivedAtMerchant"];
-      if (!allowed.includes(driverProfile.workingStatus))
+      if (driverProfile.workingStatus !== "ArrivedAtMerchant")
         throw new ConflictError(
-          "Driver must be heading to or arrived at the merchant",
+          "Driver must arrive at the merchant before picking up the order",
         );
 
       if (driverProfile.activeOrder?.toString() !== order._id.toString())
@@ -285,16 +289,22 @@ export const pickUpOrderService = async (
           "Driver's active order does not match the order id",
         );
 
+      // Status stays ReadyForPickup until both sides confirm
       if (order.status !== "ReadyForPickup")
         throw new ConflictError("Order status must be ready to pick up");
 
-      if (!isPaymentValid) throw new ConflictError("Payment is not valid");
+      if (!isOrderPaymentValid(order))
+        throw new ConflictError("Payment is not valid");
 
-      driverProfile.workingStatus = "Delivering";
-      order.status = "PickedUp";
-      order.pickedUpAt = new Date();
+      order.driverConfirmPickedUpAt = new Date();
+      bothConfirmed = Boolean(order.merchantConfirmPickedUpAt);
 
-      await driverProfile.save({ session });
+      if (bothConfirmed) {
+        order.status = "PickedUp";
+        driverProfile.workingStatus = "Delivering";
+        await driverProfile.save({ session });
+      }
+
       await order.save({ session });
 
       merchantId = order.merchant._id.toString();
@@ -304,17 +314,24 @@ export const pickUpOrderService = async (
   }
 
   try {
-    await createNotification({
-      targetId: order.merchant,
-      targetType: "Merchant",
-      type: "DRIVER_PICKED_UP",
-      title: "Order picked up",
-      message: `Order #${order.orderNumber} is on its way to the customer.`,
-      order: order._id,
-    });
+    if (bothConfirmed) {
+      await createNotification({
+        targetId: order.merchant._id,
+        targetType: "Merchant",
+        type: "DRIVER_PICKED_UP",
+        title: "Order picked up",
+        message: `Order #${order.orderNumber} is on its way to the customer.`,
+        order: order._id,
+      });
 
-    io.to(`customer:${order.customer.toString()}`).emit("order:pickedUp");
-    io.to(`merchant:${merchantId}`).emit("order:pickedUp");
+      io.to(`customer:${order.customer.toString()}`).emit("order:pickedUp");
+      io.to(`merchant:${merchantId}`).emit("order:pickedUp");
+      io.to(`driver:${order.driver?.toString()}`).emit("order:pickedUp");
+    } else {
+      io.to(`merchant:${merchantId}`).emit("order:pickupConfirmation", {
+        by: "Driver",
+      });
+    }
   } catch (err) {
     console.error("Post-pickup side effects failed", { orderId, err });
   }

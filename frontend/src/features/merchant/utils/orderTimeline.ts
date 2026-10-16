@@ -3,7 +3,8 @@ export type OrderTimelineInput = {
   createdAt: string
   preparingAt?: string | null
   readyForPickupAt?: string | null
-  pickedUpAt?: string | null
+  merchantConfirmPickedUpAt?: string | null
+  driverConfirmPickedUpAt?: string | null
   deliveredAt?: string | null
   rejectedAt?: string | null
   cancelledAt?: string | null
@@ -22,10 +23,24 @@ export type TimelineStep = {
   state: TimelineStepState
 }
 
+const laterOf = (a?: string | null, b?: string | null) => {
+  if (!a || !b) return null
+  return new Date(a).getTime() >= new Date(b).getTime() ? a : b
+}
+
+const getPickupConfirmationNote = (order: OrderTimelineInput) => {
+  if (order.merchantConfirmPickedUpAt && !order.driverConfirmPickedUpAt)
+    return "Store confirmed the handover. Waiting for the driver to confirm"
+  if (order.driverConfirmPickedUpAt && !order.merchantConfirmPickedUpAt)
+    return "Driver confirmed the pickup. Waiting for the store to confirm"
+  return null
+}
+
 export const buildOrderTimeline = (
   order: OrderTimelineInput
 ): TimelineStep[] => {
   const failed = order.status === "Rejected" || order.status === "Cancelled"
+  const pickupNote = getPickupConfirmationNote(order)
 
   const flow = [
     {
@@ -43,14 +58,18 @@ export const buildOrderTimeline = (
     {
       key: "ready",
       label: "Ready for Pickup",
-      description: "Order is ready for the driver",
+      description: pickupNote ?? "Order is ready for the driver",
       at: order.readyForPickupAt ?? null,
     },
     {
       key: "pickedUp",
       label: "Picked Up",
       description: "Driver is on the way to the customer",
-      at: order.pickedUpAt ?? null,
+      // done only when BOTH sides confirmed
+      at: laterOf(
+        order.merchantConfirmPickedUpAt,
+        order.driverConfirmPickedUpAt
+      ),
     },
     {
       key: "delivered",
@@ -109,9 +128,11 @@ export const getOrderStatusHeader = (order: OrderTimelineInput) => {
     case "ReadyForPickup":
       return {
         title: "Ready for Pickup",
-        subtitle: order.driverArrivedAtMerchantAt
-          ? "Driver has arrived at your store"
-          : "Waiting for the driver to pick up",
+        subtitle:
+          getPickupConfirmationNote(order) ??
+          (order.driverArrivedAtMerchantAt
+            ? "Driver has arrived at your store"
+            : "Waiting for the driver to pick up"),
       }
     case "PickedUp":
       return {
