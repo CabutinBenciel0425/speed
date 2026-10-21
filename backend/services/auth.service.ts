@@ -33,6 +33,7 @@ import type {
 } from "../types/types.js";
 import Merchant, { type IMerchant } from "../models/merchant.model.js";
 import { imageUpload } from "../utils/imageUpload.js";
+import { notifyAdmins } from "./notification.service.js";
 import Driver, { type IDriver } from "../models/driver.model.js";
 import { addUserRole } from "../utils/addRole.js";
 import cloudinary from "../config/cloudinary.js";
@@ -113,6 +114,11 @@ export const createMerchant = async (
   await newMerchant.save();
 
   const updatedUser = await addUserRole(userId, "Merchant");
+  await notifyAdmins({
+    type: "ADMIN_NEW_MERCHANT",
+    title: "New merchant registered",
+    message: `${data.merchantName} joined the platform.`,
+  });
 
   return {
     newMerchant: {
@@ -147,6 +153,11 @@ export const createDriver = async (userId: string, data: CreateDriverInput) => {
   await newDriver.save();
 
   const updatedUser = await addUserRole(userId, "Driver");
+  await notifyAdmins({
+    type: "ADMIN_NEW_DRIVER",
+    title: "New driver registered",
+    message: "A new driver joined the platform.",
+  });
 
   return {
     newDriver: {

@@ -5,6 +5,7 @@ import Review from "../models/review.model.js";
 import User, { type IUser } from "../models/user.model.js";
 import { ConflictError, NotFoundError } from "../utils/errors.js";
 import { Types } from "mongoose";
+import { notifyAdmins } from "./notification.service.js";
 
 type Reviewee = IDriver | IMerchant;
 export type TargetType = "Driver" | "Merchant";
@@ -169,6 +170,12 @@ const createReview = async ({
 
   await newReview.save();
   await newReview.populate(["order", "reviewer", "reviewee"]);
+  await notifyAdmins({
+    type: "ADMIN_NEW_REVIEW",
+    title: "New customer review",
+    message: `${user.firstName} ${user.lastName} left a ${targetType.toLowerCase()} review.`,
+    order: order._id,
+  });
   return newReview;
 };
 

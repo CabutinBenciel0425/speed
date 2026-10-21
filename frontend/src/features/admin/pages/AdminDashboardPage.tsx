@@ -47,7 +47,7 @@ const metrics = [
 export default function AdminDashboardPage() {
   const { data, isLoading, isError, refetch, isFetching } = useAdminDashboard()
   return (
-    <div className="space-y-6">
+    <main className="page-shell page-stack max-w-7xl">
       <header>
         <h1 className="text-2xl font-semibold">Overview</h1>
         <p className="text-sm text-muted-foreground">
@@ -111,6 +111,6 @@ export default function AdminDashboardPage() {
           </Card>
         </>
       )}
-    </div>
+    </main>
   )
 }

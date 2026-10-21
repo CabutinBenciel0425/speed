@@ -4,10 +4,42 @@ import type {
   INotification,
 } from "../models/notification.model.js";
 import Notification from "../models/notification.model.js";
+import User from "../models/user.model.js";
 import { ConflictError } from "../utils/errors.js";
 import mongoose from "mongoose";
+import { io } from "../server.js";
 
 type NotificationTargetType = CreateNotificationInput["targetType"];
+
+export const notifyAdmins = async ({
+  type,
+  title,
+  message,
+  order = null,
+}: Pick<CreateNotificationInput, "type" | "title" | "message" | "order">) => {
+  if (!type.startsWith("ADMIN_")) return;
+  try {
+    const admins = await User.find({ role: "Admin" }).select("_id").lean();
+    await Promise.allSettled(
+      admins.map(async (admin) => {
+        const notification = await createNotification({
+          targetId: admin._id,
+          targetType: "Admin",
+          type,
+          title,
+          message,
+          order,
+        });
+        io.to(`admin:${admin._id.toString()}`).emit(
+          "notification:new",
+          notification,
+        );
+      }),
+    );
+  } catch (error) {
+    console.error("Could not create admin notifications", error);
+  }
+};
 
 export const createNotification = async ({
   targetId,
@@ -44,6 +76,12 @@ export const createNotification = async ({
     "ORDER_CANCELLED",
     "ORDER_REJECTED",
   ];
+  const adminTypes = [
+    "ADMIN_NEW_ORDER",
+    "ADMIN_NEW_MERCHANT",
+    "ADMIN_NEW_DRIVER",
+    "ADMIN_NEW_REVIEW",
+  ];
 
   if (targetType === "Customer" && !customerTypes.includes(type)) {
     throw new ConflictError(
@@ -60,6 +98,11 @@ export const createNotification = async ({
   if (targetType === "Driver" && !driverTypes.includes(type)) {
     throw new ConflictError(
       `Provided type is not included in the driver's type`,
+    );
+  }
+  if (targetType === "Admin" && !adminTypes.includes(type)) {
+    throw new ConflictError(
+      "Provided type is not included in the admin's type",
     );
   }
 

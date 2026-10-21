@@ -13,12 +13,22 @@ import {
 const notificationRouter = Router();
 
 notificationRouter.get("/me", protectRoute, getNotifications);
-notificationRouter.get("/me/unread-count", protectRoute, getUnreadNotificationCount);
+notificationRouter.get(
+  "/me/unread-count",
+  protectRoute,
+  getUnreadNotificationCount,
+);
 notificationRouter.patch("/me/read-all", protectRoute, readAllNotifications);
+notificationRouter.delete("/me", protectRoute, deleteNotifications);
 notificationRouter.patch(
   "/me/:notificationId/read",
   protectRoute,
   readNotification,
+);
+notificationRouter.delete(
+  "/me/:notificationId",
+  protectRoute,
+  deleteNotification,
 );
 
 notificationRouter.get("/:id", protectRoute, getNotifications);

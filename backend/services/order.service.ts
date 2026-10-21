@@ -11,7 +11,7 @@ import { io } from "../server.js";
 import Product from "../models/product.model.js";
 import Payment from "../models/payment.model.js";
 import { driverMatching } from "./driver.service.js";
-import { createNotification } from "./notification.service.js";
+import { createNotification, notifyAdmins } from "./notification.service.js";
 
 type CartItemType = {
   product: Types.ObjectId;
@@ -233,6 +233,12 @@ export const createOrderFromPreparedData = async (
     type: "NEW_ORDER",
     title: "New order received",
     message: `Order #${newOrder.orderNumber} is ready for your review.`,
+    order: newOrder._id,
+  });
+  await notifyAdmins({
+    type: "ADMIN_NEW_ORDER",
+    title: "New order placed",
+    message: `Order #${newOrder.orderNumber} was placed and is awaiting review.`,
     order: newOrder._id,
   });
   io.to(`merchant:${orderData.merchant.toString()}`).emit("order:new", {

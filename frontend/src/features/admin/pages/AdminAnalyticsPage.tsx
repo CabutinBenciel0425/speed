@@ -10,10 +10,11 @@ const periods = ["hour", "day", "week", "month"] as const
 
 export default function AdminAnalyticsPage() {
   const [period, setPeriod] = useState<(typeof periods)[number]>("month")
-  const { data, isLoading, isError, refetch, isFetching } = useAdminRevenue(period)
+  const { data, isLoading, isError, refetch, isFetching } =
+    useAdminRevenue(period)
   const orders = useAdminOrderAnalytics()
   return (
-    <div className="space-y-6">
+    <main className="page-shell page-stack max-w-7xl">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">Analytics</h1>
@@ -95,6 +96,6 @@ export default function AdminAnalyticsPage() {
           ))}
         </div>
       )}
-    </div>
+    </main>
   )
 }

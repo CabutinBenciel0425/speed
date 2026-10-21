@@ -34,8 +34,12 @@ const resolveNotificationTarget = async (req: Request) => {
     const driver = await Driver.findOne({ user: user._id }).select("_id");
     if (!driver) throw new NotFoundError("Driver");
     id = driver._id.toString();
+  } else if (role === "Admin") {
+    id = user._id.toString();
   } else {
-    throw new UnauthorizedError("Notifications are not available for this role");
+    throw new UnauthorizedError(
+      "Notifications are not available for this role",
+    );
   }
 
   const requestedId = req.params.id;

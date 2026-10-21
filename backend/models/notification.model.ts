@@ -2,7 +2,7 @@ import mongoose, { Schema, Document, Types, model } from "mongoose";
 
 export interface INotification extends Document {
   targetId: Types.ObjectId;
-  targetType: "Customer" | "Merchant" | "Driver";
+  targetType: "Customer" | "Merchant" | "Driver" | "Admin";
   type:
     | "PAYMENT_SUCCESS"
     | "PAYMENT_FAILED"
@@ -16,7 +16,11 @@ export interface INotification extends Document {
     | "NO_DRIVER_FOUND"
     | "NEW_ORDER"
     | "NEW_DELIVERY_OFFER"
-    | "DRIVER_PICKED_UP";
+    | "DRIVER_PICKED_UP"
+    | "ADMIN_NEW_ORDER"
+    | "ADMIN_NEW_MERCHANT"
+    | "ADMIN_NEW_DRIVER"
+    | "ADMIN_NEW_REVIEW";
   title: string;
   message: string;
   order: Types.ObjectId | null;
@@ -25,7 +29,7 @@ export interface INotification extends Document {
 
 export type CreateNotificationInput = {
   targetId: Types.ObjectId;
-  targetType: "Customer" | "Merchant" | "Driver";
+  targetType: "Customer" | "Merchant" | "Driver" | "Admin";
   type: INotification["type"];
   title: string;
   message: string;
@@ -37,13 +41,15 @@ const notificationSchema = new Schema<INotification>(
   {
     targetId: {
       type: mongoose.Types.ObjectId,
-      refPath: "targetType",
+      refPath: function (this: INotification) {
+        return this.targetType === "Admin" ? "User" : this.targetType;
+      },
       required: true,
     },
     targetType: {
       type: String,
       required: true,
-      enum: ["Customer", "Merchant", "Driver"],
+      enum: ["Customer", "Merchant", "Driver", "Admin"],
     },
     type: {
       type: String,
@@ -62,6 +68,10 @@ const notificationSchema = new Schema<INotification>(
         "NEW_ORDER",
         "NEW_DELIVERY_OFFER",
         "DRIVER_PICKED_UP",
+        "ADMIN_NEW_ORDER",
+        "ADMIN_NEW_MERCHANT",
+        "ADMIN_NEW_DRIVER",
+        "ADMIN_NEW_REVIEW",
       ],
     },
     title: {

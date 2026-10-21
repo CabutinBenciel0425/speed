@@ -69,6 +69,9 @@ const MerchantAnalyticsPage = lazy(
 const AdminDashboardPage = lazy(
   () => import("./features/admin/pages/AdminDashboardPage")
 )
+const AdminNotificationsPage = lazy(
+  () => import("./features/admin/pages/AdminNotificationsPage")
+)
 const AdminAnalyticsPage = lazy(
   () => import("./features/admin/pages/AdminAnalyticsPage")
 )
@@ -127,6 +130,7 @@ export function App() {
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboardPage />} />
+            <Route path="notifications" element={<AdminNotificationsPage />} />
             <Route path="analytics" element={<AdminAnalyticsPage />} />
             <Route path=":section" element={<AdminResourcePage />} />
           </Route>
