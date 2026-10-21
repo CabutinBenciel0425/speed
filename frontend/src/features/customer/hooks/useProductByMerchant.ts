@@ -17,6 +17,7 @@ export const useProduct = (productId: string) => {
     data: product,
     isLoading,
     error,
+    refetch,
   } = useQuery<Product | null>({
     queryKey: ["product", productId],
     queryFn: () => fetchProduct(productId),
@@ -24,5 +25,5 @@ export const useProduct = (productId: string) => {
     staleTime: 1000 * 60 * 5,
   })
 
-  return { product, isLoading, error }
+  return { product, isLoading, error, refetch }
 }

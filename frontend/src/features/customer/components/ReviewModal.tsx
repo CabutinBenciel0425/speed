@@ -1,6 +1,6 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { ArrowRight, Star } from "lucide-react"
-import { useState, type Dispatch, type SetStateAction } from "react"
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react"
 import { useCustomerOrder } from "../hooks/useCustomerOrder"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -25,6 +25,14 @@ function ReviewModal({
   const [isReviewSuccess, setIsReviewSuccess] = useState(false)
   const { mutate: submitReview, isPending: submittingReview } =
     useSubmitReviewToDriver()
+
+  useEffect(() => {
+    if (!isReviewModalOpen) return
+    setRating(0)
+    setReview("")
+    setIsReviewSuccess(false)
+  }, [isReviewModalOpen])
+
   return (
     <Dialog open={isReviewModalOpen} onOpenChange={setIsReviewModalOpen}>
       <DialogContent
@@ -84,11 +92,11 @@ function ReviewModal({
             />
           </div>
           <Button
-            disabled={rating === 0}
+            disabled={rating === 0 || submittingReview}
             size="sm"
             className="w-full"
             onClick={() => {
-              if (review === "" || review.length === 0) {
+              if (!review.trim()) {
                 toast.error("Please add a comment for the driver")
                 return
               }
@@ -96,7 +104,7 @@ function ReviewModal({
                 {
                   orderId,
                   rating,
-                  review,
+                  review: review.trim(),
                 },
                 {
                   onSuccess: () => setIsReviewSuccess(true),

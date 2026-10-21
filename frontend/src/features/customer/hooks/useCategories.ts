@@ -15,10 +15,12 @@ export const useCategories = () => {
     data: categories = [],
     isLoading,
     error,
+    refetch,
+    isFetching,
   } = useQuery<Category[]>({
     queryKey: ["categories"],
     queryFn: fetchCategories,
   })
 
-  return { categories, isLoading, error }
+  return { categories, isLoading, error, refetch, isFetching }
 }

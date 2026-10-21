@@ -9,6 +9,8 @@ import AdminCategoryDialog, {
 } from "../components/AdminCategoryDialog"
 import AdminDetailDialog from "../components/AdminDetailDialog"
 import AdminRecordCard from "../components/AdminRecordCard"
+import PageError from "@/components/common/PageError"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const sections: Record<AdminSection, { title: string; description: string }> = {
   users: {
@@ -52,7 +54,7 @@ export default function AdminResourcePage() {
   )
   const [category, setCategory] = useState<AdminCategory | null>(null)
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
-  const { data, isLoading, isError } = useAdminResource(section, search, page)
+  const { data, isLoading, isError, refetch, isFetching } = useAdminResource(section, search, page)
   const { action, saveCategory } = useAdminActions()
 
   if (!config)
@@ -89,7 +91,7 @@ export default function AdminResourcePage() {
     )
 
   return (
-    <div className="space-y-5">
+    <main className="page-shell page-stack max-w-7xl">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">{config.title}</h1>
@@ -116,13 +118,17 @@ export default function AdminResourcePage() {
         )}
       </div>
       {isLoading ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">
-          Loading {config.title.toLowerCase()}…
-        </p>
+        <div className="grid grid-cols-1 gap-3 xl:grid-cols-2" role="status" aria-label={`Loading ${config.title.toLowerCase()}`}>
+          {Array.from({ length: 6 }, (_, index) => (
+            <div key={index} className="space-y-3 rounded-xl border p-4">
+              <Skeleton className="h-5 w-2/5" />
+              <Skeleton className="h-4 w-4/5" />
+              <Skeleton className="h-9 w-full" />
+            </div>
+          ))}
+        </div>
       ) : isError ? (
-        <p className="py-8 text-center text-sm text-destructive">
-          Could not load {config.title.toLowerCase()}.
-        </p>
+        <PageError message={`Could not load ${config.title.toLowerCase()}.`} onRetry={() => void refetch()} isRetrying={isFetching} />
       ) : data?.data.length ? (
         <>
           <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
@@ -187,6 +193,6 @@ export default function AdminResourcePage() {
           onSave={handleCategorySave}
         />
       )}
-    </div>
+    </main>
   )
 }

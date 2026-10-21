@@ -25,6 +25,8 @@ import {
 } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { useAuth } from "@/hooks/useAuth"
+import PageError from "@/components/common/PageError"
+import PageLoading from "@/components/common/PageLoading"
 import { useAuthStore } from "@/store/authStore"
 import axios from "@/lib/axios"
 import type { DeliveryOffer } from "../types/driver"
@@ -143,9 +145,27 @@ function DriverDashboardPage() {
     profileQuery.data?.workingStatus,
   ])
 
-  if (isLoading) return null
+  if (isLoading) return <PageLoading label="Checking your session…" />
   if (!isAuthenticated || activeRole !== "Driver")
     return <Navigate to="/login" replace />
+
+  if (profileQuery.isLoading || orderQuery.isLoading) {
+    return <PageLoading label="Loading your delivery dashboard…" />
+  }
+  if (profileQuery.isError || orderQuery.isError) {
+    return (
+      <main className="mx-auto flex min-h-[50vh] w-full max-w-4xl items-center px-4 py-8 sm:px-6">
+        <PageError
+          message="Could not load your driver dashboard. Please try again."
+          onRetry={() => {
+            void profileQuery.refetch()
+            void orderQuery.refetch()
+          }}
+          isRetrying={profileQuery.isFetching || orderQuery.isFetching}
+        />
+      </main>
+    )
+  }
 
   const profile = profileQuery.data
   const merchantName =

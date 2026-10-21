@@ -13,13 +13,14 @@ import ProductPageSkeleton from "@/components/common/Skeleton/ProductPageSkeleto
 import { useAuth } from "@/hooks/useAuth"
 import { useToggleProductFavorite } from "../hooks/useToggleProductFavorite"
 import { useProductFavorite } from "../hooks/useProductFavorite"
+import PageError from "@/components/common/PageError"
 
 function ProductPage() {
   const { isAuthenticated } = useAuth()
 
   const [quantity, setQuantity] = useState(1)
   const { productId } = useParams()
-  const { product, isLoading } = useProduct(productId || "")
+  const { product, isLoading, error, refetch } = useProduct(productId || "")
   const { mutate: toggleProductFavorite } = useToggleProductFavorite()
   const { isProductFavorite } = useProductFavorite(productId || "")
 
@@ -34,9 +35,22 @@ function ProductPage() {
   }
 
   if (!product) {
+    if (error) {
+      return (
+        <main className="mx-auto flex min-h-[50vh] w-full max-w-3xl items-center px-4 py-8">
+          <PageError
+            message="We couldn't load this product. Check your connection and try again."
+            onRetry={() => void refetch()}
+          />
+        </main>
+      )
+    }
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <p className="text-muted-foreground">Product not found</p>
+      <div className="mx-auto flex min-h-[50vh] w-full max-w-3xl flex-col items-center justify-center gap-2 px-4 text-center">
+        <p className="font-medium">{error ? "Unable to load this product" : "Product not found"}</p>
+        <p className="text-sm text-muted-foreground">
+          This product may have been removed or is no longer available.
+        </p>
       </div>
     )
   }
@@ -58,7 +72,7 @@ function ProductPage() {
       {/* Breadcrumb */}
       <BreadcrumbLinkComponent currentPage={product.name} pages={pages} />
 
-      <div className="grid w-full grid-cols-1 gap-8 px-10 lg:grid-cols-2 lg:place-items-center lg:gap-12 lg:px-15">
+      <div className="grid w-full grid-cols-1 gap-6 px-0 sm:px-2 md:gap-8 lg:grid-cols-2 lg:place-items-center lg:gap-12 lg:px-8">
         <div className="relative mx-auto flex aspect-square w-full max-w-md items-center justify-center overflow-hidden rounded-xl bg-muted/30 lg:max-w-lg xl:max-w-xl">
           <img
             src={product.image || "/placeholder-image.png"}

@@ -2,6 +2,10 @@ import {
   getCustomerReviewsService,
   getDriverReviewsService,
   getMerchantReviewsService,
+  getPublicMerchantReviewsService,
+  updateCustomerMerchantReviewService,
+  deleteCustomerMerchantReviewService,
+  setMerchantReviewVisibilityService,
   reviewCustomerToDriverService,
   reviewCustomerToMerchantService,
 } from "../services/review.service.js";
@@ -41,7 +45,7 @@ export const customerReviewToMerchant = asyncHandler(
   async (req: Request, res: Response) => {
     const user = req.user;
     const { rating, comment } = req.body;
-    const orderId = req.params.orderId ? req.params.orderId[0] : null;
+    const orderId = req.params.orderId as string;
 
     if (!orderId) {
       throw new NotFoundError("Order id");
@@ -62,6 +66,50 @@ export const customerReviewToMerchant = asyncHandler(
       success: true,
       data: newReview,
     });
+  },
+);
+
+export const getPublicMerchantReviews = asyncHandler(
+  async (req: Request, res: Response) => {
+    const reviews = await getPublicMerchantReviewsService(
+      req.params.merchantId as string,
+    );
+    res.status(200).json({ success: true, data: reviews });
+  },
+);
+
+export const updateCustomerMerchantReview = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.user) throw new UnauthorizedError("Unauthorized user");
+    const review = await updateCustomerMerchantReviewService(
+      req.params.reviewId as string,
+      req.user._id.toString(),
+      req.body,
+    );
+    res.status(200).json({ success: true, data: review });
+  },
+);
+
+export const deleteCustomerMerchantReview = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.user) throw new UnauthorizedError("Unauthorized user");
+    await deleteCustomerMerchantReviewService(
+      req.params.reviewId as string,
+      req.user._id.toString(),
+    );
+    res.status(200).json({ success: true, message: "Review deleted" });
+  },
+);
+
+export const setMerchantReviewVisibility = asyncHandler(
+  async (req: Request, res: Response) => {
+    if (!req.user) throw new UnauthorizedError("Unauthorized user");
+    const review = await setMerchantReviewVisibilityService(
+      req.params.reviewId as string,
+      req.user._id.toString(),
+      req.body.isHidden,
+    );
+    res.status(200).json({ success: true, data: review });
   },
 );
 

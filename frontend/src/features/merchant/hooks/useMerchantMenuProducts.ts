@@ -44,6 +44,7 @@ export function useMerchantMenuProducts(
     queryKey: ["merchantMenuProducts", merchantId, categoryId],
     queryFn: () => fetchMerchantProducts(merchantId!, categoryId),
     enabled: Boolean(merchantId),
+    staleTime: 30_000,
   })
 }
 

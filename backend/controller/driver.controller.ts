@@ -12,6 +12,9 @@ import {
 } from "../services/driver.service.js";
 import Order from "../models/order.model.js";
 import Driver from "../models/driver.model.js";
+import type { IOrder } from "../models/order.model.js";
+import type { QueryFilter } from "mongoose";
+import { buildQuery } from "../utils/buildQuery.js";
 
 export const getProfile = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
@@ -156,26 +159,46 @@ export const getOrderHistory = asyncHandler(
 
     const driverProfile = await getDriverProfile(user._id.toString());
 
-    const orderHistory = await Order.find({
+    const query = buildQuery(req.query);
+    const filter: QueryFilter<IOrder> = {
       driver: driverProfile._id,
       status: {
         $in: ["Delivered", "Cancelled", "Rejected"],
       },
-    })
-      .sort({ createdAt: -1 })
-      .populate("customer", "firstName lastName phoneNumber")
-      .populate("merchant", "merchantName address");
+    };
+    const [orderHistory, total] = await Promise.all([
+      Order.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(query.skip)
+        .limit(query.limit)
+        .populate("customer", "firstName lastName phoneNumber")
+        .populate("merchant", "merchantName address"),
+      Order.countDocuments(filter),
+    ]);
 
     if (orderHistory.length === 0) {
       return res.status(200).json({
         success: true,
+        data: [],
         message: "No order yet",
+        pagination: {
+          total,
+          page: query.page,
+          limit: query.limit,
+          pages: Math.ceil(total / query.limit),
+        },
       });
     }
 
     res.status(200).json({
       success: true,
       data: orderHistory,
+      pagination: {
+        total,
+        page: query.page,
+        limit: query.limit,
+        pages: Math.ceil(total / query.limit),
+      },
     });
   },
 );

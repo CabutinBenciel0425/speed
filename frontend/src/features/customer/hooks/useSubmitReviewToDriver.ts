@@ -16,7 +16,6 @@ const submitReviewToDriver = async ({
     rating,
     comment: review,
   })
-  console.log(data)
   return data.data
 }
 
@@ -26,10 +25,10 @@ export const useSubmitReviewToDriver = () => {
     mutationFn: submitReviewToDriver,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["customerOrder"] })
+      queryClient.invalidateQueries({ queryKey: ["myReviews"] })
       toast.success("Review submitted successfully")
     },
-    onError: (error) => {
-      console.error(error)
+    onError: () => {
       toast.error("Something went wrong. Please try again.")
     },
   })

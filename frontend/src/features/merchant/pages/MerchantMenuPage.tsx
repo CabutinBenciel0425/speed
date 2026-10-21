@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { Dot, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -18,20 +18,29 @@ import {
 import { useUpdateMerchantProduct } from "../hooks/useUpdateMerchantProduct"
 import { useAddMerchantProduct } from "../hooks/useAddMerchantProduct"
 import { useDeleteProduct } from "../hooks/useDeleteProduct"
+import PageLoading from "@/components/common/PageLoading"
+import PageError from "@/components/common/PageError"
+import { SkeletonProductCard } from "@/components/common/Skeleton/SkeletonProductCard"
 
 function MerchantMenuPage() {
-  const { categories } = useCategories()
+  const {
+    categories,
+    error: categoriesError,
+    refetch: refetchCategories,
+    isFetching: isFetchingCategories,
+  } = useCategories()
   const {
     merchant,
     isLoading: isLoadingMerchant,
     error: merchantError,
+    refetch: refetchMerchant,
+    isFetching: isFetchingMerchant,
   } = useMyMerchantProfile()
   const [searchParams, setSearchParams] = useSearchParams()
   const categoryId = searchParams.get("category") ?? ""
   const [dialogOpen, setDialogOpen] = useState(false)
 
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
-  const productsQuery = useMerchantMenuProducts(merchant?._id, categoryId)
   const allProductsQuery = useMerchantMenuProducts(merchant?._id, "")
   const addProductMutation = useAddMerchantProduct(merchant?._id)
   const updateProductMutation = useUpdateMerchantProduct(merchant?._id)
@@ -49,8 +58,22 @@ function MerchantMenuPage() {
       slug: category.slug,
     }))
 
-  const products = productsQuery.data ?? []
   const allProducts = allProductsQuery.data ?? []
+  const products = useMemo(
+    () =>
+      categoryId
+        ? allProducts.filter((product) => product.category === categoryId)
+        : allProducts,
+    [allProducts, categoryId]
+  )
+  const productCounts = useMemo(
+    () =>
+      allProducts.reduce<Record<string, number>>((counts, product) => {
+        counts[product.category] = (counts[product.category] ?? 0) + 1
+        return counts
+      }, {}),
+    [allProducts]
+  )
 
   const selectCategory = (selectedId: string) => {
     const nextParams = new URLSearchParams(searchParams)
@@ -86,21 +109,25 @@ function MerchantMenuPage() {
     : "Closed"
 
   if (isLoadingMerchant) {
-    return <div className="w-full p-8 text-muted-foreground">Loading menu…</div>
+    return <PageLoading label="Loading your menu…" />
   }
   if (merchantError || !merchant) {
     return (
-      <div className="w-full p-8 text-destructive">
-        Could not load your merchant profile.
-      </div>
+      <main className="page-shell flex min-h-[50vh] items-center">
+        <PageError
+          message="Could not load your merchant profile. Please try again."
+          onRetry={() => void refetchMerchant()}
+          isRetrying={isFetchingMerchant}
+        />
+      </main>
     )
   }
 
   return (
-    <div className="w-full space-y-6 px-4 py-6 sm:px-8 sm:py-8">
+    <main className="page-shell page-stack max-w-7xl">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="mb-5 flex items-center gap-4">
-          <div className="size-16 overflow-hidden rounded-xl border bg-white shadow-sm sm:size-20">
+          <div className="size-16 overflow-hidden rounded-xl border bg-muted shadow-sm sm:size-20">
             <img
               src={merchant.logo || "/placeholder-logo.png"}
               alt={`${merchant.merchantName} logo`}
@@ -111,13 +138,7 @@ function MerchantMenuPage() {
             <h1 className="text-lg font-bold sm:text-xl">
               {merchant.merchantName}
             </h1>
-            <div className="flex flex-wrap items-center gap-x-2 text-xs text-slate-500 sm:text-sm">
-              <span>
-                {categoryList
-                  .slice(0, 3)
-                  .map((item) => item.name)
-                  .join(" · ")}
-              </span>
+            <div className="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground sm:text-sm">
               <span className="inline-flex items-center">
                 <Dot
                   className={`size-6 ${merchant.isOpen ? "text-emerald-500" : "text-slate-400"}`}
@@ -133,7 +154,7 @@ function MerchantMenuPage() {
         <Button
           type="button"
           onClick={openCreateDialog}
-          className="flex items-center gap-2 bg-orange-500 px-5 text-white hover:bg-orange-600"
+          className="flex items-center gap-2 px-5"
         >
           <Plus className="size-4" /> Add Item
         </Button>
@@ -177,19 +198,41 @@ function MerchantMenuPage() {
           categoryId={categoryId}
           onSelect={selectCategory}
           allCount={allProducts.length}
-          getCategoryCount={(id) =>
-            allProducts.filter((product) => product.category === id).length
-          }
+          getCategoryCount={(id) => productCounts[id] ?? 0}
         />
+        {categoriesError && (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-destructive/20 px-4 py-3 text-sm">
+            <p className="text-muted-foreground">
+              Could not load menu categories.
+            </p>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => void refetchCategories()}
+              disabled={isFetchingCategories}
+            >
+              Try again
+            </Button>
+          </div>
+        )}
 
-        {productsQuery.isLoading || allProductsQuery.isLoading ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            Loading products…
-          </p>
-        ) : productsQuery.isError || allProductsQuery.isError ? (
-          <p className="py-8 text-center text-sm text-destructive">
-            Could not load products. Please refresh and try again.
-          </p>
+        {allProductsQuery.isLoading ? (
+          <div
+            className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
+            role="status"
+            aria-label="Loading products"
+          >
+            {Array.from({ length: 8 }, (_, index) => (
+              <SkeletonProductCard key={index} />
+            ))}
+          </div>
+        ) : allProductsQuery.isError ? (
+          <PageError
+            message="Could not load products. Please try again."
+            onRetry={() => void allProductsQuery.refetch()}
+            isRetrying={allProductsQuery.isFetching}
+          />
         ) : products.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
             {categoryId
@@ -219,7 +262,7 @@ function MerchantMenuPage() {
           </div>
         )}
       </section>
-    </div>
+    </main>
   )
 }
 

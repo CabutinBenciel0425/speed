@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQueryClient } from "@tanstack/react-query"
 import { NavLink, useSearchParams } from "react-router-dom"
-import axios from "@/lib/axios"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/useAuth"
 
@@ -10,87 +9,25 @@ import type { Socket } from "socket.io-client"
 import { useAuthStore } from "@/store/authStore"
 import { io } from "socket.io-client"
 import { toast } from "sonner"
-
-type Merchant = { _id: string; merchantName: string }
-type OrderCustomer =
-  | {
-      firstName?: string
-      lastName?: string
-      phoneNumber?: string
-    }
-  | string
-type OrderStatus =
-  | "Pending"
-  | "Preparing"
-  | "ReadyForPickup"
-  | "PickedUp"
-  | "Delivered"
-  | "Cancelled"
-  | "Rejected"
-  | "NoDriverFound"
-type MerchantOrder = {
-  _id: string
-  orderNumber: string
-  customer: OrderCustomer
-  items: Array<{
-    productName: string
-    quantity: number
-    unitPrice: number
-    subtotal: number
-    notes?: string
-  }>
-  deliveryAddress: {
-    street: string
-    barangay: string
-    city: string
-    province: string
-  }
-  pricing: { subtotal: number; total: number }
-  payment: { method: string; status: string; transactionId?: string | null }
-  status: OrderStatus
-  driver: { _id: string; workingStatus: string } | string | null
-  acceptedAt?: string | null
-  driverAssignedAt?: string | null
-  merchantReceivedAt?: string | null
-  createdAt?: string
-}
-
-const fetchMerchant = async (): Promise<Merchant> => {
-  const { data } = await axios.get<{ data: Merchant }>("/merchant/me")
-  return data.data
-}
-
-const fetchOrders = async (merchantId: string): Promise<MerchantOrder[]> => {
-  const { data } = await axios.get<{ data: MerchantOrder[] }>(
-    `/merchant/${merchantId}/orders`
-  )
-  return data.data
-}
+import PageControls from "@/components/common/PageControls"
+import OrderStatusBadge from "@/components/common/OrderStatusBadge"
+import OrderListSkeleton from "@/components/common/OrderListSkeleton"
+import PageError from "@/components/common/PageError"
+import { useMerchantOrders } from "../hooks/useMerchantOrders"
+import { formatOrderCustomer } from "../utils/formatOrderCustomer"
 
 function MerchantOrdersPage() {
   const { isAuthenticated, user } = useAuth()
   const activeRoleState = useAuthStore((state) => state.activeRole)
   const queryClient = useQueryClient()
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const focusedOrderId = searchParams.get("orderId")
+  const page = Math.max(1, Number(searchParams.get("page")) || 1)
   const socketRef = useRef<Socket | null>(null)
-  const negativeStatus = ["Cancelled", "Rejected", "NoDriverFound"]
-  const isStatusNegative = (value: OrderStatus) => {
-    return negativeStatus.includes(value)
-  }
-
-  const merchantQuery = useQuery({
-    queryKey: ["merchantProfile", user?.id],
-    queryFn: fetchMerchant,
-    enabled: Boolean(user?.id),
-  })
-  const merchantId = merchantQuery.data?._id
-  const ordersQuery = useQuery({
-    queryKey: ["merchantOrders", merchantId],
-    queryFn: () => fetchOrders(merchantId!),
-    enabled: Boolean(merchantId),
-    refetchInterval: 30_000,
-  })
+  const { merchantQuery, merchantId, ordersQuery } = useMerchantOrders(
+    user?.id,
+    page
+  )
 
   useEffect(() => {
     if (!isAuthenticated || activeRoleState !== "Merchant") return
@@ -143,29 +80,33 @@ function MerchantOrdersPage() {
 
   if (merchantQuery.isLoading || ordersQuery.isLoading) {
     return (
-      <main className="w-full p-6 text-muted-foreground">Loading orders…</main>
+      <OrderListSkeleton />
     )
   }
   if (merchantQuery.isError || ordersQuery.isError) {
     return (
-      <main className="w-full p-6">
+      <main className="page-shell page-stack max-w-7xl">
         <h1 className="text-2xl font-semibold">Orders</h1>
-        <p className="mt-3 text-destructive">
-          Could not load orders. Refresh the page to try again.
-        </p>
+        <PageError
+          message="Could not load your orders. Please try again."
+          onRetry={() => {
+            void merchantQuery.refetch()
+            if (merchantId) void ordersQuery.refetch()
+          }}
+          isRetrying={merchantQuery.isFetching || ordersQuery.isFetching}
+        />
       </main>
     )
   }
 
-  const orders = ordersQuery.data ?? []
-  const customerName = (customer: OrderCustomer) =>
-    typeof customer === "string"
-      ? "Customer"
-      : `${customer.firstName ?? ""} ${customer.lastName ?? ""}`.trim() ||
-        "Customer"
-  console.log(orders)
+  const orders = ordersQuery.data?.data ?? []
+  const setPage = (nextPage: number) => {
+    const params = new URLSearchParams(searchParams)
+    params.set("page", String(nextPage))
+    setSearchParams(params)
+  }
   return (
-    <main className="w-full p-6 xl:px-20">
+    <main className="page-shell page-stack max-w-7xl">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">Orders</h1>
@@ -187,15 +128,18 @@ function MerchantOrdersPage() {
           No orders yet.
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center space-y-4">
+        <div className="mx-auto flex w-full max-w-4xl flex-col gap-4">
           {orders.map((order) => {
             const address = order.deliveryAddress
             return (
-              <NavLink to={`/merchant/orders/${order._id}`} key={order._id}>
+              <NavLink
+                to={`/merchant/orders/${order._id}`}
+                key={order._id}
+                className="block w-full"
+              >
                 <article
-                  key={order._id}
                   id={`order-${order._id}`}
-                  className={`max-w-200 rounded-lg border bg-card p-5 ${
+                  className={`w-full rounded-2xl border border-border/70 bg-card p-4 shadow-sm transition-all hover:border-primary/30 hover:shadow-md sm:p-5 ${
                     order._id === focusedOrderId ? "ring-2 ring-primary/50" : ""
                   }`}
                 >
@@ -205,16 +149,12 @@ function MerchantOrdersPage() {
                         Order #{order.orderNumber}
                       </h2>
                       <p className="text-sm text-muted-foreground">
-                        {customerName(order.customer)}
+                        {formatOrderCustomer(order.customer)}
                         {order.createdAt &&
                           ` · ${new Date(order.createdAt).toLocaleString()}`}
                       </p>
                     </div>
-                    <span
-                      className={`rounded-full px-3 py-1 text-sm ${isStatusNegative(order.status) ? "bg-red-200 text-red-700" : "bg-green-200 text-green-700"}`}
-                    >
-                      {order.status}
-                    </span>
+                    <OrderStatusBadge status={order.status} />
                   </div>
 
                   <ul className="my-4 divide-y">
@@ -251,7 +191,7 @@ function MerchantOrdersPage() {
                       </p>
                     </div>
                     <p className="font-medium text-foreground">
-                      Total: ₱{order.pricing.subtotal.toFixed(2)}
+                      Total: ₱{order.pricing.total.toFixed(2)}
                     </p>
                   </div>
                 </article>
@@ -260,6 +200,12 @@ function MerchantOrdersPage() {
           })}
         </div>
       )}
+      <PageControls
+        page={ordersQuery.data?.pagination.page ?? page}
+        pages={ordersQuery.data?.pagination.pages ?? 0}
+        total={ordersQuery.data?.pagination.total ?? 0}
+        onPageChange={setPage}
+      />
     </main>
   )
 }

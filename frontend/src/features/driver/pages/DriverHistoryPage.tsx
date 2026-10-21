@@ -2,24 +2,26 @@ import { Link } from "react-router-dom"
 import { format } from "date-fns"
 import { ClipboardList, PackageCheck } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useDriverOrderHistory } from "../hooks/useDriverData"
-import type { DriverOrder } from "../types/driver"
-
-function address(order: DriverOrder) {
-  const merchant =
-    typeof order.merchant === "string" ? "Store" : order.merchant.merchantName
-  return `${merchant} · ${[order.deliveryAddress?.barangay, order.deliveryAddress?.city].filter(Boolean).join(", ")}`
-}
+import PageControls from "@/components/common/PageControls"
+import OrderStatusBadge from "@/components/common/OrderStatusBadge"
+import { useSearchParams } from "react-router-dom"
+import PageError from "@/components/common/PageError"
+import { formatDriverOrderAddress } from "../utils/formatDriverOrderAddress"
 
 export default function DriverHistoryPage() {
-  const {
-    data: orders = [],
-    isLoading,
-    isError,
-    refetch,
-  } = useDriverOrderHistory()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const page = Math.max(1, Number(searchParams.get("page")) || 1)
+  const { data, isLoading, isError, isFetching, refetch } = useDriverOrderHistory(page)
+  const orders = data?.data ?? []
+  const setPage = (nextPage: number) => {
+    const params = new URLSearchParams(searchParams)
+    params.set("page", String(nextPage))
+    setSearchParams(params)
+  }
   return (
-    <main className="mx-auto w-full max-w-5xl space-y-5 p-4 sm:p-8">
+    <main className="page-shell page-stack max-w-5xl">
       <header>
         <p className="text-sm font-medium text-primary">Your activity</p>
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
@@ -30,23 +32,26 @@ export default function DriverHistoryPage() {
         </p>
       </header>
       {isLoading ? (
-        <p className="py-12 text-center text-sm text-muted-foreground">
-          Loading delivery history…
-        </p>
+        <div className="space-y-3" role="status" aria-label="Loading delivery history">
+          {Array.from({ length: 5 }, (_, index) => (
+            <Card key={index}>
+              <CardContent className="flex items-center gap-3 p-4 sm:p-5">
+                <Skeleton className="size-10 shrink-0 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-40 max-w-full" />
+                  <Skeleton className="h-3 w-64 max-w-full" />
+                </div>
+                <Skeleton className="h-6 w-20 rounded-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       ) : isError ? (
-        <Card>
-          <CardContent className="p-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              Could not load delivery history.
-            </p>
-            <button
-              className="mt-2 text-sm text-primary underline"
-              onClick={() => void refetch()}
-            >
-              Try again
-            </button>
-          </CardContent>
-        </Card>
+        <PageError
+          message="Could not load delivery history."
+          onRetry={() => void refetch()}
+          isRetrying={isFetching}
+        />
       ) : orders.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center p-10 text-center">
@@ -75,7 +80,7 @@ export default function DriverHistoryPage() {
                   <div className="min-w-0">
                     <p className="font-medium">Order #{order.orderNumber}</p>
                     <p className="truncate text-sm text-muted-foreground">
-                      {address(order)}
+                      {formatDriverOrderAddress(order)}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {order.createdAt
@@ -88,9 +93,7 @@ export default function DriverHistoryPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end">
-                  <span className="rounded-full border px-2.5 py-1 text-xs">
-                    {order.status}
-                  </span>
+                  <OrderStatusBadge status={order.status} />
                   <span className="text-sm font-semibold">
                     ₱{(order.pricing?.deliveryFee ?? 0).toFixed(2)} earned
                   </span>
@@ -100,6 +103,12 @@ export default function DriverHistoryPage() {
           ))}
         </div>
       )}
+      <PageControls
+        page={data?.pagination.page ?? page}
+        pages={data?.pagination.pages ?? 0}
+        total={data?.pagination.total ?? 0}
+        onPageChange={setPage}
+      />
     </main>
   )
 }

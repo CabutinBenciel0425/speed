@@ -8,6 +8,7 @@ import {
 import { NavLink, Navigate, Outlet } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
 import { getRoleHomePath } from "@/utils/roleRoutes"
+import PageLoading from "@/components/common/PageLoading"
 
 const links = [
   ["/driver", "Deliveries", LayoutDashboard],
@@ -18,13 +19,13 @@ const links = [
 
 export default function DriverLayout() {
   const { activeRole, isAuthenticated, isLoading } = useAuth()
-  if (isLoading) return null
+  if (isLoading) return <PageLoading label="Checking your session…" className="min-h-screen" />
   if (!isAuthenticated) return <Navigate to="/login" replace />
   if (activeRole !== "Driver")
     return <Navigate to={getRoleHomePath(activeRole)} replace />
 
   return (
-    <div className="min-h-screen w-full">
+    <div className="min-h-screen w-full overflow-x-clip">
       <header className="border-b">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div className="flex items-center gap-2 font-semibold">

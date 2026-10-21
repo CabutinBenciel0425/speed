@@ -3,12 +3,14 @@ import { Activity, Banknote, CircleCheck, XCircle } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import AdminStatCard from "../components/AdminStatCard"
 import { useAdminOrderAnalytics, useAdminRevenue } from "../hooks/useAdminData"
+import PageError from "@/components/common/PageError"
+import PageLoading from "@/components/common/PageLoading"
 
 const periods = ["hour", "day", "week", "month"] as const
 
 export default function AdminAnalyticsPage() {
   const [period, setPeriod] = useState<(typeof periods)[number]>("month")
-  const { data, isLoading, isError } = useAdminRevenue(period)
+  const { data, isLoading, isError, refetch, isFetching } = useAdminRevenue(period)
   const orders = useAdminOrderAnalytics()
   return (
     <div className="space-y-6">
@@ -55,9 +57,13 @@ export default function AdminAnalyticsPage() {
         </div>
       )}
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading analytics…</p>
+        <PageLoading label="Loading analytics…" />
       ) : isError ? (
-        <p className="text-sm text-destructive">Could not load analytics.</p>
+        <PageError
+          message="Could not load analytics. Please try again."
+          onRetry={() => void refetch()}
+          isRetrying={isFetching}
+        />
       ) : !data?.length ? (
         <p className="text-sm text-muted-foreground">
           No paid, delivered orders for this period.

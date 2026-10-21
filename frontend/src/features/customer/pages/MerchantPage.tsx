@@ -8,6 +8,7 @@ import MerchantPageSkeleton from "@/components/common/Skeleton/MerchantPageSkele
 import { formatOperatingHours } from "@/utils/timeUtils"
 import { useToggleMerchantFavorite } from "../hooks/useToggleMerchantFavorite"
 import { useMerchantFavorite } from "../hooks/useMerchantFavorite"
+import MerchantReviewsSection from "@/features/reviews/components/MerchantReviewsSection"
 
 export type RequestType = "public" | "merchant"
 
@@ -110,6 +111,7 @@ function MerchantPage() {
         isLoadingProducts={isLoadingProducts}
         errorProducts={errorProducts || null}
       />
+      {merchantId && <MerchantReviewsSection merchantId={merchantId} />}
     </div>
   )
 }

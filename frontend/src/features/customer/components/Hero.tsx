@@ -5,7 +5,7 @@ import PressButton from "@/components/common/PressButton"
 
 function Hero() {
   return (
-    <section className="mx-auto max-w-7xl px-10">
+    <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
       <motion.div
         className="flex min-h-100 w-full flex-col overflow-hidden rounded-3xl bg-secondary lg:flex-row"
         initial={{ opacity: 0, y: -50 }}
@@ -36,6 +36,8 @@ function Hero() {
           <img
             src={heroImage}
             alt="Food delivery"
+            fetchPriority="high"
+            decoding="async"
             className="h-auto w-80 object-contain sm:w-80 lg:w-162.5"
           />
         </div>

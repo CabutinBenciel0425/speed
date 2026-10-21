@@ -13,6 +13,8 @@ import DriverSignupPage from "./features/auth/pages/DriverSignupPage"
 import AdminLayout from "./features/admin/components/AdminLayout"
 import { getRoleHomePath } from "@/utils/roleRoutes"
 import DriverLayout from "./features/driver/components/DriverLayout"
+import PageLoading from "./components/common/PageLoading"
+import RouteErrorBoundary from "./components/common/RouteErrorBoundary"
 
 const Dashboard = lazy(() => import("./features/customer/pages/Dashboard"))
 const CategoryProductsPage = lazy(
@@ -103,22 +105,25 @@ const DriverReviewsPage = lazy(
 const DriverProfilePage = lazy(
   () => import("./features/driver/pages/DriverProfilePage")
 )
+const CustomerReviewsPage = lazy(
+  () => import("./features/reviews/pages/CustomerReviewsPage")
+)
+const MerchantReviewsPage = lazy(
+  () => import("./features/reviews/pages/MerchantReviewsPage")
+)
 
 export function App() {
   const { isAuthenticated, isVerified, activeRole } = useAuth()
 
   return (
-    <div className="flex min-h-screen w-full scrollbar-gutter-stable items-center justify-center">
+    <div className="min-h-screen w-full scrollbar-gutter-stable">
       {/* authentication */}
       <ScrollToTop />
-      <Suspense
-        fallback={
-          <div className="w-full p-6 text-center text-sm text-muted-foreground">
-            Loading page…
-          </div>
-        }
-      >
-        <Routes>
+      <RouteErrorBoundary>
+        <Suspense
+          fallback={<PageLoading label="Loading page…" className="min-h-screen" />}
+        >
+          <Routes>
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboardPage />} />
@@ -131,15 +136,12 @@ export function App() {
             <Route path="menu" element={<MerchantMenuPage />} />
             <Route path="orders" element={<MerchantOrdersPage />} />
             <Route path="orders/:orderId" element={<OrderComponent />} />
+            <Route path="reviews" element={<MerchantReviewsPage />} />
             <Route
               path="analytics"
               element={
                 <Suspense
-                  fallback={
-                    <p className="p-6 text-sm text-muted-foreground">
-                      Loading analytics…
-                    </p>
-                  }
+                  fallback={<PageLoading label="Loading analytics…" />}
                 >
                   <MerchantAnalyticsPage />
                 </Suspense>
@@ -156,11 +158,7 @@ export function App() {
               index
               element={
                 <Suspense
-                  fallback={
-                    <p className="p-6 text-sm text-muted-foreground">
-                      Loading deliveries…
-                    </p>
-                  }
+                  fallback={<PageLoading label="Loading deliveries…" />}
                 >
                   <DriverDashboardPage />
                 </Suspense>
@@ -170,11 +168,7 @@ export function App() {
               path="history"
               element={
                 <Suspense
-                  fallback={
-                    <p className="p-6 text-sm text-muted-foreground">
-                      Loading history…
-                    </p>
-                  }
+                  fallback={<PageLoading label="Loading history…" />}
                 >
                   <DriverHistoryPage />
                 </Suspense>
@@ -184,11 +178,7 @@ export function App() {
               path="reviews"
               element={
                 <Suspense
-                  fallback={
-                    <p className="p-6 text-sm text-muted-foreground">
-                      Loading reviews…
-                    </p>
-                  }
+                  fallback={<PageLoading label="Loading reviews…" />}
                 >
                   <DriverReviewsPage />
                 </Suspense>
@@ -198,11 +188,7 @@ export function App() {
               path="profile"
               element={
                 <Suspense
-                  fallback={
-                    <p className="p-6 text-sm text-muted-foreground">
-                      Loading profile…
-                    </p>
-                  }
+                  fallback={<PageLoading label="Loading profile…" />}
                 >
                   <DriverProfilePage />
                 </Suspense>
@@ -310,6 +296,16 @@ export function App() {
               }
             />
             <Route
+              path="/reviews"
+              element={
+                isAuthenticated ? (
+                  <CustomerReviewsPage />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+            <Route
               path="/favorites/merchants"
               element={
                 isAuthenticated ? <MerchantFavoritesAll /> : <Navigate to="/" />
@@ -345,8 +341,9 @@ export function App() {
               }
             />
           </Route>
-        </Routes>
-      </Suspense>
+          </Routes>
+        </Suspense>
+      </RouteErrorBoundary>
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { isAxiosError } from "axios"
 import { toast } from "sonner"
 import axios from "@/lib/axios"
+import type { PaginatedResponse } from "@/types/pagination"
 import type {
   DriverOrder,
   DriverOrderAction,
@@ -39,12 +40,15 @@ export function useDriverCurrentOrder(enabled = true) {
   })
 }
 
-export function useDriverOrderHistory(enabled = true) {
+export function useDriverOrderHistory(page: number, enabled = true) {
   return useQuery({
-    queryKey: driverKeys.history,
+    queryKey: [...driverKeys.history, page],
     queryFn: async () =>
-      (await axios.get<{ data?: DriverOrder[] }>("/driver/orders/history")).data
-        .data ?? [],
+      (
+        await axios.get<PaginatedResponse<DriverOrder>>(
+          `/driver/orders/history?page=${page}&limit=8`
+        )
+      ).data,
     enabled,
     staleTime: 60_000,
   })
@@ -96,6 +100,7 @@ export function useDriverOrderAction() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: driverKeys.currentOrder })
       void queryClient.invalidateQueries({ queryKey: driverKeys.profile })
+      void queryClient.invalidateQueries({ queryKey: driverKeys.history })
     },
     onError: (error) =>
       toast.error(

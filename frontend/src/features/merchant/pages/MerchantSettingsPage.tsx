@@ -1,29 +1,29 @@
 import MerchantProfileForm from "../components/MerchantProfileForm"
 import { useMyMerchantProfile } from "../hooks/useMerchantProfile"
 import { useUpdateMerchantProfile } from "../hooks/useUpdateMerchantProfile"
+import PageLoading from "@/components/common/PageLoading"
+import PageError from "@/components/common/PageError"
 
 function MerchantSettingsPage() {
-  const { merchant, isLoading, error } = useMyMerchantProfile()
+  const { merchant, isLoading, error, refetch, isFetching } = useMyMerchantProfile()
   const updateProfile = useUpdateMerchantProfile(merchant?._id)
 
-  if (isLoading) {
-    return (
-      <p className="p-6 text-sm text-muted-foreground">
-        Loading store settings…
-      </p>
-    )
-  }
+  if (isLoading) return <PageLoading label="Loading store settings…" />
   if (error || !merchant) {
     return (
-      <p className="p-6 text-sm text-destructive">
-        Could not load your store settings.
-      </p>
+      <main className="page-shell flex min-h-[50vh] items-center">
+        <PageError
+          message="Could not load your store settings. Please try again."
+          onRetry={() => void refetch()}
+          isRetrying={isFetching}
+        />
+      </main>
     )
   }
 
   return (
-    <main className="mx-auto w-full max-w-5xl space-y-2 px-4 py-6 sm:px-8 sm:py-8">
-      <header className="mb-6">
+    <main className="page-shell page-stack max-w-5xl">
+      <header>
         <h1 className="text-2xl font-bold sm:text-3xl">Store settings</h1>
         <p className="text-sm text-muted-foreground">
           Manage your store details, delivery location, and weekly hours.

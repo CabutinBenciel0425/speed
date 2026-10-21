@@ -47,6 +47,8 @@ function MerchantProductCard({
           `https://placeholderimage.co/400x240/f3f4f6/374151/?text=${encodeURIComponent(product.name)}`
         }
         alt={product.name}
+        loading="lazy"
+        decoding="async"
         className="z-20 aspect-video w-full object-contain"
       />
       <CardHeader className="gap-1 px-3 pt-0">

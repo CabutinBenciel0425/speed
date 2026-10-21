@@ -1,13 +1,21 @@
 import { Star } from "lucide-react"
-import { format } from "date-fns"
 import { Card, CardContent } from "@/components/ui/card"
 import { useDriverProfile, useDriverReviews } from "../hooks/useDriverData"
+import DriverReviewCard from "../components/DriverReviewCard"
+import ReviewCardSkeleton from "@/features/reviews/components/ReviewCardSkeleton"
+import PageError from "@/components/common/PageError"
 
 export default function DriverReviewsPage() {
   const { data: profile } = useDriverProfile()
-  const { data: reviews = [], isLoading, isError, refetch } = useDriverReviews()
+  const {
+    data: reviews = [],
+    isLoading,
+    isError,
+    refetch,
+    isFetching,
+  } = useDriverReviews()
   return (
-    <main className="mx-auto w-full max-w-5xl space-y-5 p-4 sm:p-8">
+    <main className="page-shell page-stack max-w-5xl">
       <header>
         <p className="text-sm font-medium text-primary">Customer feedback</p>
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
@@ -20,21 +28,13 @@ export default function DriverReviewsPage() {
         </p>
       </header>
       {isLoading ? (
-        <p className="py-12 text-center text-sm text-muted-foreground">
-          Loading reviews…
-        </p>
+        <ReviewCardSkeleton count={2} />
       ) : isError ? (
-        <Card>
-          <CardContent className="p-6 text-center text-sm">
-            <p className="text-muted-foreground">Could not load reviews.</p>
-            <button
-              className="mt-2 text-primary underline"
-              onClick={() => void refetch()}
-            >
-              Try again
-            </button>
-          </CardContent>
-        </Card>
+        <PageError
+          message="Could not load your reviews. Please try again."
+          onRetry={() => void refetch()}
+          isRetrying={isFetching}
+        />
       ) : reviews.length === 0 ? (
         <Card>
           <CardContent className="p-10 text-center">
@@ -46,29 +46,9 @@ export default function DriverReviewsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid items-stretch gap-4 md:grid-cols-2">
           {reviews.map((review) => (
-            <Card key={review._id}>
-              <CardContent className="space-y-3 p-5">
-                <div className="flex items-center justify-between">
-                  <p className="font-medium">
-                    {review.reviewer
-                      ? `${review.reviewer.firstName ?? "Customer"} ${review.reviewer.lastName ?? ""}`
-                      : "Customer"}
-                  </p>
-                  <span className="flex items-center gap-1 text-sm">
-                    <Star className="size-4 fill-amber-400 text-amber-400" />
-                    {review.rating}
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {review.comment || "No comment left."}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {format(new Date(review.createdAt), "MMM d, yyyy")}
-                </p>
-              </CardContent>
-            </Card>
+            <DriverReviewCard key={review._id} review={review} />
           ))}
         </div>
       )}

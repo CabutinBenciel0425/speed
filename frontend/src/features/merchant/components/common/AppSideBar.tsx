@@ -13,6 +13,7 @@ import {
   House,
   Settings,
   ShoppingBag,
+  Star,
   Utensils,
 } from "lucide-react"
 import { useMerchantNotifications } from "../../hooks/useMerchantNotifications"
@@ -26,6 +27,7 @@ function AppSideBar() {
   const navItems = [
     { to: "/merchant/dashboard", label: "Overview", Icon: House },
     { to: "/merchant/orders", label: "Orders", Icon: ShoppingBag },
+    { to: "/merchant/reviews", label: "Reviews", Icon: Star },
     { to: "/merchant/menu", label: "Menu", Icon: Utensils },
     { to: "/merchant/analytics", label: "Analytics", Icon: ChartLine },
     { to: "/merchant/notifications", label: "Notifications", Icon: Bell },

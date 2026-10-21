@@ -33,11 +33,15 @@ function MerchantCard({ merchant }: { merchant: Merchant }) {
           <img
             src={merchant.banner}
             alt="merchant cover"
+            loading="lazy"
+            decoding="async"
             className="relative z-20 aspect-video w-full object-cover"
           />
           <img
             src={merchant.logo}
             alt="merchant logo"
+            loading="lazy"
+            decoding="async"
             className="absolute -top-1 -left-1 z-50 size-20 rounded-full 2xl:h-30 2xl:w-30"
           />
           <CardHeader>

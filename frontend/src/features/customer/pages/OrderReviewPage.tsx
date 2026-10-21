@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query"
 import {
   ArrowLeft,
   Check,
@@ -11,27 +10,32 @@ import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import axios from "@/lib/axios"
-import type { Address } from "@/types/address"
 import { useCart } from "../hooks/useCart"
 import { usePlaceOrder } from "../hooks/usePlaceOrder"
+import { useCheckoutAddress } from "../hooks/useCheckoutAddress"
+import PageError from "@/components/common/PageError"
 
 function OrderReviewPage() {
   const { cart, isLoading } = useCart()
   const placeOrder = usePlaceOrder()
-  const addressQuery = useQuery({
-    queryKey: ["checkoutAddresses"],
-    queryFn: async () => {
-      const { data } = await axios.get<{ data: Address[] }>("/address")
-      return data.data.find((address) => address.isDefault) ?? null
-    },
-  })
+  const addressQuery = useCheckoutAddress()
   if (isLoading || addressQuery.isLoading) {
     return (
       <div className="mx-auto w-full max-w-5xl animate-pulse p-5 sm:p-8">
         <div className="h-8 w-56 rounded bg-muted" />
         <div className="mt-6 h-72 rounded-xl bg-muted" />
       </div>
+    )
+  }
+  if (addressQuery.isError) {
+    return (
+      <main className="page-shell max-w-5xl">
+        <PageError
+          message="Could not load your delivery details. Please try again."
+          onRetry={() => void addressQuery.refetch()}
+          isRetrying={addressQuery.isFetching}
+        />
+      </main>
     )
   }
   if (!cart?.items.length) {

@@ -12,7 +12,9 @@ export const useCustomerOrder = (orderId: string) => {
   const {
     data: order,
     isLoading,
+    isFetching,
     error,
+    refetch,
   } = useQuery<Order>({
     queryKey: ["customerOrder", orderId],
     queryFn: () => fetchCustomerOrder(orderId!),
@@ -25,5 +27,5 @@ export const useCustomerOrder = (orderId: string) => {
         : 5000,
   })
 
-  return { order, isLoading, error }
+  return { order, isLoading, isFetching, error, refetch }
 }

@@ -60,6 +60,8 @@ function ProductCard({ product }: { product: Product }) {
             `https://placeholderimage.co/400x400/f3f4f6/374151/?text=${product.name}`
           }
           alt={product.name}
+          loading="lazy"
+          decoding="async"
           className="z-20 aspect-video w-full object-contain"
         />
 

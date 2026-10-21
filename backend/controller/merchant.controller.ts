@@ -73,14 +73,23 @@ export const getOrders = asyncHandler(async (req: Request, res: Response) => {
   }
 
   await requireOwnedMerchant(user._id.toString(), merchantId);
-  const orders = await Order.find({ merchant: merchantId })
-    .populate("customer", "firstName lastName phoneNumber")
-    .populate("driver", "workingStatus")
-    .sort({ createdAt: -1 });
+  const page = Math.max(Number(req.query.page) || 1, 1);
+  const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 50);
+  const filter = { merchant: merchantId };
+  const [orders, total] = await Promise.all([
+    Order.find(filter)
+      .populate("customer", "firstName lastName phoneNumber")
+      .populate("driver", "workingStatus")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit),
+    Order.countDocuments(filter),
+  ]);
 
   res.status(200).json({
     success: true,
     data: orders,
+    pagination: { total, page, limit, pages: Math.ceil(total / limit) },
   });
 });
 

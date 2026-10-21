@@ -13,11 +13,13 @@ export const useMyMerchantProfile = () => {
     data: merchant,
     isLoading,
     error,
+    refetch,
+    isFetching,
   } = useQuery<Merchant | null>({
     queryKey: ["myMerchant"],
     queryFn: fetchMyMerchantProfile,
     staleTime: 1000 * 60 * 5,
   })
 
-  return { merchant, isLoading, error }
+  return { merchant, isLoading, error, refetch, isFetching }
 }

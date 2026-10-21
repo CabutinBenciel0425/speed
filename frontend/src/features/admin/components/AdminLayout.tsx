@@ -2,10 +2,11 @@ import { Navigate, Outlet } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
 import AdminSidebar from "./AdminSidebar"
 import { getRoleHomePath } from "@/utils/roleRoutes"
+import PageLoading from "@/components/common/PageLoading"
 
 export default function AdminLayout() {
   const { activeRole, isAuthenticated, isLoading } = useAuth()
-  if (isLoading) return null
+  if (isLoading) return <PageLoading label="Checking your session…" className="min-h-screen" />
   if (!isAuthenticated) return <Navigate to="/login" replace />
   if (activeRole !== "Admin")
     return <Navigate to={getRoleHomePath(activeRole)} replace />

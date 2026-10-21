@@ -30,12 +30,14 @@ import { useState } from "react"
 import { DialogTrigger } from "@/components/ui/dialog"
 import PickupConfirmationModal from "./PickupConfirmationModal"
 import { toast } from "sonner"
+import OrderDetailsSkeleton from "@/components/common/OrderDetailsSkeleton"
+import PageError from "@/components/common/PageError"
 
 const ADDED_TIME = 15
 
 function OrderComponent() {
   const { orderId } = useParams()
-  const { data, isLoading, isError } = useOrder(orderId || "")
+  const { data, isLoading, isError, refetch, isFetching } = useOrder(orderId || "")
   const [isPickedupModalOpen, setIsPickedupModalOpen] = useState(false)
   const [isPaymentConfirm, setIsPaymentConfirm] = useState(false)
   const [action, setAction] = useState<
@@ -52,10 +54,17 @@ function OrderComponent() {
     "reject" | "cancel" | "accept" | "picked-up" | null
   >(null)
 
-  if (isLoading)
-    return <p className="p-5 text-muted-foreground">Loading order…</p>
+  if (isLoading) return <OrderDetailsSkeleton />
   if (isError || !data)
-    return <p className="p-5 text-destructive">Order not found.</p>
+    return (
+      <main className="page-shell flex min-h-[50vh] max-w-3xl items-center">
+        <PageError
+          message="We couldn't load this order. Please try again."
+          onRetry={() => void refetch()}
+          isRetrying={isFetching}
+        />
+      </main>
+    )
 
   const orderDate = data.createdAt
 

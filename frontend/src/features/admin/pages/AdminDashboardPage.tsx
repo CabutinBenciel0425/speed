@@ -15,6 +15,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import AdminStatCard from "../components/AdminStatCard"
 import { useAdminDashboard } from "../hooks/useAdminData"
+import PageError from "@/components/common/PageError"
+import PageLoading from "@/components/common/PageLoading"
 
 const metrics = [
   { label: "Customers", key: "totalCustomer", icon: Users, accent: "brand" },
@@ -43,7 +45,7 @@ const metrics = [
 ] as const
 
 export default function AdminDashboardPage() {
-  const { data, isLoading, isError } = useAdminDashboard()
+  const { data, isLoading, isError, refetch, isFetching } = useAdminDashboard()
   return (
     <div className="space-y-6">
       <header>
@@ -53,11 +55,13 @@ export default function AdminDashboardPage() {
         </p>
       </header>
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading overview…</p>
+        <PageLoading label="Loading overview…" />
       ) : isError || !data ? (
-        <p className="text-sm text-destructive">
-          Could not load dashboard data.
-        </p>
+        <PageError
+          message="Could not load dashboard data. Please try again."
+          onRetry={() => void refetch()}
+          isRetrying={isFetching}
+        />
       ) : (
         <>
           <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 xl:grid-cols-5">

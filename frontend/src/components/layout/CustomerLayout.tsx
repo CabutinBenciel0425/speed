@@ -3,11 +3,12 @@ import Navbar from "../common/Navbar"
 import Footer from "../common/Footer"
 import { useAuth } from "@/hooks/useAuth"
 import { getRoleHomePath } from "@/utils/roleRoutes"
+import PageLoading from "@/components/common/PageLoading"
 
 function CustomerLayout() {
   const { activeRole, isAuthenticated, isLoading } = useAuth()
 
-  if (isLoading) return null
+  if (isLoading) return <PageLoading label="Checking your session…" className="min-h-screen" />
   if (isAuthenticated && activeRole !== "Customer") {
     return <Navigate to={getRoleHomePath(activeRole)} replace />
   }

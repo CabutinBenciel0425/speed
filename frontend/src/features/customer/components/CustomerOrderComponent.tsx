@@ -15,6 +15,7 @@ import {
   MapPin,
   NotepadText,
   Phone,
+  Star,
   Timer,
   User,
 } from "lucide-react"
@@ -29,21 +30,46 @@ import { useCustomerCancelOrder } from "../hooks/useCustomerCancelOrder"
 import { useState } from "react"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
+import { useMyReviews } from "@/features/reviews/hooks/useReviews"
+import ReviewModal from "./ReviewModal"
+import OrderDetailsSkeleton from "@/components/common/OrderDetailsSkeleton"
+import PageError from "@/components/common/PageError"
 
 const ADDED_TIME = 15
 
 function CustomerOrderComponent() {
   const { orderId } = useParams()
-  const { order, isLoading, error } = useCustomerOrder(orderId || "")
+  const { order, isLoading, error, refetch, isFetching } = useCustomerOrder(
+    orderId || ""
+  )
+  const {
+    data: customerReviews = [],
+    isLoading: reviewsLoading,
+    isError: reviewsError,
+  } = useMyReviews()
   const { mutate: cancelOrder } = useCustomerCancelOrder(orderId || "")
   const [cancellationReason, setCancellationReason] = useState("")
+  const [reviewDriverOpen, setReviewDriverOpen] = useState(false)
 
   const [openTextArea, setOpenTextArea] = useState(false)
 
-  if (isLoading)
-    return <p className="p-5 text-muted-foreground">Loading order…</p>
+  if (isLoading) return <OrderDetailsSkeleton />
   if (error || !order)
-    return <p className="p-5 text-destructive">Order not found.</p>
+    return (
+      <main className="page-shell flex min-h-[50vh] max-w-3xl items-center">
+        <PageError
+          message="We couldn't load this order. Please try again."
+          onRetry={() => void refetch()}
+          isRetrying={isFetching}
+        />
+      </main>
+    )
+
+  const driverAlreadyReviewed = customerReviews.some((review) => {
+    const reviewOrderId =
+      typeof review.order === "string" ? review.order : review.order._id
+    return review.targetType === "Driver" && reviewOrderId === order._id
+  })
 
   const orderDate = order.createdAt
 
@@ -238,7 +264,7 @@ function CustomerOrderComponent() {
               <div>
                 <p className="mb-2 flex flex-row items-start gap-2">
                   <User className="size-6 shrink-0" />
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-col items-start">
                     <span className="wrap-break-words">
                       <span className="text-sm text-muted-foreground">
                         Customer name:
@@ -390,6 +416,37 @@ function CustomerOrderComponent() {
       <div className="flex w-full flex-col items-stretch gap-4 xl:mt-15 xl:w-104 xl:shrink-0 2xl:w-lg">
         <OrderStatusTimeline order={order} />
 
+        {order.status === "Delivered" &&
+          order.driver &&
+          !reviewsLoading &&
+          !reviewsError &&
+          !driverAlreadyReviewed && (
+            <Card className="overflow-hidden rounded-2xl border-primary/20 shadow-sm">
+              <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+                <div className="flex items-start gap-3">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                    <Star className="size-5 fill-current" />
+                  </span>
+                  <div>
+                    <h2 className="font-semibold tracking-tight">
+                      How was your delivery?
+                    </h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Leave a review for your driver.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  className="w-full shrink-0 sm:w-auto"
+                  onClick={() => setReviewDriverOpen(true)}
+                >
+                  <Star className="size-4" />
+                  Review driver
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
         {["Pending", "NoDriverFound"].includes(order?.status) &&
           !order?.driverArrivedAtMerchantAt && (
             <Card className="w-full divide-y px-2">
@@ -476,6 +533,11 @@ function CustomerOrderComponent() {
             </Card>
           )}
       </div>
+      <ReviewModal
+        isReviewModalOpen={reviewDriverOpen}
+        setIsReviewModalOpen={setReviewDriverOpen}
+        orderId={order._id}
+      />
     </div>
   )
 }

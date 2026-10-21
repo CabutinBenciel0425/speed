@@ -47,13 +47,16 @@ export const getOrders = asyncHandler(async (req: Request, res: Response) => {
     };
   }
 
-  const docs = await Order.find(queryData.filter)
-    .sort(sort)
-    .select(queryData.select)
-    .skip(queryData.skip)
-    .limit(queryData.limit);
-
-  const total = await Order.countDocuments(queryData.filter);
+  const [docs, total] = await Promise.all([
+    Order.find(queryData.filter)
+      .sort(sort)
+      .select(queryData.select)
+      .skip(queryData.skip)
+      .limit(queryData.limit)
+      .populate("merchant", "_id merchantName logo isOpen")
+      .populate("driver", "workingStatus"),
+    Order.countDocuments(queryData.filter),
+  ]);
 
   res.status(200).json({
     success: true,

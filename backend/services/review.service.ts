@@ -64,9 +64,7 @@ export const reviewCustomerToMerchantService = async (
   orderId: string,
 ) => {
   const targetType: TargetType = "Merchant";
-  if (!rating) {
-    throw new ConflictError("Rating is not found");
-  }
+  if (!rating) throw new ConflictError("Rating is not found");
 
   const user = await User.findById<IUser>(userId);
   if (!user) throw new NotFoundError("User");
@@ -75,7 +73,7 @@ export const reviewCustomerToMerchantService = async (
   if (!order) throw new NotFoundError("Order");
 
   const merchant = await Merchant.findById<IMerchant>(order.merchant);
-  if (!merchant) throw new NotFoundError("Driver");
+  if (!merchant) throw new NotFoundError("Merchant");
   const reviewee: Reviewee = merchant;
 
   if (user._id.toString() !== order.customer.toString()) {
@@ -96,14 +94,16 @@ export const reviewCustomerToMerchantService = async (
     targetType,
   });
 
-  await updateAverageRating(review.reviewee.toString(), "Merchant");
+  await updateAverageRating(review.reviewee._id.toString(), "Merchant");
 
   return review;
 };
 
 const updateAverageRating = async (id: string, targetType: TargetType) => {
   const result = await Review.aggregate([
-    { $match: { reviewee: new Types.ObjectId(id) } },
+    {
+      $match: { reviewee: new Types.ObjectId(id), targetType, isHidden: false },
+    },
     {
       $group: {
         _id: null,
@@ -179,34 +179,107 @@ export const getDriverReviewsService = async (user: IUser) => {
     throw new NotFoundError("Driver");
   }
 
-  const reviews = await Review.find({ reviewee: driver._id }).populate({
-    path: "reviewer",
-    select: "firstName lastName avatar",
-  });
+  const reviews = await Review.find({
+    reviewee: driver._id,
+    targetType: "Driver",
+    isHidden: false,
+  })
+    .sort({ createdAt: -1 })
+    .populate({ path: "reviewer", select: "firstName lastName avatar" })
+    .populate("order", "orderNumber createdAt");
 
   return reviews;
 };
 
 export const getMerchantReviewsService = async (user: IUser) => {
-  const merchant = await Merchant.findOne({ user: user._id });
+  const merchant = await Merchant.findOne({ owner: user._id });
 
   if (!merchant) {
     throw new NotFoundError("Merchant");
   }
 
-  const reviews = await Review.find({ reviewee: merchant._id }).populate({
-    path: "reviewer",
-    select: "firstName lastName avatar",
-  });
+  const reviews = await Review.find({
+    reviewee: merchant._id,
+    targetType: "Merchant",
+  })
+    .sort({ createdAt: -1 })
+    .populate({ path: "reviewer", select: "firstName lastName avatar" })
+    .populate("order", "orderNumber createdAt");
 
   return reviews;
 };
 
-export const getCustomerReviewsService = async (userId: string) => {
-  const reviews = await Review.find({ reviewer: userId }).populate({
-    path: "reviewer",
-    select: "firstName lastName avatar",
+export const getPublicMerchantReviewsService = async (merchantId: string) => {
+  const merchant = await Merchant.findById(merchantId);
+  if (!merchant) throw new NotFoundError("Merchant");
+  const reviews = await Review.find({
+    reviewee: merchant._id,
+    targetType: "Merchant",
+    isHidden: false,
+  })
+    .sort({ createdAt: -1 })
+    .populate({ path: "reviewer", select: "firstName lastName avatar" })
+    .populate("order", "orderNumber createdAt");
+  return reviews;
+};
+
+export const updateCustomerMerchantReviewService = async (
+  reviewId: string,
+  userId: string,
+  updates: { rating?: number; comment?: string },
+) => {
+  const review = await Review.findOne({
+    _id: reviewId,
+    reviewer: userId,
+    targetType: "Merchant",
   });
+  if (!review) throw new NotFoundError("Review");
+  if (updates.rating !== undefined) review.rating = updates.rating;
+  if (updates.comment !== undefined) review.comment = updates.comment;
+  await review.save();
+  await updateAverageRating(review.reviewee.toString(), "Merchant");
+  return review.populate(["reviewer", "order", "reviewee"]);
+};
+
+export const deleteCustomerMerchantReviewService = async (
+  reviewId: string,
+  userId: string,
+) => {
+  const review = await Review.findOneAndDelete({
+    _id: reviewId,
+    reviewer: userId,
+    targetType: "Merchant",
+  });
+  if (!review) throw new NotFoundError("Review");
+  await updateAverageRating(review.reviewee.toString(), "Merchant");
+};
+
+export const setMerchantReviewVisibilityService = async (
+  reviewId: string,
+  userId: string,
+  isHidden: boolean,
+) => {
+  const merchant = await Merchant.findOne({ owner: userId });
+  if (!merchant) throw new NotFoundError("Merchant");
+  const review = await Review.findOneAndUpdate(
+    { _id: reviewId, reviewee: merchant._id, targetType: "Merchant" },
+    { isHidden },
+    { new: true, runValidators: true },
+  ).populate({ path: "reviewer", select: "firstName lastName avatar" });
+  if (!review) throw new NotFoundError("Review");
+  await updateAverageRating(merchant._id.toString(), "Merchant");
+  return review;
+};
+
+export const getCustomerReviewsService = async (userId: string) => {
+  const reviews = await Review.find({ reviewer: userId })
+    .sort({ createdAt: -1 })
+    .populate({
+      path: "reviewee",
+      select: "merchantName logo firstName lastName",
+    })
+    .populate("order", "orderNumber createdAt")
+    .populate({ path: "reviewer", select: "firstName lastName avatar" });
 
   return reviews;
 };
