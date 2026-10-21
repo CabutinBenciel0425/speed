@@ -45,7 +45,7 @@ type MerchantOrder = {
     city: string
     province: string
   }
-  pricing: { total: number }
+  pricing: { subtotal: number; total: number }
   payment: { method: string; status: string; transactionId?: string | null }
   status: OrderStatus
   driver: { _id: string; workingStatus: string } | string | null
@@ -251,7 +251,7 @@ function MerchantOrdersPage() {
                       </p>
                     </div>
                     <p className="font-medium text-foreground">
-                      Total: ₱{order.pricing.total.toFixed(2)}
+                      Total: ₱{order.pricing.subtotal.toFixed(2)}
                     </p>
                   </div>
                 </article>

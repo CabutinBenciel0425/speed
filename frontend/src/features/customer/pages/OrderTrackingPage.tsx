@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import type { AxiosError } from "axios"
@@ -29,6 +29,10 @@ import {
 import type { LatLngExpression } from "leaflet"
 import { useCancelOrder } from "../hooks/useCancelOrder"
 import CancelOrderModal from "@/components/common/CancelOrderModal"
+import Confetti from "react-confetti"
+import soundFile from "@/assets/success-sound.mp3"
+import SuccessModal from "../components/SuccessModal"
+import ReviewModal from "../components/ReviewModal"
 
 type Driver = {
   _id: string
@@ -153,13 +157,15 @@ function OrderTrackingPage() {
   const { orderId } = useParams()
   const queryClient = useQueryClient()
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
   const [cancellationReason, setCancellationReason] = useState("")
+  const hasCelebrated = useRef(false)
   const activeRole = useAuthStore((state) => state.activeRole)
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const [liveLocation, setLiveLocation] = useState<[number, number] | null>(
     null
   )
-
   const { mutate: cancelOrder } = useCancelOrder({ orderId: orderId ?? "" })
   const orderQuery = useQuery({
     queryKey: ["customerOrder", orderId],
@@ -237,6 +243,15 @@ function OrderTrackingPage() {
       setLiveLocation(coordinates)
     }
   }, [isPickedUp, driver?.currentLocation?.coordinates])
+
+  useEffect(() => {
+    if (order?.status !== "Delivered") return
+    if (hasCelebrated.current) return
+    hasCelebrated.current = true
+
+    setIsSuccessModalOpen(true)
+    new Audio(soundFile).play().catch(() => {})
+  }, [order?.status])
 
   const retrySearch = useMutation({
     mutationFn: async () => {
@@ -318,8 +333,37 @@ function OrderTrackingPage() {
     }
   }
 
+  const handleShowReviewModal = () => {
+    console.log("Review show clicked")
+    setIsSuccessModalOpen(false)
+    setIsReviewModalOpen(true)
+  }
+
   return (
     <main className="mx-auto w-full max-w-4xl space-y-5 p-4 sm:space-y-6 sm:p-8">
+      {order.status === "Delivered" && (
+        <>
+          <Confetti
+            width={window.innerWidth}
+            height={window.innerHeight}
+            gravity={0.3}
+            style={{ zIndex: 1100 }}
+            numberOfPieces={250}
+            recycle={false}
+          />
+          <SuccessModal
+            isSuccessModalOpen={isSuccessModalOpen}
+            setIsSuccessModalOpen={setIsSuccessModalOpen}
+            orderId={order._id}
+            onHandleShowReviewModal={handleShowReviewModal}
+          />
+          <ReviewModal
+            isReviewModalOpen={isReviewModalOpen}
+            setIsReviewModalOpen={setIsReviewModalOpen}
+            orderId={order._id}
+          />
+        </>
+      )}
       <header>
         <p className="text-sm font-medium text-primary">
           Order #{order.orderNumber}
@@ -390,11 +434,11 @@ function OrderTrackingPage() {
             <SearchingMap />
           ) : (
             <Card>
-              <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:p-5">
+              <CardContent className="flex flex-col gap-6 p-4 sm:flex-row sm:items-center sm:p-5">
                 <img
                   src={driver.avatar || "/driver-avatar.jpg"}
                   alt=""
-                  className="size-16 rounded-full border object-cover"
+                  className="size-20 rounded-full border object-cover"
                 />
                 <div className="min-w-0 flex-1">
                   <p className="text-xs text-muted-foreground">Your driver</p>
@@ -408,17 +452,6 @@ function OrderTrackingPage() {
                     {driver.plateNumber ? ` · ${driver.plateNumber}` : ""}
                   </p>
                 </div>
-                {driver.user?.phoneNumber && (
-                  <a
-                    className="inline-flex h-9 items-center rounded-md border px-4 text-sm"
-                    href={`tel:${driver.user.phoneNumber}`}
-                  >
-                    Call driver
-                  </a>
-                )}
-                <p className="w-full border-t pt-3 text-sm text-muted-foreground sm:w-auto sm:border-0 sm:pt-0">
-                  Live tracking starts after pickup.
-                </p>
               </CardContent>
             </Card>
           )}
@@ -451,18 +484,22 @@ function OrderTrackingPage() {
               ].map(({ label, done, icon: Icon }) => (
                 <div
                   key={label}
-                  className="flex items-center justify-evenly gap-3 sm:flex-col"
+                  className="flex w-full items-center justify-start gap-3 sm:flex-col"
                 >
-                  <span
-                    className={`grid size-9 place-items-center rounded-full ${done ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
-                  >
-                    <Icon className="size-4" />
-                  </span>
-                  <span
-                    className={`text-xs ${done ? "font-medium" : "text-muted-foreground"}`}
-                  >
-                    {label}
-                  </span>
+                  <div className="flex w-1/2 items-center justify-center">
+                    <span
+                      className={`grid size-9 place-items-center rounded-full ${done ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
+                    >
+                      <Icon className="size-4" />
+                    </span>
+                  </div>
+                  <div className="w-1/2">
+                    <span
+                      className={`text-xs ${done ? "font-medium" : "text-muted-foreground"}`}
+                    >
+                      {label}
+                    </span>
+                  </div>
                 </div>
               ))}
             </CardContent>

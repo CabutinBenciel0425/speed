@@ -17,12 +17,16 @@ function PickupConfirmationModal({
   onHandleClick,
   open,
   onOpenChange,
+  isPaymentConfirm,
+  setIsPaymentConfirm,
 }: {
   dialogTrigger: React.ReactNode
   order: Order
   onHandleClick: () => void
   open: boolean
   onOpenChange: (open: boolean) => void
+  isPaymentConfirm: boolean
+  setIsPaymentConfirm: (value: boolean) => void
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -42,12 +46,15 @@ function PickupConfirmationModal({
         <OrderDetailSummary order={order} />
         <DialogFooter className="flex flex-col! items-start gap-8">
           <Label className="flex flex-row items-start gap-2">
-            <Checkbox />
+            <Checkbox
+              checked={isPaymentConfirm}
+              onCheckedChange={(checked) => setIsPaymentConfirm(checked)}
+            />
             <p className="text-xs text-muted-foreground">
               I confirm that the above information are correct and I have
               received{" "}
               <span className="text-sm font-semibold text-primary">
-                ₱ {order.pricing.total.toFixed(2)}
+                ₱ {order.pricing.subtotal.toFixed(2)}
               </span>{" "}
               from the driver as payment for this order.
             </p>

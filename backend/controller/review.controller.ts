@@ -13,7 +13,7 @@ export const customerReviewToDriver = asyncHandler(
   async (req: Request, res: Response) => {
     const user = req.user;
     const { rating, comment } = req.body;
-    const orderId = req.params.orderId ? req.params.orderId[0] : null;
+    const orderId = req.params.orderId as string;
 
     if (!orderId) {
       throw new NotFoundError("Order id");

@@ -19,11 +19,15 @@ export const reviewCustomerToDriverService = async (
   if (!rating) {
     throw new ConflictError("Rating is not found");
   }
+  if (!orderId) {
+    throw new ConflictError("Order Id is not provided");
+  }
 
   const user = await User.findById<IUser>(userId);
   if (!user) throw new NotFoundError("User");
 
   const order = await Order.findById<IOrder>(orderId);
+
   if (!order) throw new NotFoundError("Order");
 
   const driver = await Driver.findById<IDriver>(order.driver);
@@ -48,7 +52,7 @@ export const reviewCustomerToDriverService = async (
     targetType,
   });
 
-  await updateAverageRating(review.reviewee.toString(), "Driver");
+  await updateAverageRating(review.reviewee._id.toString(), "Driver");
 
   return review;
 };
@@ -145,8 +149,8 @@ const createReview = async ({
   targetType: "Driver" | "Merchant";
 }) => {
   const existingReview = await Review.findOne({
-    order: order._id,
-    reviewer: user._id,
+    order: order._id.toString(),
+    reviewer: user._id.toString(),
     targetType,
   });
 

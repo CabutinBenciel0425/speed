@@ -19,7 +19,6 @@ const reviewRouter = Router();
 reviewRouter.post(
   "/orders/:orderId/driver",
   protectRoute,
-  driverOnly,
   validate(reviewschema),
   customerReviewToDriver,
 );

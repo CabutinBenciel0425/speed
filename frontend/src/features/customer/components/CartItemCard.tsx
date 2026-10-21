@@ -130,6 +130,7 @@ function CartItemCard({
               variant="destructive"
               onClick={() => setIsModalOpen(true)}
               disabled={isDeleting}
+              className={"bg-red-700 hover:bg-red-600"}
             >
               {isDeleting ? <Spinner /> : <Trash2 className="text-white" />}
             </Button>

@@ -17,7 +17,6 @@ import {
   NotepadText,
   Phone,
   Timer,
-  User,
 } from "lucide-react"
 import { formatTimeAndDate } from "@/utils/timeUtils"
 import { capitalizeFirstLetter } from "@/utils/capitalizeFirstLetter"
@@ -30,11 +29,15 @@ import { useActionMutation } from "../../hooks/useOrderActionMutation"
 import { useState } from "react"
 import { DialogTrigger } from "@/components/ui/dialog"
 import PickupConfirmationModal from "./PickupConfirmationModal"
+import { toast } from "sonner"
+
+const ADDED_TIME = 15
 
 function OrderComponent() {
   const { orderId } = useParams()
   const { data, isLoading, isError } = useOrder(orderId || "")
   const [isPickedupModalOpen, setIsPickedupModalOpen] = useState(false)
+  const [isPaymentConfirm, setIsPaymentConfirm] = useState(false)
   const [action, setAction] = useState<
     "accept" | "cancel" | "reject" | "picked-up"
   >("accept")
@@ -64,9 +67,25 @@ function OrderComponent() {
     data.deliveryAddress?.location?.coordinates?.[0] ?? 0,
   ]
 
+  const responsiveActionCardClassName =
+    "fixed inset-x-0 bottom-0 z-30 w-full rounded-t-xl border-x-0 border-b-0 bg-background pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-xl lg:static lg:z-auto lg:rounded-xl lg:border lg:pb-2 lg:shadow-none"
+
+  let estimatedPrepTime1 = ""
+  let estimatedPrepTime2 = ""
+  if (data?.preparingAt && data?.estimatedPreparationTime) {
+    const baseMs = new Date(data.preparingAt).getTime()
+    const MS_PER_MIN = 60_000
+
+    const prepMs = baseMs + data.estimatedPreparationTime * MS_PER_MIN
+    const extendedMs = prepMs + ADDED_TIME * MS_PER_MIN
+
+    estimatedPrepTime1 = formatTimeAndDate(prepMs)
+    estimatedPrepTime2 = formatTimeAndDate(extendedMs)
+  }
+
   return (
-    <div className="flex w-full flex-col items-start gap-5 px-4 pb-10 sm:px-6 xl:flex-row xl:px-10">
-      <div className="flex w-full min-w-0 flex-col gap-4 xl:max-w-5xl xl:flex-1">
+    <div className="relative flex w-full flex-col items-start gap-10 px-4 pb-64 sm:px-6 lg:pb-10 xl:flex-row xl:px-10">
+      <div className="flex w-full min-w-0 flex-col gap-4 lg:gap-8 xl:max-w-5xl xl:flex-1">
         <NavLink
           to="/merchant/orders"
           className="flex w-fit flex-row items-center gap-2 py-3 text-muted-foreground"
@@ -97,19 +116,36 @@ function OrderComponent() {
               <img
                 src={data.customer.avatar}
                 alt={data.customer.firstName}
-                className="size-12 shrink-0 rounded-full object-cover sm:size-15"
+                className="size-15 shrink-0 rounded-full object-cover sm:size-20"
               />
               <div className="flex min-w-0 flex-col justify-center gap-1 text-sm sm:gap-2">
                 <p className="flex flex-row flex-wrap items-center gap-2 text-base font-semibold">
-                  <span className="wrap-break-words">{customerName}</span>
+                  <span className="wrap-break-words ml-12">{customerName}</span>
                   <span className="rounded-lg bg-primary/10 px-2 py-0.5 text-xs text-primary">
                     Customer
                   </span>
                 </p>
-                <p className="flex flex-row items-center gap-2 text-muted-foreground/80">
-                  <Phone className="size-4 shrink-0" />
+                <p className="flex flex-row items-center gap-4 text-muted-foreground/80">
+                  <Phone className="size-7 shrink-0" />
                   {data.customer.phoneNumber}
                 </p>
+                <div className="flex flex-row items-center gap-4 text-muted-foreground/80">
+                  <MapPin className="size-7 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="wrap-break-words text-sm text-muted-foreground">
+                      {data.deliveryAddress.houseOrUnitNumber}{" "}
+                      {data.deliveryAddress.street}
+                    </p>
+                    <p className="wrap-break-words text-sm text-muted-foreground">
+                      {data.deliveryAddress.barangay},{" "}
+                      {data.deliveryAddress.city},
+                    </p>
+                    <p className="wrap-break-words text-sm text-muted-foreground">
+                      {data.deliveryAddress.province || ""}{" "}
+                      {data.deliveryAddress.region}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
             {data.customerNote && (
@@ -120,44 +156,8 @@ function OrderComponent() {
             )}
           </div>
 
-          <div className="w-full rounded-md border border-muted-foreground/30 p-3 lg:w-80 lg:shrink-0">
-            <div className="border-b border-b-muted-foreground/30 pb-2">
-              <h2 className="text-sm font-semibold">Order Summary</h2>
-              <p className="flex flex-row items-center justify-between">
-                <span className="text-muted-foreground">
-                  {(data.items?.length ?? 0) > 1
-                    ? `${data.items?.length ?? 0} items`
-                    : `${data.items?.length ?? 0} item`}
-                </span>
-                <span className="text-base font-bold">
-                  ₱ {data.pricing?.total}
-                </span>
-              </p>
-            </div>
-
-            <div className="border-b border-b-muted-foreground/30 py-2">
-              <p className="flex flex-row items-center justify-between">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span className="text-xs font-normal text-muted-foreground">
-                  ₱ {data.pricing?.subtotal}
-                </span>
-              </p>
-              <p className="flex flex-row items-center justify-between">
-                <span className="text-muted-foreground">Delivery Fee</span>
-                <span className="text-xs font-normal text-muted-foreground">
-                  ₱ {data.pricing?.deliveryFee}
-                </span>
-              </p>
-            </div>
-
-            <div className="pt-2">
-              <p className="flex flex-row items-center justify-between">
-                <span className="text-lg font-bold">Total</span>
-                <span className="text-xl font-bold text-primary sm:text-2xl">
-                  ₱ {data.pricing?.total}
-                </span>
-              </p>
-            </div>
+          <div className="w-full rounded-md border border-muted-foreground/30 p-3 md:w-72 md:shrink-0 lg:w-md">
+            <MapComponent position={customerLocation} active height={"180px"} />
           </div>
         </Card>
 
@@ -210,7 +210,7 @@ function OrderComponent() {
         </Card>
 
         {/* Delivery address */}
-        <Card className="w-full divide-y px-4 sm:px-5">
+        {/* <Card className="w-full divide-y px-4 sm:px-5">
           <div className="py-2">
             <p className="flex flex-row items-center gap-2">
               <MapPin className="size-4" />
@@ -245,35 +245,9 @@ function OrderComponent() {
                   {data.customer.phoneNumber}
                 </p>
               </div>
-
-              <div className="flex flex-row gap-2">
-                <MapPin className="size-6 shrink-0" />
-                <div className="min-w-0">
-                  <p className="wrap-break-words text-sm text-muted-foreground">
-                    {data.deliveryAddress.houseOrUnitNumber}{" "}
-                    {data.deliveryAddress.street}
-                  </p>
-                  <p className="wrap-break-words text-sm text-muted-foreground">
-                    {data.deliveryAddress.barangay}, {data.deliveryAddress.city}
-                    ,
-                  </p>
-                  <p className="wrap-break-words text-sm text-muted-foreground">
-                    {data.deliveryAddress.province || ""}{" "}
-                    {data.deliveryAddress.region}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="w-full rounded-md border border-muted-foreground/30 p-3 md:w-72 md:shrink-0 lg:w-md">
-              <MapComponent
-                position={customerLocation}
-                active
-                height={"120px"}
-              />
             </div>
           </div>
-        </Card>
+        </Card> */}
 
         <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
           <Card className="min-h-37.5 w-full px-4 sm:px-5">
@@ -325,17 +299,17 @@ function OrderComponent() {
             </div>
 
             <div className="flex w-full flex-row items-center justify-center gap-4">
-              <div className="flex w-1/2 flex-col items-center justify-center gap-2">
+              <div className="flex w-1/3 flex-col items-center justify-center gap-2">
                 <p className="text-sm text-muted-foreground">Preparation</p>
                 <p className="text-base font-semibold sm:text-lg">
                   {data.estimatedPreparationTime} mins
                 </p>
               </div>
               <Separator orientation="vertical" className="h-12" />
-              <div className="flex w-1/2 flex-col items-center justify-center gap-2">
+              <div className="flex w-2/3 flex-col items-center justify-center gap-2">
                 <p className="text-sm text-muted-foreground">Delivery</p>
                 <p className="text-base font-semibold sm:text-lg">
-                  {data.estimatedDeliveryTime} mins
+                  {estimatedPrepTime1} - {estimatedPrepTime2}
                 </p>
               </div>
             </div>
@@ -360,14 +334,14 @@ function OrderComponent() {
         </div>
       </div>
 
-      <div className="flex w-full flex-col items-stretch gap-4 xl:mt-15 xl:w-104 xl:shrink-0 2xl:w-lg">
+      <div className="flex w-full flex-col items-stretch gap-4 lg:gap-8 xl:mt-15 xl:w-104 xl:shrink-0 2xl:w-lg">
         <OrderStatusTimeline order={data} />
 
         {!data.driver &&
           !data.driverAssignedAt &&
           !data.cancelledAt &&
           !data.rejectedAt && (
-            <Card className="w-full divide-y px-2">
+            <Card className={`${responsiveActionCardClassName} divide-y px-2`}>
               <CardHeader>
                 <CardTitle className="py-2 text-base text-muted-foreground">
                   Action buttons will show after a driver has accepted this
@@ -377,7 +351,7 @@ function OrderComponent() {
             </Card>
           )}
         {data.status === "Pending" && data.driver && data.driverAssignedAt && (
-          <Card className="w-full divide-y px-2">
+          <Card className={`${responsiveActionCardClassName} divide-y px-2`}>
             <CardHeader>
               <CardTitle className="py-2 text-base font-semibold">
                 Accept or Reject
@@ -386,7 +360,7 @@ function OrderComponent() {
 
             <CardContent className="flex flex-col gap-3 pt-3">
               <CardDescription>
-                You can accept or reject this order.
+                Review the order before accepting or rejecting the order.
               </CardDescription>
               <div className="flex w-full flex-col gap-3 sm:flex-row">
                 <Button
@@ -425,7 +399,7 @@ function OrderComponent() {
           </Card>
         )}
         {data.status === "Preparing" && (
-          <Card className="w-full divide-y px-2">
+          <Card className={`${responsiveActionCardClassName} divide-y px-2`}>
             <CardHeader>
               <CardTitle className="py-2 text-base font-semibold">
                 Ready for Pickup or Cancel
@@ -474,7 +448,7 @@ function OrderComponent() {
           </Card>
         )}
         {data.status === "ReadyForPickup" && (
-          <Card className="w-full divide-y px-2">
+          <Card className={`${responsiveActionCardClassName} divide-y px-2`}>
             <CardHeader>
               <CardTitle className="py-2 text-base font-semibold">
                 Pick up Confirmation
@@ -510,6 +484,13 @@ function OrderComponent() {
                       }
                       order={data}
                       onHandleClick={() => {
+                        if (!isPaymentConfirm) {
+                          toast.error(
+                            "You must confirm the payment first before submitting the confirmation."
+                          )
+                          return
+                        }
+
                         if (!data.driver || !data.readyForPickupAt) return
                         setLoading("picked-up")
                         setAction("picked-up")
@@ -529,6 +510,8 @@ function OrderComponent() {
                       }}
                       open={isPickedupModalOpen}
                       onOpenChange={setIsPickedupModalOpen}
+                      isPaymentConfirm={isPaymentConfirm}
+                      setIsPaymentConfirm={setIsPaymentConfirm}
                     />
                   </div>
                 </>

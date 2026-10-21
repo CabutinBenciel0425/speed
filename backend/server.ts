@@ -27,6 +27,7 @@ import cors from "cors";
 import searchRouter from "./routes/search.route.js";
 import qs from "qs";
 import { registerSocketHandlers } from "./socket/socket.js";
+import reviewRouter from "./routes/review.route.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -70,6 +71,7 @@ app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/payment", paymentRouter);
 app.use("/api/v1/notification", notificationRouter);
 app.use("/api/v1/search", searchRouter);
+app.use("/api/v1/review", reviewRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

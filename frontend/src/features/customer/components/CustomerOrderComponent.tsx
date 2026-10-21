@@ -30,6 +30,8 @@ import { useState } from "react"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 
+const ADDED_TIME = 15
+
 function CustomerOrderComponent() {
   const { orderId } = useParams()
   const { order, isLoading, error } = useCustomerOrder(orderId || "")
@@ -66,7 +68,18 @@ function CustomerOrderComponent() {
       cancelOrder({ orderId, cancellationReason })
     }
   }
-  console.log(order)
+  let estimatedPrepTime1 = ""
+  let estimatedPrepTime2 = ""
+  if (order?.preparingAt && order?.estimatedPreparationTime) {
+    const baseMs = new Date(order.preparingAt).getTime()
+    const MS_PER_MIN = 60_000
+
+    const prepMs = baseMs + order.estimatedPreparationTime * MS_PER_MIN
+    const extendedMs = prepMs + ADDED_TIME * MS_PER_MIN
+
+    estimatedPrepTime1 = formatTimeAndDate(prepMs)
+    estimatedPrepTime2 = formatTimeAndDate(extendedMs)
+  }
   return (
     <div className="flex w-full flex-col items-start gap-5 px-4 pb-10 sm:px-6 xl:flex-row xl:px-10">
       <div className="flex w-full min-w-0 flex-col gap-4 xl:max-w-7xl xl:flex-1">
@@ -328,17 +341,28 @@ function CustomerOrderComponent() {
             </div>
 
             <div className="flex w-full flex-row items-center justify-center gap-4">
-              <div className="flex w-1/2 flex-col items-center justify-center gap-2">
+              <div
+                className={`flex ${order?.deliveredAt && order.status === "Delivered" ? "w-1/2" : "w-1/3"} flex-col items-center justify-center gap-2`}
+              >
                 <p className="text-sm text-muted-foreground">Preparation</p>
                 <p className="text-base font-semibold sm:text-lg">
                   {order.estimatedPreparationTime} mins
                 </p>
               </div>
               <Separator orientation="vertical" className="h-12" />
-              <div className="flex w-1/2 flex-col items-center justify-center gap-2">
+              <div
+                className={`flex ${order?.deliveredAt && order.status === "Delivered" ? "w-1/2" : "w-2/3"} flex-col items-center justify-center gap-2`}
+              >
                 <p className="text-sm text-muted-foreground">Delivery</p>
                 <p className="text-base font-semibold sm:text-lg">
-                  {order.estimatedDeliveryTime} mins
+                  {!order.deliveredAt &&
+                  order.status !== "Delivered" &&
+                  order.status !== "Cancelled" &&
+                  order.status !== "Rejected"
+                    ? `${estimatedPrepTime1} - ${estimatedPrepTime2}`
+                    : order.deliveredAt
+                      ? formatTimeAndDate(order.deliveredAt)
+                      : "—"}
                 </p>
               </div>
             </div>

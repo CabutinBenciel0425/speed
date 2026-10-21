@@ -48,7 +48,7 @@ function OrderDetailSummary({ order }: { order: Order }) {
           <p className="flex w-full flex-row items-center justify-between">
             <span className="text-base font-bold">Total price to pay</span>
             <span className="text-xl font-bold text-primary">
-              ₱ {order.pricing.total.toFixed(2)}
+              ₱ {order.pricing.subtotal.toFixed(2)}
             </span>
           </p>
         </div>
