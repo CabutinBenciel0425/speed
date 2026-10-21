@@ -162,8 +162,9 @@ export const getOrderHistory = asyncHandler(
         $in: ["Delivered", "Cancelled", "Rejected"],
       },
     })
-      .populate<"user">("user")
-      .populate<"merchant">("merchant");
+      .sort({ createdAt: -1 })
+      .populate("customer", "firstName lastName phoneNumber")
+      .populate("merchant", "merchantName address");
 
     if (orderHistory.length === 0) {
       return res.status(200).json({

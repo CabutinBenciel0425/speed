@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import {
   ArrowLeft,
   Check,
@@ -7,43 +7,25 @@ import {
   Phone,
   ShoppingBag,
 } from "lucide-react"
-import { Link, useNavigate } from "react-router-dom"
-import { toast } from "sonner"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import axios from "@/lib/axios"
 import type { Address } from "@/types/address"
 import { useCart } from "../hooks/useCart"
+import { usePlaceOrder } from "../hooks/usePlaceOrder"
 
 function OrderReviewPage() {
   const { cart, isLoading } = useCart()
-  const navigate = useNavigate()
-  const queryClient = useQueryClient()
+  const placeOrder = usePlaceOrder()
   const addressQuery = useQuery({
     queryKey: ["checkoutAddresses"],
     queryFn: async () => {
       const { data } = await axios.get<{ data: Address[] }>("/address")
-      return (
-        data.data.find((address) => address.isDefault) ?? data.data[0] ?? null
-      )
+      return data.data.find((address) => address.isDefault) ?? null
     },
   })
-  const placeOrder = useMutation({
-    mutationFn: async () => {
-      const { data } = await axios.post("/orders/checkout/cod")
-      return data.data as { _id: string }
-    },
-    onSuccess: async (order) => {
-      await queryClient.invalidateQueries({ queryKey: ["cart"] })
-      navigate(`/orders/tracking/${order._id}`)
-    },
-    onError: (error) => {
-      console.log(error)
-      toast.error("We couldn’t place your order. Please try again.")
-    },
-  })
-
   if (isLoading || addressQuery.isLoading) {
     return (
       <div className="mx-auto w-full max-w-5xl animate-pulse p-5 sm:p-8">
@@ -221,8 +203,8 @@ function OrderReviewPage() {
               className="hidden w-full sm:flex"
               size="lg"
               disabled={
-                !address?.recipientName ||
-                !address.phoneNumber ||
+                !address?.recipientName?.trim() ||
+                !address.phoneNumber?.trim() ||
                 placeOrder.isPending ||
                 !cart.merchant.isOpen
               }
@@ -230,6 +212,13 @@ function OrderReviewPage() {
             >
               {placeOrder.isPending ? "Placing order…" : "Place order"}
             </Button>
+            {(!address?.recipientName?.trim() ||
+              !address.phoneNumber?.trim()) && (
+              <p className="text-xs text-muted-foreground">
+                Select a default delivery address with a recipient name and
+                phone number.
+              </p>
+            )}
             {!cart.merchant.isOpen && (
               <p className="text-sm text-destructive">
                 This store is closed right now.
@@ -249,8 +238,8 @@ function OrderReviewPage() {
           <Button
             className="flex-1"
             disabled={
-              !address?.recipientName ||
-              !address.phoneNumber ||
+              !address?.recipientName?.trim() ||
+              !address.phoneNumber?.trim() ||
               placeOrder.isPending ||
               !cart.merchant.isOpen
             }

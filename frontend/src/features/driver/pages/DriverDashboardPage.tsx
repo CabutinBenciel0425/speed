@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQueryClient } from "@tanstack/react-query"
 import { io } from "socket.io-client"
 import type { Socket } from "socket.io-client"
 import {
@@ -27,32 +27,13 @@ import { Switch } from "@/components/ui/switch"
 import { useAuth } from "@/hooks/useAuth"
 import { useAuthStore } from "@/store/authStore"
 import axios from "@/lib/axios"
-import type { DeliveryOffer } from "@/features/merchant/store/offerStore"
-
-type DriverProfile = {
-  _id: string
-  status: string
-  isAvailable: boolean
-  workingStatus: string
-  activeOrder?: string | null
-}
-
-type DriverOrder = {
-  _id: string
-  orderNumber: string
-  status: string
-  merchant:
-    | {
-        merchantName: string
-        address?: { street?: string; barangay?: string; city?: string }
-      }
-    | string
-  customer?: { firstName?: string; lastName?: string }
-  deliveryAddress?: { street: string; barangay: string; city: string }
-  driverArrivedAtMerchantAt?: string
-  driverConfirmPickedUpAt?: string
-  merchantConfirmPickedUpAt?: string
-}
+import type { DeliveryOffer } from "../types/driver"
+import {
+  useDriverAvailability,
+  useDriverCurrentOrder,
+  useDriverOrderAction,
+  useDriverProfile,
+} from "../hooks/useDriverData"
 
 function DriverDashboardPage() {
   const { activeRole, isAuthenticated, isLoading } = useAuth()
@@ -62,63 +43,14 @@ function DriverDashboardPage() {
   const [socketConnected, setSocketConnected] = useState(false)
   const socketRef = useRef<Socket | null>(null)
   const locationSentAt = useRef(0)
-  const profileQuery = useQuery({
-    queryKey: ["driverProfile"],
-    queryFn: async () =>
-      (await axios.get<{ data: DriverProfile }>("/driver")).data.data,
-    enabled: isAuthenticated && activeRole === "Driver",
-    refetchInterval: 15000,
-  })
-  const orderQuery = useQuery({
-    queryKey: ["driverCurrentOrder"],
-    queryFn: async () => {
-      const { data } = await axios.get<{ data?: DriverOrder }>(
-        "/driver/orders/current"
-      )
-      return data.data ?? null
-    },
-    enabled: isAuthenticated && activeRole === "Driver",
-    refetchInterval: 10000,
-  })
-  const availabilityMutation = useMutation({
-    mutationFn: async (isAvailable: boolean) =>
-      (
-        await axios.patch<{ data: DriverProfile }>("/driver/availability", {
-          isAvailable,
-        })
-      ).data.data,
-    onSuccess: (profile) => {
-      queryClient.setQueryData(["driverProfile"], profile)
-      toast.success(
-        profile.isAvailable
-          ? "You’re online and can receive offers."
-          : "You’re offline."
-      )
-    },
-    onError: () => toast.error("Could not update availability."),
-  })
-  const orderAction = useMutation({
-    mutationFn: async ({
-      orderId,
-      action,
-    }: {
-      orderId: string
-      action: "heading-to-merchant" | "picked-up" | "delivered"
-    }) => {
-      const path = `/driver/orders/${orderId}/${action}`
-
-      return axios.patch(path)
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["driverCurrentOrder"] })
-      void queryClient.invalidateQueries({ queryKey: ["driverProfile"] })
-    },
-    onError: (error) =>
-      toast.error(
-        (error as any)?.response?.data?.message ??
-          "That delivery update could not be saved."
-      ),
-  })
+  const profileQuery = useDriverProfile(
+    isAuthenticated && activeRole === "Driver"
+  )
+  const orderQuery = useDriverCurrentOrder(
+    isAuthenticated && activeRole === "Driver"
+  )
+  const availabilityMutation = useDriverAvailability()
+  const orderAction = useDriverOrderAction()
 
   useEffect(() => {
     if (!isAuthenticated || activeRoleState !== "Driver") return

@@ -1,15 +1,8 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+import type { DeliveryOffer } from "@/features/driver/types/driver"
 
-export type DeliveryOffer = {
-  offerId: string
-  merchantName: string
-  merchantAddress: { street?: string; barangay?: string; city?: string }
-  customerAddress?: { street?: string; barangay?: string; city?: string }
-  deliveryFee: number
-  estimatedDistance: number
-  estimatedDuration: number
-}
+export type { DeliveryOffer } from "@/features/driver/types/driver"
 
 interface OfferStore {
   offers: DeliveryOffer[]
