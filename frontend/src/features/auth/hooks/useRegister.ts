@@ -7,7 +7,9 @@ export const useRegister = () => {
   return useMutation({
     mutationFn: registerUser,
     onSuccess: () => {
-      toast.success("Account successfully created")
+      toast.success(
+        "Account created. Check your email for the verification code."
+      )
     },
     onError: () => {
       toast.error("Something went wrong. Please try again later.")
@@ -16,12 +18,6 @@ export const useRegister = () => {
 }
 
 const registerUser = async (payload: SignupInput) => {
-  try {
-    const res = await axios.post("auth/sign-up/customer", payload)
-    return res.data
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error
-    }
-  }
+  const res = await axios.post("auth/sign-up/customer", payload)
+  return res.data
 }

@@ -12,10 +12,14 @@ import type { VerifyEmailInput } from "@/features/auth/types/auth"
 import { useAuth } from "@/hooks/useAuth"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import { Controller } from "react-hook-form"
 import { NavLink, useNavigate } from "react-router-dom"
 import { useVerifyEmail } from "../hooks/useVerifyEmail"
 import { Spinner } from "@/components/ui/spinner"
 import { useEffect } from "react"
+import { Input } from "@/components/ui/input"
+import FieldStateError from "@/components/common/FieldStateError"
+import { Field, FieldLabel } from "@/components/ui/field"
 
 function EmailVerificationCard() {
   const { user } = useAuth()
@@ -24,7 +28,7 @@ function EmailVerificationCard() {
   const form = useForm<VerifyEmailInput>({
     resolver: zodResolver(emailVerifySchema),
     defaultValues: {
-      email: user?.email,
+      email: user?.email ?? "",
     },
   })
 
@@ -34,9 +38,13 @@ function EmailVerificationCard() {
 
   useEffect(() => {
     if (data?.success) {
-      navigate("/input-otp")
+      navigate("/input-otp", { state: { email: form.getValues("email") } })
     }
-  }, [data, navigate])
+  }, [data, form, navigate])
+
+  useEffect(() => {
+    if (user?.email) form.setValue("email", user.email)
+  }, [form, user?.email])
 
   return (
     <Card
@@ -50,9 +58,36 @@ function EmailVerificationCard() {
         </CardDescription>
       </CardHeader>
       <form onSubmit={form.handleSubmit(handleSubmit)}>
-        <CardContent></CardContent>
+        <CardContent>
+          <Controller
+            name="email"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="verification-email">
+                  Email address
+                </FieldLabel>
+                <Input
+                  {...field}
+                  id="verification-email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  readOnly={Boolean(user?.email)}
+                  aria-invalid={fieldState.invalid}
+                />
+                <FieldStateError fieldState={fieldState} />
+              </Field>
+            )}
+          />
+        </CardContent>
         <CardFooter className="flex-col gap-2">
-          <Button size="sm" className="w-full" type="submit">
+          <Button
+            size="sm"
+            className="w-full"
+            type="submit"
+            disabled={isPending}
+          >
             {isPending ? (
               <>
                 <Spinner className="mr-1" />
@@ -68,7 +103,9 @@ function EmailVerificationCard() {
 
           {error && (
             <p className="text-sm text-destructive">
-              {error.message || "Something went wrong"}
+              {
+                "The verification email could not be sent. Check the address and try again."
+              }
             </p>
           )}
         </CardFooter>

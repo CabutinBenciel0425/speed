@@ -1,4 +1,4 @@
-const PSGC_BASE = "https://psgc.cloud/api/v2"
+import axios from "@/lib/axios"
 
 type PSGCRecord = { code: string; name: string; [key: string]: unknown }
 
@@ -35,12 +35,14 @@ export type PSGCBarangay = {
   isPoblacion?: boolean
 }
 
-const fetchAll = async <T>(endpoint: string, mapRecord: (record: PSGCRecord) => T): Promise<T[]> => {
-  const response = await fetch(`${PSGC_BASE}${endpoint}`)
-  if (!response.ok) throw new Error(`Location data could not be loaded (${response.status}).`)
-  const payload = await response.json()
+const fetchAll = async <T>(
+  endpoint: string,
+  mapRecord: (record: PSGCRecord) => T
+): Promise<T[]> => {
+  const { data: payload } = await axios.get(endpoint)
   const records = Array.isArray(payload) ? payload : payload.data
-  if (!Array.isArray(records)) throw new Error("Location service returned an unexpected response.")
+  if (!Array.isArray(records))
+    throw new Error("Location service returned an unexpected response.")
   return records.map(mapRecord)
 }
 
@@ -64,7 +66,11 @@ const cityMunicipality = (item: PSGCRecord): PSGCCitiesMunicipality => ({
   provinceCode: String(item.province ?? ""),
   psgc10DigitCode: item.code,
   isCapital: Boolean(item.is_capital),
-  geographicLevel: String(item.type ?? "").toLowerCase().includes("city") ? "City" : "Mun",
+  geographicLevel: String(item.type ?? "")
+    .toLowerCase()
+    .includes("city")
+    ? "City"
+    : "Mun",
 })
 
 const barangay = (item: PSGCRecord): PSGCBarangay => ({
@@ -80,13 +86,22 @@ const barangay = (item: PSGCRecord): PSGCBarangay => ({
 const codePath = (code: string) => encodeURIComponent(code)
 
 export const psgcService = {
-  getRegions: () => fetchAll("/regions", region),
+  getRegions: () => fetchAll("/location/regions", region),
   getProvincesByRegion: (code: string) =>
-    fetchAll(`/regions/${codePath(code)}/provinces`, province),
+    fetchAll(`/location/regions/${codePath(code)}/provinces`, province),
   getCitiesMunicipalitiesByRegion: (code: string) =>
-    fetchAll(`/regions/${codePath(code)}/cities-municipalities`, cityMunicipality),
+    fetchAll(
+      `/location/regions/${codePath(code)}/cities-municipalities`,
+      cityMunicipality
+    ),
   getCitiesMunicipalitiesByProvince: (code: string) =>
-    fetchAll(`/provinces/${codePath(code)}/cities-municipalities`, cityMunicipality),
+    fetchAll(
+      `/location/provinces/${codePath(code)}/cities-municipalities`,
+      cityMunicipality
+    ),
   getBarangays: (code: string) =>
-    fetchAll(`/cities-municipalities/${codePath(code)}/barangays`, barangay),
+    fetchAll(
+      `/location/cities-municipalities/${codePath(code)}/barangays`,
+      barangay
+    ),
 }

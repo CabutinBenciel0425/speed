@@ -18,9 +18,10 @@ import type { SignupInput } from "../types/auth"
 import { signupSchema } from "../schemas/authSchema"
 import { motion } from "framer-motion"
 import { useRegister } from "../hooks/useRegister"
-import { NavLink } from "react-router-dom"
+import { NavLink, useNavigate } from "react-router-dom"
 
 export function RegisterPage() {
+  const navigate = useNavigate()
   const { mutate, isPending, error } = useRegister()
   const form = useForm<SignupInput>({
     resolver: zodResolver(signupSchema),
@@ -34,11 +35,11 @@ export function RegisterPage() {
   })
 
   function onSubmit(data: SignupInput) {
-    mutate(data)
-
-    if (!error) {
-      form.reset()
-    }
+    mutate(data, {
+      onSuccess: () => {
+        navigate("/input-otp", { state: { email: data.email } })
+      },
+    })
   }
 
   return (

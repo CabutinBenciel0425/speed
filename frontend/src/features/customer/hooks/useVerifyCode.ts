@@ -12,10 +12,13 @@ export const useVerifyCode = () => {
   const setVerified = useAuthStore((state) => state.setVerified)
   return useMutation({
     mutationFn: verifyCode,
-    onSuccess: () => {
+    onSuccess: (_result, variables) => {
       toast.success("Email verified successfully!")
 
-      setVerified(true)
+      const currentUser = useAuthStore.getState().user
+      if (currentUser?.email.toLowerCase() === variables.email.toLowerCase()) {
+        setVerified(true)
+      }
 
       queryClient.invalidateQueries({ queryKey: ["currentUser"] })
     },

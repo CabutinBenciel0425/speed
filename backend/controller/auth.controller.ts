@@ -66,10 +66,14 @@ export const customerSignup = asyncHandler(
       avatar: req.file,
     });
 
+    await sendCodeFn(email);
+
     res.status(201).json({
       success: true,
-      message: "User successfully created",
+      message:
+        "Account created. A verification code has been sent to your email.",
       data: newCustomer,
+      email,
     });
   },
 );

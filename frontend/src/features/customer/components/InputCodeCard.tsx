@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/input-otp"
 import { REGEXP_ONLY_DIGITS } from "input-otp"
 import { useAuth } from "@/hooks/useAuth"
-import { NavLink, useNavigate } from "react-router-dom"
+import { NavLink, useLocation, useNavigate } from "react-router-dom"
 import { useVerifyCode } from "../hooks/useVerifyCode"
 import type { VerificationCodeInput } from "../types/emailVerification"
 import { useEffect, useState } from "react"
@@ -28,24 +28,28 @@ import { useVerifyEmail } from "../hooks/useVerifyEmail"
 
 function InputCodeCard() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const pendingEmail = (location.state as { email?: string } | null)?.email
   const [otp, setOtp] = useState("")
   const { user } = useAuth()
   const {
     mutate: verifyCode,
     isPending: isVerifying,
+    isSuccess: isVerified,
     error: verifyCodeError,
   } = useVerifyCode()
   const {
     mutate: resendCode,
-    data,
     isPending: isResending,
     error: verifyEmailError,
   } = useVerifyEmail()
   const { seconds, reset, isRunning } = useCountdown(60)
+  const email = user?.email ?? pendingEmail ?? ""
 
   const handleSubmit = (data: VerificationCodeInput) => {
     if (!data.email) {
       toast.error("User email not found")
+      return
     }
     verifyCode(data)
   }
@@ -56,11 +60,11 @@ function InputCodeCard() {
       return
     }
 
-    resendCode({ email: user?.email ?? "" })
-    reset(60)
-    if (data?.success) {
-      toast.success("A new OTP has been sent to your email")
+    if (!email) {
+      toast.error("Enter your email address to request a verification code.")
+      return
     }
+    resendCode({ email }, { onSuccess: () => reset(60) })
   }
 
   useEffect(() => {
@@ -69,6 +73,10 @@ function InputCodeCard() {
     }
   }, [user?.isVerified, navigate])
 
+  useEffect(() => {
+    if (isVerified && !user) navigate("/login", { replace: true })
+  }, [isVerified, user, navigate])
+
   return (
     <Card className="mx-auto flex max-w-md flex-col gap-8 px-3 py-5">
       <CardHeader className="flex flex-col gap-4">
@@ -76,13 +84,16 @@ function InputCodeCard() {
         <CardDescription>
           Enter the verification code we sent to your email address:{" "}
           <span className="text-base font-semibold text-primary">
-            {user?.email}
+            {email || "your email address"}
           </span>
           .
         </CardDescription>
       </CardHeader>
       <form
-        action={() => handleSubmit({ email: user?.email ?? "", code: otp })}
+        onSubmit={(event) => {
+          event.preventDefault()
+          handleSubmit({ email, code: otp })
+        }}
       >
         <CardContent className="w-full">
           <Field className="px-5">
@@ -90,7 +101,13 @@ function InputCodeCard() {
               <FieldLabel htmlFor="otp-verification">
                 Verification code
               </FieldLabel>
-              <Button variant="outline" size="xs" onClick={handleResend}>
+              <Button
+                type="button"
+                variant="outline"
+                size="xs"
+                onClick={handleResend}
+                disabled={isResending}
+              >
                 <RefreshCwIcon
                   className={`${isResending ? "animate-spin" : ""}`}
                 />

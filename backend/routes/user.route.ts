@@ -77,15 +77,9 @@ userRoute.patch(
   validate(resetPasswordSchema),
   resetPassword,
 );
-userRoute.post(
-  "/send-code",
-  protectRoute,
-  validate(emailVerifySchema),
-  sendVerificationCode,
-);
+userRoute.post("/send-code", validate(emailVerifySchema), sendVerificationCode);
 userRoute.post(
   "/verify-code",
-  protectRoute,
   validate(verificationCodeSchema),
   codeVerification,
 );
