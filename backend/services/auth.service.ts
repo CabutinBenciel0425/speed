@@ -36,6 +36,7 @@ import { imageUpload } from "../utils/imageUpload.js";
 import { notifyAdmins } from "./notification.service.js";
 import Driver, { type IDriver } from "../models/driver.model.js";
 import { addUserRole } from "../utils/addRole.js";
+import { normalizeUserRoles } from "../utils/userRoles.js";
 import cloudinary from "../config/cloudinary.js";
 import { storePasswordResetToken } from "../utils/storePasswordResetToken.js";
 import type { HydratedDocument } from "mongoose";
@@ -182,16 +183,18 @@ export const loginUser = async ({ email, password }: LoginInput) => {
     throw new UnauthorizedError("Invalid email or password");
   }
 
-  if (user.role.length > 1) {
+  const roles = normalizeUserRoles(user.role);
+
+  if (roles.length > 1) {
     const tempToken = createTempToken(user._id.toString());
     return {
       tempToken,
       requiresRoleSelection: true,
-      roles: user.role,
+      roles,
     };
   }
 
-  const activeRole = user.role[0] as ValidUserRoleInput;
+  const activeRole = roles[0] ?? "Customer";
 
   const { accessToken, refreshToken } = generateToken(
     user._id.toString(),
@@ -207,7 +210,7 @@ export const loginUser = async ({ email, password }: LoginInput) => {
       lastName: user.lastName,
       email: user.email,
       phoneNumber: user.phoneNumber,
-      role: user.role,
+      role: roles,
       avatar: user.avatar,
       isVerified: user.isVerified,
     },
@@ -241,7 +244,7 @@ export const selectRoleService = async (
     throw new NotFoundError("User");
   }
 
-  if (!user.role.includes(activeRole)) {
+  if (!normalizeUserRoles(user.role).includes(activeRole)) {
     throw new UnauthorizedError(
       "Provided role not found in the user's listed role",
     );

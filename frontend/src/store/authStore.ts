@@ -25,15 +25,28 @@ export const useAuthStore = create<AuthStore>()(
       isVerified: false,
       isLoading: true,
 
-      setAuth: (user, activeRole) =>
+      setAuth: (user, activeRole) => {
+        const roles = Array.from(
+          new Set(
+            user.role.map((role) =>
+              (role as string) === "User" ? "Customer" : role,
+            ),
+          ),
+        ) as ValidRole[]
+        const normalizedActiveRole =
+          (activeRole as string | undefined) === "User"
+            ? "Customer"
+            : activeRole
+
         set({
-          user,
+          user: { ...user, role: roles },
           activeRole:
-            activeRole ?? (user.role.length === 1 ? user.role[0] : null),
+            normalizedActiveRole ?? (roles.length === 1 ? roles[0] : null),
           isAuthenticated: true,
           isVerified: user.isVerified,
           isLoading: false,
-        }),
+        })
+      },
       setActiveRole: (role) => set({ activeRole: role }),
       setVerified: (isVerified) => set({ isVerified }),
       setLoading: (isLoading) => set({ isLoading }),

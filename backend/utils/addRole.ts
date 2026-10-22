@@ -1,7 +1,7 @@
 import { NotFoundError } from "./errors.js";
 import User from "../models/user.model.js";
 
-const VALID_ROLES = ["User", "Merchant", "Driver", "Admin"] as const;
+const VALID_ROLES = ["Customer", "Merchant", "Driver", "Admin"] as const;
 
 export const addUserRole = async (userId: string, role: string) => {
   try {

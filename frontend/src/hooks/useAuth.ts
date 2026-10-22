@@ -6,14 +6,9 @@ import { useEffect } from "react"
 
 type CurrentSession = { user: User; activeRole: User["role"][number] }
 
-const fetchCurrentUser = async (): Promise<CurrentSession | null> => {
-  try {
-    const { data } = await axios.get("/auth/profile")
-    return data.data
-  } catch (error) {
-    console.log(error)
-    return null
-  }
+const fetchCurrentUser = async (): Promise<CurrentSession> => {
+  const { data } = await axios.get("/auth/profile")
+  return data.data
 }
 
 export const useAuth = () => {

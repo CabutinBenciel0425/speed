@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { LoginInput } from "../types/auth"
 import axios from "@/lib/axios"
 import { toast } from "sonner"
@@ -7,6 +7,7 @@ import type { ValidRole } from "@/types/user"
 
 export const useLogin = () => {
   const setAuth = useAuthStore((state) => state.setAuth)
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: loginUser,
     onSuccess: (response) => {
@@ -16,6 +17,8 @@ export const useLogin = () => {
         const user = response.data
 
         setAuth(user, user.role[0] as ValidRole)
+
+        void queryClient.invalidateQueries({ queryKey: ["currentUser"] })
 
         sessionStorage.removeItem("refreshFailed")
       }
@@ -32,8 +35,6 @@ const loginUser = async (payload: LoginInput) => {
 
     return res.data
   } catch (error) {
-    if (error instanceof Error) {
-      throw error
-    }
+    throw error
   }
 }

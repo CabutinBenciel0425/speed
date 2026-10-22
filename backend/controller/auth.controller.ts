@@ -44,6 +44,7 @@ import type { DriverInput } from "../schemas/driver.schema.js";
 import { getProductFavoritesService } from "../services/product.service.js";
 import { getMerchantFavoritesService } from "../services/merchant.service.js";
 import Order from "../models/order.model.js";
+import { normalizeUserRoles } from "../utils/userRoles.js";
 
 const clearAuthCookies = (res: Response) => {
   res.clearCookie("accessToken", { path: "/" });
@@ -281,7 +282,10 @@ export const recreateAccessToken = asyncHandler(
     }
 
     const user = await User.findById(userId);
-    if (!user || !user.role.includes(activeRole)) {
+    if (
+      !user ||
+      !normalizeUserRoles(user.role).includes(activeRole as ValidUserRoleInput)
+    ) {
       await redisClient.del(tokenKey);
       clearAuthCookies(res);
       throw new UnauthorizedError(
