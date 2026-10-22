@@ -2,9 +2,12 @@ import {
   Bike,
   ClipboardList,
   LayoutDashboard,
+  LogOut,
   Star,
   UserRound,
 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { useLogout } from "@/features/auth/hooks/useLogout"
 import { NavLink, Navigate, Outlet } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
 import { getRoleHomePath } from "@/utils/roleRoutes"
@@ -19,6 +22,7 @@ const links = [
 
 export default function DriverLayout() {
   const { activeRole, isAuthenticated, isLoading } = useAuth()
+  const { mutate: logout, isPending: isLoggingOut } = useLogout()
   if (isLoading) return <PageLoading label="Checking your session…" className="min-h-screen" />
   if (!isAuthenticated) return <Navigate to="/login" replace />
   if (activeRole !== "Driver")
@@ -49,6 +53,17 @@ export default function DriverLayout() {
               </NavLink>
             ))}
           </nav>
+          <Button
+            type="button"
+            variant="outline"
+            className="ml-auto gap-2 text-muted-foreground hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive sm:ml-0"
+            onClick={() => logout()}
+            disabled={isLoggingOut}
+            aria-label="Log out of driver account"
+          >
+            <LogOut className="size-4" />
+            <span>{isLoggingOut ? "Signing out…" : "Sign out"}</span>
+          </Button>
         </div>
       </header>
       <Outlet />

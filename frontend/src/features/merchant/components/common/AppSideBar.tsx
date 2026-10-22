@@ -1,9 +1,11 @@
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { Button } from "@/components/ui/button"
 import { NavLink } from "react-router-dom"
 import speedIconSmall from "@/assets/speed-sm.png"
 import speedIconLogo from "@/assets/speed-s-logo.png"
@@ -11,16 +13,19 @@ import {
   Bell,
   ChartLine,
   House,
+  LogOut,
   Settings,
   ShoppingBag,
   Star,
   Utensils,
 } from "lucide-react"
 import { useMerchantNotifications } from "../../hooks/useMerchantNotifications"
+import { useLogout } from "@/features/auth/hooks/useLogout"
 
 function AppSideBar() {
   const { isMobile, state, setOpenMobile } = useSidebar()
   const { data: notificationData } = useMerchantNotifications()
+  const { mutate: logout, isPending: isLoggingOut } = useLogout()
   const unreadCount = notificationData?.unreadCount ?? 0
   const iconsOnly = !isMobile && state === "collapsed"
 
@@ -84,6 +89,27 @@ function AppSideBar() {
           </NavLink>
         ))}
       </SidebarContent>
+      <SidebarFooter
+        className={`border-t ${iconsOnly ? "items-center px-1 py-3" : "px-3 py-3"}`}
+      >
+        <Button
+          type="button"
+          variant="ghost"
+          title={iconsOnly ? "Sign out" : undefined}
+          aria-label="Sign out of merchant account"
+          disabled={isLoggingOut}
+          onClick={() => {
+            if (isMobile) setOpenMobile(false)
+            logout()
+          }}
+          className={`min-h-10 text-muted-foreground hover:bg-destructive/10 hover:text-destructive ${iconsOnly ? "size-10 p-0" : "w-full justify-start gap-3 px-3"}`}
+        >
+          <LogOut className="size-4 shrink-0" aria-hidden="true" />
+          {!iconsOnly && (
+            <span>{isLoggingOut ? "Signing out…" : "Sign out"}</span>
+          )}
+        </Button>
+      </SidebarFooter>
     </Sidebar>
   )
 }
