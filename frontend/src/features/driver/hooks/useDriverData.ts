@@ -3,11 +3,11 @@ import { isAxiosError } from "axios"
 import { toast } from "sonner"
 import axios from "@/lib/axios"
 import type { PaginatedResponse } from "@/types/pagination"
+import type { PaginatedDriverReviews } from "../types/driver"
 import type {
   DriverOrder,
   DriverOrderAction,
   DriverProfile,
-  DriverReview,
 } from "../types/driver"
 
 export const driverKeys = {
@@ -40,6 +40,16 @@ export function useDriverCurrentOrder(enabled = true) {
   })
 }
 
+export function useDriverOrderDetails(orderId: string | undefined) {
+  return useQuery({
+    queryKey: [...driverKeys.currentOrder, "details", orderId],
+    queryFn: async () =>
+      (await axios.get<{ data: DriverOrder }>(`/driver/orders/${orderId}`)).data.data,
+    enabled: Boolean(orderId),
+    staleTime: 15_000,
+  })
+}
+
 export function useDriverOrderHistory(page: number, enabled = true) {
   return useQuery({
     queryKey: [...driverKeys.history, page],
@@ -54,12 +64,11 @@ export function useDriverOrderHistory(page: number, enabled = true) {
   })
 }
 
-export function useDriverReviews(enabled = true) {
+export function useDriverReviews(page: number, enabled = true) {
   return useQuery({
-    queryKey: driverKeys.reviews,
+    queryKey: [...driverKeys.reviews, page],
     queryFn: async () =>
-      (await axios.post<{ data?: DriverReview[] }>("/review/driver")).data
-        .data ?? [],
+      (await axios.post<PaginatedDriverReviews>(`/review/driver?page=${page}&limit=8`)).data,
     enabled,
     staleTime: 60_000,
   })

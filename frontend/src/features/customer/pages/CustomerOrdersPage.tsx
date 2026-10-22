@@ -66,9 +66,7 @@ function CustomerOrdersPage() {
   }, [focusedOrderId, ordersQuery.data])
 
   if (ordersQuery.isLoading) {
-    return (
-      <OrderListSkeleton />
-    )
+    return <OrderListSkeleton />
   }
   if (ordersQuery.isError) {
     return (
@@ -185,8 +183,11 @@ function CustomerOrdersPage() {
                       <div className="flex flex-row items-center justify-start gap-2">
                         <PhilippinePeso className="size-6 text-primary" />
                         <p>
-                          Payment: {order.payment.method} ·{" "}
-                          {order.payment.status}
+                          Payment:{" "}
+                          {order.payment.method === "QRPh"
+                            ? "QR Ph"
+                            : "Cash on delivery"}{" "}
+                          · {order.payment.status}
                         </p>
                       </div>
                     </div>

@@ -6,18 +6,20 @@ export default function PageControls({
   pages,
   total,
   onPageChange,
+  label = "orders",
 }: {
   page: number
   pages: number
   total: number
   onPageChange: (page: number) => void
+  label?: string
 }) {
   if (pages <= 1) return null
   return (
     <div className="mt-6 space-y-2">
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs text-muted-foreground">
-          {total} orders · page {page} of {pages}
+          {total} {label} · page {page} of {pages}
         </p>
         <div className="flex gap-2">
           <Button

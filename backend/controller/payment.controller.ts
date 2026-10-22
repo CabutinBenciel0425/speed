@@ -1,15 +1,17 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import crypto from "crypto";
 import type { Request, Response } from "express";
-import { NotFoundError, UnauthorizedError } from "../utils/errors.js";
+import { UnauthorizedError } from "../utils/errors.js";
 import {
   createCheckoutService,
   handleExpiredQRPhPaymentService,
   handleFailedPaymentService,
   handleSuccessfulPaymentService,
+  syncQRPhPaymentStatusService,
 } from "../services/payment.service.js";
 import { PAYMONGO_WEBHOOK_SECRET } from "../config/envVars.js";
 import Payment from "../models/payment.model.js";
+import Cart from "../models/cart.model.js";
 
 export const createCheckout = asyncHandler(
   async (req: Request, res: Response) => {
@@ -77,7 +79,12 @@ export const paymongoWebhook = asyncHandler(
       .update(signaturePayload)
       .digest("hex");
 
-    if (signatureToCompare !== expectedSignature) {
+    const receivedBuffer = Buffer.from(signatureToCompare, "hex");
+    const expectedBuffer = Buffer.from(expectedSignature, "hex");
+    if (
+      receivedBuffer.length !== expectedBuffer.length ||
+      !crypto.timingSafeEqual(receivedBuffer, expectedBuffer)
+    ) {
       console.error("Invalid webhook signature");
       return res.status(401).send("Invalid signature");
     }
@@ -86,29 +93,26 @@ export const paymongoWebhook = asyncHandler(
 
     const eventType = event.data?.type;
 
-    console.log(`📨 PayMongo webhook: ${eventType}`);
-
-    console.log("RAW BODY:", req.body.toString());
-    console.log("SIGNATURE:", signatureHeader);
-    console.log("EVENT:", event);
-    console.log("EVENT TYPE:", eventType);
+    const paymentData = event.data?.attributes?.data;
+    const paymentAttributes = paymentData?.attributes;
 
     switch (eventType) {
       case "payment.paid": {
-        const paymentIntentId = event.data.attributes.data.payment_intent_id;
+        const paymentIntentId = paymentAttributes?.payment_intent_id;
+        const transactionId = paymentData?.id;
+        const amount = paymentAttributes?.amount;
 
-        const transactionId = event.data.attributes.data.id;
-
-        if (!paymentIntentId) {
+        if (!paymentIntentId || !transactionId || typeof amount !== "number") {
           return res.status(400).json({
             success: false,
-            message: "Missing payment intent ID",
+            message: "Missing payment confirmation details",
           });
         }
 
         const order = await handleSuccessfulPaymentService(
           paymentIntentId,
           transactionId,
+          amount,
         );
 
         return res.status(200).json({
@@ -122,8 +126,8 @@ export const paymongoWebhook = asyncHandler(
       }
 
       case "payment.failed": {
-        console.log("❌ Payment failed");
-        const paymentIntentId = event.data.attributes.data.payment_intent_id;
+        const paymentIntentId = paymentAttributes?.payment_intent_id;
+        if (!paymentIntentId) return res.status(200).json({ success: true });
 
         const payment = await handleFailedPaymentService(paymentIntentId);
 
@@ -135,8 +139,8 @@ export const paymongoWebhook = asyncHandler(
       }
 
       case "qrph.expired": {
-        console.log("⏰ QRPh expired");
-        const paymentIntentId = event.data.attributes.data.payment_intent_id;
+        const paymentIntentId = paymentAttributes?.payment_intent_id;
+        if (!paymentIntentId) return res.status(200).json({ success: true });
 
         const payment = await handleExpiredQRPhPaymentService(paymentIntentId);
 
@@ -148,12 +152,11 @@ export const paymongoWebhook = asyncHandler(
       }
 
       case "payment.refunded": {
-        console.log("💰 Payment refunded");
         break;
       }
 
       default: {
-        console.log(`ℹ️ Unhandled event: ${eventType}`);
+        return res.status(200).json({ success: true, ignored: true });
       }
     }
   },
@@ -184,17 +187,54 @@ export const getPayment = asyncHandler(async (req: Request, res: Response) => {
     throw new UnauthorizedError("Unauthorized user");
   }
 
-  const payment = await Payment.findOne({
-    customer: user._id.toString(),
-    _id: paymentId,
-  });
-
-  if (!payment) {
-    throw new NotFoundError("Payment");
-  }
+  const payment = await syncQRPhPaymentStatusService(
+    user._id.toString(),
+    paymentId,
+  );
 
   res.status(200).json({
     success: true,
     data: payment,
   });
 });
+
+export const getPendingQRPhPayment = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+    if (!user) throw new UnauthorizedError("Unauthorized user");
+
+    const recentPaymentCutoff = new Date(Date.now() - 15 * 60 * 1000);
+    const cart = await Cart.findOne({ customer: user._id }).select("_id");
+    const activePayment = cart
+      ? await Payment.findOne({
+          customer: user._id,
+          cart: cart._id,
+          method: "QRPh",
+          status: {
+            $in: ["Pending", "GeneratingQR", "Processing"] as const,
+          },
+        }).sort({ createdAt: -1 })
+      : null;
+    const recentPaidPayment = await Payment.findOne({
+      customer: user._id,
+      method: "QRPh",
+      status: "Paid",
+      paidAt: { $gte: recentPaymentCutoff },
+    }).sort({ createdAt: -1 });
+    const payment = activePayment ?? recentPaidPayment;
+
+    res.status(200).json({
+      success: true,
+      data: payment
+        ? {
+            paymentId: payment._id,
+            paymentIntentId: payment.paymentIntentId,
+            qrCodeImage: payment.qrCodeImage,
+            amount: payment.amount,
+            expiresAt: payment.expiresAt,
+            status: payment.status,
+          }
+        : null,
+    });
+  },
+);

@@ -18,6 +18,7 @@ export default function DriverProfilePage() {
   const [avatar, setAvatar] = useState<File | null>(null)
   useEffect(() => {
     if (!profile) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setVehicleType(profile.vehicleType)
     setPlateNumber(profile.plateNumber ?? "")
   }, [profile])

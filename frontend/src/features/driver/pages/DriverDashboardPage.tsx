@@ -13,7 +13,7 @@ import {
   Truck,
   UserRound,
 } from "lucide-react"
-import { Navigate } from "react-router-dom"
+import { Link, Navigate } from "react-router-dom"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
@@ -30,6 +30,8 @@ import PageLoading from "@/components/common/PageLoading"
 import { useAuthStore } from "@/store/authStore"
 import axios from "@/lib/axios"
 import type { DeliveryOffer } from "../types/driver"
+import type { DriverOrder } from "../types/driver"
+import DriverDeliveryCompleteDialog from "../components/DriverDeliveryCompleteDialog"
 import {
   useDriverAvailability,
   useDriverCurrentOrder,
@@ -42,6 +44,7 @@ function DriverDashboardPage() {
   const queryClient = useQueryClient()
   const activeRoleState = useAuthStore((state) => state.activeRole)
   const [offers, setOffers] = useState<DeliveryOffer[]>([])
+  const [deliveredOrder, setDeliveredOrder] = useState<DriverOrder | null>(null)
   const [socketConnected, setSocketConnected] = useState(false)
   const socketRef = useRef<Socket | null>(null)
   const locationSentAt = useRef(0)
@@ -342,6 +345,12 @@ function DriverDashboardPage() {
                 {currentOrder.customer.lastName}
               </p>
             )}
+            <Link
+              to={`/driver/orders/${currentOrder._id}`}
+              className="inline-flex h-9 w-full items-center justify-center rounded-md border bg-background px-4 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground sm:w-auto"
+            >
+              View order details
+            </Link>
             {currentOrder.status === "Pending" && (
               <p className="rounded-lg border p-3 text-sm text-muted-foreground">
                 The store is reviewing this order. You’ll be able to head to
@@ -425,6 +434,8 @@ function DriverDashboardPage() {
                   orderAction.mutate({
                     orderId: currentOrder._id,
                     action: "delivered",
+                  }, {
+                    onSuccess: () => setDeliveredOrder(currentOrder),
                   })
                 }
                 disabled={orderAction.isPending}
@@ -457,6 +468,10 @@ function DriverDashboardPage() {
           </CardContent>
         </Card>
       )}
+      <DriverDeliveryCompleteDialog
+        order={deliveredOrder}
+        onClose={() => setDeliveredOrder(null)}
+      />
     </main>
   )
 }

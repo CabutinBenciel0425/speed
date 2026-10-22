@@ -1,6 +1,6 @@
 import { Separator } from "@/components/ui/separator"
 import type { Order } from "@/types/order"
-import { Dot } from "lucide-react"
+import { Dot, QrCode, Wallet } from "lucide-react"
 
 function OrderDetailSummary({ order }: { order: Order }) {
   return (
@@ -46,38 +46,27 @@ function OrderDetailSummary({ order }: { order: Order }) {
         <Separator />
         <div className="py-3">
           <p className="flex w-full flex-row items-center justify-between">
-            <span className="text-base font-bold">Total price to pay</span>
+            <span className="text-base font-bold">Total to pay</span>
             <span className="text-xl font-bold text-primary">
-              ₱ {order.pricing.subtotal.toFixed(2)}
+              ₱ {order.pricing.total.toFixed(2)}
             </span>
           </p>
         </div>
       </div>
 
-      {/*Payment Method*/}
-      {/* <div className="flex flex-col gap-2 py-2">
-        <h2 className="text-base font-bold">Payment</h2>
-        <div>
-          <div className="flex flex-row items-center justify-evenly gap-4">
-            <span className="flex flex-col items-center rounded-md border border-dashed border-primary px-4 py-2">
-              <Banknote className="size-15 text-primary" />
-              <span className="text-base font-semibold">Cash</span>
-            </span>
-            <span className="flex flex-col items-center rounded-md border border-dashed border-background px-4 py-2">
-              <QrCode className="size-15" />
-              <span className="text-base font-semibold">QRPh</span>
-            </span>
-          </div>
-          {order.payment.method === "QRPh" && (
-            <div>
-              <Label>
-                Reference #:
-                <Input placeholder="Enter reference number" />
-              </Label>
-            </div>
+      <div className="flex items-center justify-between gap-3 border-t pt-3 text-sm">
+        <span className="flex items-center gap-2 text-muted-foreground">
+          {order.payment.method === "QRPh" ? (
+            <QrCode className="size-4" />
+          ) : (
+            <Wallet className="size-4" />
           )}
-        </div>
-      </div> */}
+          {order.payment.method === "QRPh"
+            ? "QR Ph paid online"
+            : "Cash on delivery"}
+        </span>
+        <span className="font-medium">{order.payment.status}</span>
+      </div>
     </div>
   )
 }

@@ -4,7 +4,8 @@ import Order, { type IOrder } from "../models/order.model.js";
 import Review from "../models/review.model.js";
 import User, { type IUser } from "../models/user.model.js";
 import { ConflictError, NotFoundError } from "../utils/errors.js";
-import { Types } from "mongoose";
+import { Types, type QueryFilter } from "mongoose";
+import type { IReview } from "../models/review.model.js";
 import { notifyAdmins } from "./notification.service.js";
 
 type Reviewee = IDriver | IMerchant;
@@ -179,23 +180,32 @@ const createReview = async ({
   return newReview;
 };
 
-export const getDriverReviewsService = async (user: IUser) => {
+export const getDriverReviewsService = async (
+  user: IUser,
+  pagination: { skip: number; limit: number },
+) => {
   const driver = await Driver.findOne({ user: user._id });
 
   if (!driver) {
     throw new NotFoundError("Driver");
   }
 
-  const reviews = await Review.find({
+  const filter: QueryFilter<IReview> = {
     reviewee: driver._id,
     targetType: "Driver",
     isHidden: false,
-  })
+  };
+  const [reviews, total] = await Promise.all([
+    Review.find(filter)
     .sort({ createdAt: -1 })
+    .skip(pagination.skip)
+    .limit(pagination.limit)
     .populate({ path: "reviewer", select: "firstName lastName avatar" })
-    .populate("order", "orderNumber createdAt");
+    .populate("order", "orderNumber createdAt"),
+    Review.countDocuments(filter),
+  ]);
 
-  return reviews;
+  return { reviews, total };
 };
 
 export const getMerchantReviewsService = async (user: IUser) => {

@@ -79,9 +79,7 @@ function MerchantOrdersPage() {
   }, [focusedOrderId, ordersQuery.data])
 
   if (merchantQuery.isLoading || ordersQuery.isLoading) {
-    return (
-      <OrderListSkeleton />
-    )
+    return <OrderListSkeleton />
   }
   if (merchantQuery.isError || ordersQuery.isError) {
     return (
@@ -187,7 +185,11 @@ function MerchantOrdersPage() {
                     <div className="flex flex-row items-center justify-start gap-2">
                       <PhilippinePeso className="size-6 text-primary" />
                       <p>
-                        Payment: {order.payment.method} · {order.payment.status}
+                        Payment:{" "}
+                        {order.payment.method === "QRPh"
+                          ? "QR Ph"
+                          : "Cash on delivery"}{" "}
+                        · {order.payment.status}
                       </p>
                     </div>
                     <p className="font-medium text-foreground">

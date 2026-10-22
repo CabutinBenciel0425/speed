@@ -12,6 +12,7 @@ import {
 import { asyncHandler } from "../utils/asyncHandler.js";
 import type { Response, Request } from "express";
 import { NotFoundError, UnauthorizedError } from "../utils/errors.js";
+import { buildQuery } from "../utils/buildQuery.js";
 
 export const customerReviewToDriver = asyncHandler(
   async (req: Request, res: Response) => {
@@ -134,11 +135,18 @@ export const getDriverReviews = asyncHandler(
     if (!user) {
       throw new UnauthorizedError("Unauthorized user");
     }
-    const reviews = await getDriverReviewsService(user);
+    const query = buildQuery(req.query);
+    const { reviews, total } = await getDriverReviewsService(user, query);
 
     res.status(200).json({
       success: true,
       data: reviews,
+      pagination: {
+        total,
+        page: query.page,
+        limit: query.limit,
+        pages: Math.ceil(total / query.limit),
+      },
     });
   },
 );

@@ -31,11 +31,22 @@ export interface DriverOrder {
   orderNumber: string
   status: string
   createdAt?: string
-  merchant: { merchantName: string; address?: DriverAddress } | string
+  merchant:
+    | { merchantName: string; phoneNumber?: string; address?: DriverAddress & { location?: { coordinates?: number[] } } }
+    | string
   customer?: { firstName?: string; lastName?: string; phoneNumber?: string }
-  deliveryAddress?: DriverAddress
-  pricing?: { deliveryFee?: number; total?: number }
-  items?: Array<{ productName: string; quantity: number; unitPrice?: number }>
+  deliveryAddress?: DriverAddress & {
+    recipientName?: string
+    phoneNumber?: string
+    houseOrUnitNumber?: string
+    region?: string
+    address?: string | { instructions?: string; landmark?: string }
+  }
+  payment?: { method: "Cash" | "QRPh"; status: "Pending" | "Paid" | "Cancelled" }
+  pricing?: { subtotal?: number; serviceFee?: number; discount?: number; deliveryFee?: number; total?: number }
+  estimatedDeliveryTime?: number
+  deliveryDistanceKm?: number | null
+  items?: Array<{ productName: string; image?: string; quantity: number; unitPrice?: number; subtotal?: number; notes?: string }>
   driverArrivedAtMerchantAt?: string
   driverConfirmPickedUpAt?: string
   merchantConfirmPickedUpAt?: string
@@ -65,6 +76,12 @@ export interface DriverReview {
   createdAt: string
   reviewer?: { firstName?: string; lastName?: string; avatar?: string }
   order?: { orderNumber?: string } | string
+}
+
+export interface PaginatedDriverReviews {
+  success: boolean
+  data: DriverReview[]
+  pagination: { total: number; page: number; limit: number; pages: number }
 }
 
 export type DriverOrderAction =

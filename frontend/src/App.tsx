@@ -102,6 +102,9 @@ const DriverDashboardPage = lazy(
 const DriverHistoryPage = lazy(
   () => import("./features/driver/pages/DriverHistoryPage")
 )
+const DriverOrderPage = lazy(
+  () => import("./features/driver/pages/DriverOrderPage")
+)
 const DriverReviewsPage = lazy(
   () => import("./features/driver/pages/DriverReviewsPage")
 )
@@ -175,6 +178,14 @@ export function App() {
                   fallback={<PageLoading label="Loading history…" />}
                 >
                   <DriverHistoryPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="orders/:orderId"
+              element={
+                <Suspense fallback={<PageLoading label="Loading order details…" />}>
+                  <DriverOrderPage />
                 </Suspense>
               }
             />

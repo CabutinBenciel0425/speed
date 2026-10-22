@@ -16,6 +16,7 @@ import {
   MapPin,
   NotepadText,
   Phone,
+  QrCode,
   Timer,
 } from "lucide-react"
 import { formatTimeAndDate } from "@/utils/timeUtils"
@@ -37,7 +38,9 @@ const ADDED_TIME = 15
 
 function OrderComponent() {
   const { orderId } = useParams()
-  const { data, isLoading, isError, refetch, isFetching } = useOrder(orderId || "")
+  const { data, isLoading, isError, refetch, isFetching } = useOrder(
+    orderId || ""
+  )
   const [isPickedupModalOpen, setIsPickedupModalOpen] = useState(false)
   const [isPaymentConfirm, setIsPaymentConfirm] = useState(false)
   const [action, setAction] = useState<
@@ -278,9 +281,9 @@ function OrderComponent() {
                   </div>
                 ) : (
                   <div className="flex flex-row items-center gap-2">
-                    <CreditCard className="size-4" />
+                    <QrCode className="size-4" />
                     <span className="text-sm text-muted-foreground">
-                      Online Payment
+                      QR Ph payment
                     </span>
                   </div>
                 )}

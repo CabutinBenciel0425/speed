@@ -78,7 +78,9 @@ export default function DriverHistoryPage() {
                     <PackageCheck className="size-5" />
                   </span>
                   <div className="min-w-0">
-                    <p className="font-medium">Order #{order.orderNumber}</p>
+                    <Link to={`/driver/orders/${order._id}`} className="font-medium hover:text-primary hover:underline">
+                      Order #{order.orderNumber}
+                    </Link>
                     <p className="truncate text-sm text-muted-foreground">
                       {formatDriverOrderAddress(order)}
                     </p>

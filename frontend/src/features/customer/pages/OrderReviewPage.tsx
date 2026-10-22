@@ -1,30 +1,87 @@
-import {
-  ArrowLeft,
-  Check,
-  Clock3,
-  MapPin,
-  Phone,
-  ShoppingBag,
-} from "lucide-react"
+import { ArrowLeft, Clock3, MapPin, Phone, ShoppingBag } from "lucide-react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { useCart } from "../hooks/useCart"
-import { usePlaceOrder } from "../hooks/usePlaceOrder"
+import { usePlaceOrderCod } from "../hooks/usePlaceOrderCod"
 import { useCheckoutAddress } from "../hooks/useCheckoutAddress"
 import PageError from "@/components/common/PageError"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldLabel,
+  FieldTitle,
+} from "@/components/ui/field"
+import { useEffect, useState } from "react"
+import {
+  usePendingQRPhPayment,
+  usePlaceOrderQRPh,
+  type QRPhPaymentResponseType,
+} from "../hooks/usePlaceOrderQRPh"
+import QRPhPaymentDialog from "../components/QRPhPaymentDialog"
 
 function OrderReviewPage() {
+  const [paymentMethod, setPaymentMethod] = useState<"Cash" | "QRPh">("Cash")
   const { cart, isLoading } = useCart()
-  const placeOrder = usePlaceOrder()
+  const placeOrderCod = usePlaceOrderCod()
+  const placeOrderQRPh = usePlaceOrderQRPh()
+  const pendingQRPh = usePendingQRPhPayment()
+  const [qrPayment, setQrPayment] = useState<QRPhPaymentResponseType | null>(
+    null
+  )
+  const [qrDialogOpen, setQrDialogOpen] = useState(false)
   const addressQuery = useCheckoutAddress()
+
+  useEffect(() => {
+    if (pendingQRPh.data && !qrPayment && !pendingQRPh.isFetching) {
+      setQrPayment(pendingQRPh.data)
+      setQrDialogOpen(true)
+    }
+  }, [pendingQRPh.data, pendingQRPh.isFetching, qrPayment])
+
+  const closeQRPayment = () => {
+    setQrDialogOpen(false)
+    setQrPayment(null)
+    void pendingQRPh.refetch()
+  }
+  const generateReplacementQR = () => {
+    placeOrderQRPh.mutate(undefined, {
+      onSuccess: (payment) => {
+        setQrPayment(payment)
+        setQrDialogOpen(true)
+      },
+    })
+  }
   if (isLoading || addressQuery.isLoading) {
     return (
       <div className="mx-auto w-full max-w-5xl animate-pulse p-5 sm:p-8">
         <div className="h-8 w-56 rounded bg-muted" />
         <div className="mt-6 h-72 rounded-xl bg-muted" />
       </div>
+    )
+  }
+  if (!cart?.items.length) {
+    return (
+      <main className="mx-auto max-w-3xl p-6 text-center">
+        <h1 className="text-2xl font-semibold">Your cart is empty</h1>
+        <Link
+          to="/"
+          className="mt-4 inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
+        >
+          Browse menu
+        </Link>
+        <QRPhPaymentDialog
+          payment={qrPayment}
+          open={qrDialogOpen}
+          onDismiss={() => setQrDialogOpen(false)}
+          onClose={closeQRPayment}
+          onGenerateNewQR={generateReplacementQR}
+          isGeneratingQR={placeOrderQRPh.isPending}
+        />
+      </main>
     )
   }
   if (addressQuery.isError) {
@@ -38,25 +95,10 @@ function OrderReviewPage() {
       </main>
     )
   }
-  if (!cart?.items.length) {
-    return (
-      <main className="mx-auto max-w-3xl p-6 text-center">
-        <h1 className="text-2xl font-semibold">Your cart is empty</h1>
-        <Link
-          to="/"
-          className="mt-4 inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
-        >
-          Browse menu
-        </Link>
-      </main>
-    )
-  }
-
   const address = addressQuery.data
   const addressLabel = address
     ? `${address.houseOrUnitNumber} ${address.street}, ${address.barangay}, ${address.city}, ${address.province}`
     : `${cart.deliveryAddress.street}, ${cart.deliveryAddress.barangay}, ${cart.deliveryAddress.city}, ${cart.deliveryAddress.province}`
-
   return (
     <main className="mx-auto w-full max-w-5xl space-y-5 p-4 pb-28 sm:space-y-6 sm:p-8 sm:pb-8">
       <header>
@@ -185,17 +227,62 @@ function OrderReviewPage() {
                 ₱{cart.pricing.total.toFixed(2)}
               </span>
             </div>
-            <div className="flex items-start gap-3 rounded-lg border p-3">
-              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
-                <Check className="size-4" />
-              </span>
-              <div>
-                <p className="text-sm font-medium">Cash on delivery</p>
-                <p className="text-xs text-muted-foreground">
-                  Pay the driver when your order arrives.
-                </p>
-              </div>
+            <div className="flex flex-col gap-5">
+              <p className="text-base font-semibold">Payment Method</p>
+              <RadioGroup
+                defaultValue={paymentMethod}
+                className="flex max-w-4xl flex-row 2xl:flex-col"
+                onValueChange={(v) => {
+                  if (v === "Cash" || v === "QRPh") setPaymentMethod(v)
+                }}
+              >
+                <FieldLabel htmlFor="Cash">
+                  <Field orientation="horizontal">
+                    <FieldContent>
+                      <FieldTitle className="text-sm font-normal">
+                        Cash on Delivery (COD)
+                      </FieldTitle>
+                      <FieldDescription className="text-xs text-muted-foreground">
+                        Pay with cash when your order arrives.
+                      </FieldDescription>
+                    </FieldContent>
+                    <RadioGroupItem value="Cash" id="Cash" />
+                  </Field>
+                </FieldLabel>
+                <FieldLabel htmlFor="QRPh">
+                  <Field orientation="horizontal">
+                    <FieldContent>
+                      <FieldTitle className="text-sm font-normal">
+                        QRPh
+                      </FieldTitle>
+                      <FieldDescription className="text-xs text-muted-foreground">
+                        Scan and pay using any QR Ph–enabled app.
+                      </FieldDescription>
+                    </FieldContent>
+                    <RadioGroupItem value="QRPh" id="QRPh" />
+                  </Field>
+                </FieldLabel>
+              </RadioGroup>
             </div>
+            {qrPayment && !qrDialogOpen && (
+              <div className="space-y-2 rounded-lg border p-3 text-sm">
+                <p className="font-medium">
+                  Payment confirmation is still pending
+                </p>
+                <p className="text-muted-foreground">
+                  The QR window is closed. We’ll keep checking, and this
+                  checkout will stay locked until the payment is confirmed or
+                  expires.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setQrDialogOpen(true)}
+                >
+                  View payment status
+                </Button>
+              </div>
+            )}
             <p className="flex items-center gap-2 text-xs text-muted-foreground">
               <Clock3 className="size-4" />
               Estimated{" "}
@@ -209,12 +296,29 @@ function OrderReviewPage() {
               disabled={
                 !address?.recipientName?.trim() ||
                 !address.phoneNumber?.trim() ||
-                placeOrder.isPending ||
+                placeOrderCod.isPending ||
+                placeOrderQRPh.isPending ||
+                !!qrPayment ||
                 !cart.merchant.isOpen
               }
-              onClick={() => placeOrder.mutate()}
+              onClick={() => {
+                if (paymentMethod === "Cash") placeOrderCod.mutate()
+                if (paymentMethod === "QRPh")
+                  placeOrderQRPh.mutate(undefined, {
+                    onSuccess: (payment) => {
+                      setQrPayment(payment)
+                      setQrDialogOpen(true)
+                    },
+                  })
+              }}
             >
-              {placeOrder.isPending ? "Placing order…" : "Place order"}
+              {placeOrderCod.isPending
+                ? "Placing order…"
+                : placeOrderQRPh.isPending
+                  ? "Generating QR…"
+                  : paymentMethod === "QRPh"
+                    ? "Continue to payment"
+                    : "Place order"}
             </Button>
             {(!address?.recipientName?.trim() ||
               !address.phoneNumber?.trim()) && (
@@ -244,15 +348,40 @@ function OrderReviewPage() {
             disabled={
               !address?.recipientName?.trim() ||
               !address.phoneNumber?.trim() ||
-              placeOrder.isPending ||
+              placeOrderCod.isPending ||
+              placeOrderQRPh.isPending ||
+              !!qrPayment ||
               !cart.merchant.isOpen
             }
-            onClick={() => placeOrder.mutate()}
+            onClick={() => {
+              if (paymentMethod === "Cash") placeOrderCod.mutate()
+              if (paymentMethod === "QRPh")
+                placeOrderQRPh.mutate(undefined, {
+                  onSuccess: (payment) => {
+                    setQrPayment(payment)
+                    setQrDialogOpen(true)
+                  },
+                })
+            }}
           >
-            {placeOrder.isPending ? "Placing…" : "Place order"}
+            {placeOrderCod.isPending
+              ? "Placing order…"
+              : placeOrderQRPh.isPending
+                ? "Generating QR…"
+                : paymentMethod === "QRPh"
+                  ? "Continue to payment"
+                  : "Place order"}
           </Button>
         </div>
       </div>
+      <QRPhPaymentDialog
+        payment={qrPayment}
+        open={qrDialogOpen}
+        onDismiss={() => setQrDialogOpen(false)}
+        onClose={closeQRPayment}
+        onGenerateNewQR={generateReplacementQR}
+        isGeneratingQR={placeOrderQRPh.isPending}
+      />
     </main>
   )
 }

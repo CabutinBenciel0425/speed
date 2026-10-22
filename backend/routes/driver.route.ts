@@ -8,6 +8,7 @@ import {
 import {
   deliveredOrder,
   getCurrentOrder,
+  getDriverOrderDetails,
   getOrderHistory,
   getProfile,
   headingToMerchant,
@@ -43,6 +44,7 @@ driverRouter.patch(
 
 driverRouter.get("/orders/current", protectRoute, driverOnly, getCurrentOrder);
 driverRouter.get("/orders/history", protectRoute, driverOnly, getOrderHistory);
+driverRouter.get("/orders/:orderId", protectRoute, driverOnly, getDriverOrderDetails);
 
 driverRouter.patch(
   "/orders/:orderId/heading-to-merchant",

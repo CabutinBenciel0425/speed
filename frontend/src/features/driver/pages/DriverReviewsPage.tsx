@@ -4,16 +4,26 @@ import { useDriverProfile, useDriverReviews } from "../hooks/useDriverData"
 import DriverReviewCard from "../components/DriverReviewCard"
 import ReviewCardSkeleton from "@/features/reviews/components/ReviewCardSkeleton"
 import PageError from "@/components/common/PageError"
+import PageControls from "@/components/common/PageControls"
+import { useSearchParams } from "react-router-dom"
 
 export default function DriverReviewsPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const page = Math.max(1, Number(searchParams.get("page")) || 1)
   const { data: profile } = useDriverProfile()
   const {
-    data: reviews = [],
+    data,
     isLoading,
     isError,
     refetch,
     isFetching,
-  } = useDriverReviews()
+  } = useDriverReviews(page)
+  const reviews = data?.data ?? []
+  const setPage = (nextPage: number) => {
+    const params = new URLSearchParams(searchParams)
+    params.set("page", String(nextPage))
+    setSearchParams(params)
+  }
   return (
     <main className="page-shell page-stack max-w-5xl">
       <header>
@@ -51,6 +61,15 @@ export default function DriverReviewsPage() {
             <DriverReviewCard key={review._id} review={review} />
           ))}
         </div>
+      )}
+      {!isLoading && !isError && reviews.length > 0 && (
+        <PageControls
+          page={data?.pagination.page ?? page}
+          pages={data?.pagination.pages ?? 0}
+          total={data?.pagination.total ?? 0}
+          onPageChange={setPage}
+          label="reviews"
+        />
       )}
     </main>
   )

@@ -46,8 +46,20 @@ export interface IPayment extends Document {
   provider: "Manual" | "Paymongo";
   method: "Cash" | "QRPh";
   amount: number;
-  status: "Pending" | "Paid" | "Failed" | "Expired" | "Refunded";
+  status:
+    | "Pending"
+    | "GeneratingQR"
+    | "Processing"
+    | "Paid"
+    | "Failed"
+    | "Expired"
+    | "Refunded";
   paymentIntentId?: string | null;
+  paymentMethodId?: string | null;
+  clientKey?: string | null;
+  qrAttempt?: number;
+  processingAt?: Date | null;
+  qrCodeImage?: string | null;
   transactionId: string | null;
   paidAt: Date | null;
   expiresAt: Date;
@@ -223,7 +235,15 @@ const paymentSchema = new Schema<IPayment>(
     },
     status: {
       type: String,
-      enum: ["Pending", "Paid", "Failed", "Expired", "Refunded"],
+      enum: [
+        "Pending",
+        "GeneratingQR",
+        "Processing",
+        "Paid",
+        "Failed",
+        "Expired",
+        "Refunded",
+      ],
       default: "Pending",
     },
     paymentIntentId: {
@@ -238,6 +258,14 @@ const paymentSchema = new Schema<IPayment>(
         },
         message: "Payment Intent ID is required for QRPh payments",
       },
+    },
+    paymentMethodId: { type: String, default: null },
+    clientKey: { type: String, default: null },
+    qrAttempt: { type: Number, default: 1 },
+    processingAt: { type: Date, default: null },
+    qrCodeImage: {
+      type: String,
+      default: null,
     },
     transactionId: {
       type: String,

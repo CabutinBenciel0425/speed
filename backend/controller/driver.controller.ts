@@ -15,6 +15,7 @@ import Driver from "../models/driver.model.js";
 import type { IOrder } from "../models/order.model.js";
 import type { QueryFilter } from "mongoose";
 import { buildQuery } from "../utils/buildQuery.js";
+import { computeDistance } from "../services/delivery.service.js";
 
 export const getProfile = asyncHandler(async (req: Request, res: Response) => {
   const user = req.user;
@@ -145,6 +146,59 @@ export const getCurrentOrder = asyncHandler(
     res.status(200).json({
       success: true,
       data: currentOrder,
+    });
+  },
+);
+
+export const getDriverOrderDetails = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = req.user;
+    if (!user) throw new NotFoundError("User");
+
+    const driverProfile = await getDriverProfile(user._id.toString());
+    const order = await Order.findOne({
+      _id: req.params.orderId,
+      driver: driverProfile._id,
+    })
+      .populate("customer", "firstName lastName phoneNumber")
+      .populate("merchant", "merchantName phoneNumber address")
+      .populate({ path: "deliveryAddress.address", select: "instructions landmark" });
+
+    if (!order) throw new NotFoundError("Order");
+
+    const merchant = order.merchant as unknown as {
+      address?: { location?: { coordinates?: number[] } };
+    };
+    const from = merchant?.address?.location?.coordinates;
+    const to = order.deliveryAddress?.location?.coordinates;
+    let deliveryDistanceKm: number | null = null;
+    if (from?.length === 2 && to?.length === 2) {
+      try {
+        const route = await computeDistance(
+          from as [number, number],
+          to as [number, number],
+        );
+        deliveryDistanceKm = Math.round(route.distanceKm * 10) / 10;
+      } catch (error) {
+        console.warn("Could not calculate route distance for driver order", error);
+      }
+    }
+    if (deliveryDistanceKm === null && from?.length === 2 && to?.length === 2) {
+      const [lng1, lat1] = from.map((value) => (value * Math.PI) / 180);
+      const [lng2, lat2] = to.map((value) => (value * Math.PI) / 180);
+      const dLat = lat2 - lat1;
+      const dLng = lng2 - lng1;
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+      deliveryDistanceKm =
+        Math.round(6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) * 10) /
+        10;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: { ...order.toObject(), deliveryDistanceKm },
     });
   },
 );

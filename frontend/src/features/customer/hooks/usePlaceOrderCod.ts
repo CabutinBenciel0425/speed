@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import axios from "@/lib/axios"
 
-export function usePlaceOrder() {
+export function usePlaceOrderCod() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 

@@ -15,6 +15,7 @@ import {
   MapPin,
   NotepadText,
   Phone,
+  QrCode,
   Star,
   Timer,
   User,
@@ -337,9 +338,9 @@ function CustomerOrderComponent() {
                   </div>
                 ) : (
                   <div className="flex flex-row items-center gap-2">
-                    <CreditCard className="size-4" />
+                    <QrCode className="size-4" />
                     <span className="text-sm text-muted-foreground">
-                      Online Payment
+                      QR Ph payment
                     </span>
                   </div>
                 )}
