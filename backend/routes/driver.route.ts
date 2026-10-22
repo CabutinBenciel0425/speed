@@ -7,6 +7,9 @@ import {
 } from "../middlewares/auth.middleware.js";
 import {
   deliveredOrder,
+  acceptOffer,
+  declineOffer,
+  getPendingOffers,
   getCurrentOrder,
   getDriverOrderDetails,
   getOrderHistory,
@@ -41,6 +44,10 @@ driverRouter.patch(
   driverOnly,
   updateCurrentLocation,
 );
+
+driverRouter.get("/offers/pending", protectRoute, driverOnly, getPendingOffers);
+driverRouter.post("/offers/:offerId/accept", protectRoute, driverOnly, acceptOffer);
+driverRouter.post("/offers/:offerId/decline", protectRoute, driverOnly, declineOffer);
 
 driverRouter.get("/orders/current", protectRoute, driverOnly, getCurrentOrder);
 driverRouter.get("/orders/history", protectRoute, driverOnly, getOrderHistory);

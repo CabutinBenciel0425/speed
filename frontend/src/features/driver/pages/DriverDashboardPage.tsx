@@ -37,6 +37,7 @@ import {
   useDriverAvailability,
   useDriverCurrentOrder,
   useDriverOrderAction,
+  useDriverPendingOffers,
   useDriverProfile,
 } from "../hooks/useDriverData"
 
@@ -52,6 +53,9 @@ function DriverDashboardPage() {
   const locationSentAt = useRef(0)
   const profileQuery = useDriverProfile(
     isAuthenticated && activeRole === "Driver"
+  )
+  const pendingOffersQuery = useDriverPendingOffers(
+    isAuthenticated && activeRole === "Driver" && Boolean(profileQuery.data?.isAvailable)
   )
   const orderQuery = useDriverCurrentOrder(
     isAuthenticated && activeRole === "Driver"
@@ -184,14 +188,22 @@ function DriverDashboardPage() {
     currentOrder && typeof currentOrder.merchant !== "string"
       ? currentOrder.merchant.merchantName
       : "Store"
-  const offerAction = (offerId: string, accepted: boolean) => {
-    socketRef.current?.emit(accepted ? "delivery:accept" : "delivery:decline", {
-      offerId,
-    })
-    if (!accepted)
-      setOffers((current) =>
-        current.filter((offer) => offer.offerId !== offerId)
-      )
+  const visibleOffers = [
+    ...(pendingOffersQuery.data ?? []),
+    ...offers,
+  ].filter((offer, index, list) => list.findIndex((item) => item.offerId === offer.offerId) === index)
+  const offerAction = async (offerId: string, accepted: boolean) => {
+    try {
+      await axios.post(`/driver/offers/${offerId}/${accepted ? "accept" : "decline"}`)
+      setOffers((current) => current.filter((offer) => offer.offerId !== offerId))
+      void queryClient.invalidateQueries({ queryKey: ["driverOffers"] })
+      if (accepted) {
+        void queryClient.invalidateQueries({ queryKey: ["driverCurrentOrder"] })
+        void queryClient.invalidateQueries({ queryKey: ["driverProfile"] })
+      }
+    } catch {
+      toast.error(accepted ? "Could not accept this offer. It may have expired." : "Could not decline this offer.")
+    }
   }
   const changeAvailability = (available: boolean) => {
     if (!available) {
@@ -255,7 +267,7 @@ function DriverDashboardPage() {
                 {socketConnected
                   ? "Live offer connection ready"
                   : socketError
-                    ? "Live offer connection unavailable"
+                    ? "Live connection unavailable · checking offers by API"
                     : "Connecting to live offers…"}
               </p>
             </div>
@@ -266,7 +278,6 @@ function DriverDashboardPage() {
               !profile ||
               profile.status !== "Operational" ||
               availabilityMutation.isPending ||
-              !socketConnected ||
               Boolean(profile.activeOrder)
             }
             onCheckedChange={changeAvailability}
@@ -283,7 +294,7 @@ function DriverDashboardPage() {
         </Card>
       )}
 
-      {offers.map((offer) => (
+      {visibleOffers.map((offer) => (
         <Card key={offer.offerId} className="border-primary/30">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

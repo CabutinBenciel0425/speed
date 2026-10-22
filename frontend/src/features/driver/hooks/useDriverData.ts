@@ -8,6 +8,7 @@ import type {
   DriverOrder,
   DriverOrderAction,
   DriverProfile,
+  DeliveryOffer,
 } from "../types/driver"
 
 export const driverKeys = {
@@ -15,6 +16,18 @@ export const driverKeys = {
   currentOrder: ["driverCurrentOrder"] as const,
   history: ["driverOrderHistory"] as const,
   reviews: ["driverReviews"] as const,
+  offers: ["driverOffers"] as const,
+}
+
+export function useDriverPendingOffers(enabled = true) {
+  return useQuery({
+    queryKey: driverKeys.offers,
+    queryFn: async () =>
+      (await axios.get<{ data: DeliveryOffer[] }>("/driver/offers/pending")).data.data,
+    enabled,
+    staleTime: 0,
+    refetchInterval: enabled ? 3000 : false,
+  })
 }
 
 export function useDriverProfile(enabled = true) {

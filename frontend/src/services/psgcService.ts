@@ -1,5 +1,6 @@
-// frontend/src/services/psgcService.ts
-const PSGC_BASE = "https://psgc.thecodebit.space/api/v1"
+const PSGC_BASE = "https://psgc.cloud/api/v2"
+
+type PSGCRecord = { code: string; name: string; [key: string]: unknown }
 
 export type PSGCRegion = {
   code: string
@@ -34,31 +35,58 @@ export type PSGCBarangay = {
   isPoblacion?: boolean
 }
 
-const fetchAll = async <T>(endpoint: string): Promise<T[]> => {
-  const url = `${PSGC_BASE}${endpoint}?limit=2000`
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`PSGC API error: ${res.status}`)
-  const json = await res.json()
-
-  return json.data as T[]
+const fetchAll = async <T>(endpoint: string, mapRecord: (record: PSGCRecord) => T): Promise<T[]> => {
+  const response = await fetch(`${PSGC_BASE}${endpoint}`)
+  if (!response.ok) throw new Error(`Location data could not be loaded (${response.status}).`)
+  const payload = await response.json()
+  const records = Array.isArray(payload) ? payload : payload.data
+  if (!Array.isArray(records)) throw new Error("Location service returned an unexpected response.")
+  return records.map(mapRecord)
 }
 
+const region = (item: PSGCRecord): PSGCRegion => ({
+  code: item.code,
+  name: item.name,
+  psgc10DigitCode: item.code,
+})
+
+const province = (item: PSGCRecord): PSGCProvince => ({
+  code: item.code,
+  name: item.name,
+  regionCode: String(item.region ?? ""),
+  psgc10DigitCode: item.code,
+})
+
+const cityMunicipality = (item: PSGCRecord): PSGCCitiesMunicipality => ({
+  code: item.code,
+  name: item.name,
+  regionCode: String(item.region ?? ""),
+  provinceCode: String(item.province ?? ""),
+  psgc10DigitCode: item.code,
+  isCapital: Boolean(item.is_capital),
+  geographicLevel: String(item.type ?? "").toLowerCase().includes("city") ? "City" : "Mun",
+})
+
+const barangay = (item: PSGCRecord): PSGCBarangay => ({
+  code: item.code,
+  name: item.name,
+  cityMunicipalityCode: String(item.city_municipality ?? ""),
+  provinceCode: String(item.province ?? ""),
+  regionCode: String(item.region ?? ""),
+  psgc10DigitCode: item.code,
+  isPoblacion: false,
+})
+
+const codePath = (code: string) => encodeURIComponent(code)
+
 export const psgcService = {
-  getRegions: () => fetchAll<PSGCRegion>("/region"),
-
-  getProvincesByRegion: (regionPsgc10: string) =>
-    fetchAll<PSGCProvince>(`/region/${regionPsgc10}/provinces`),
-
-  getCitiesMunicipalitiesByRegion: (regionPsgc10: string) =>
-    fetchAll<PSGCCitiesMunicipality>(
-      `/region/${regionPsgc10}/cities-municipalities`
-    ),
-
-  getCitiesMunicipalitiesByProvince: (provincePsgc10: string) =>
-    fetchAll<PSGCCitiesMunicipality>(
-      `/province/${provincePsgc10}/cities-municipalities`
-    ),
-
-  getBarangays: (cityMunicipalityPsgc10: string) =>
-    fetchAll<PSGCBarangay>(`/municipality/${cityMunicipalityPsgc10}/barangays`),
+  getRegions: () => fetchAll("/regions", region),
+  getProvincesByRegion: (code: string) =>
+    fetchAll(`/regions/${codePath(code)}/provinces`, province),
+  getCitiesMunicipalitiesByRegion: (code: string) =>
+    fetchAll(`/regions/${codePath(code)}/cities-municipalities`, cityMunicipality),
+  getCitiesMunicipalitiesByProvince: (code: string) =>
+    fetchAll(`/provinces/${codePath(code)}/cities-municipalities`, cityMunicipality),
+  getBarangays: (code: string) =>
+    fetchAll(`/cities-municipalities/${codePath(code)}/barangays`, barangay),
 }

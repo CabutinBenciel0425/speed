@@ -624,9 +624,6 @@ export const sendOffer = async (orderId: string, driverId: string) => {
   await offer.save();
 
   const driverSockets = await io.to(`driver:${driverId}`).fetchSockets();
-  if (driverSockets.length === 0) {
-    return null;
-  }
   driverSockets.forEach((s) =>
     s.emit("delivery:offer", {
       offerId: offer._id,
@@ -641,6 +638,46 @@ export const sendOffer = async (orderId: string, driverId: string) => {
     }),
   );
   return offer;
+};
+
+export const getPendingDriverOffers = async (userId: string) => {
+  const driver = await Driver.findOne({ user: userId });
+  if (!driver) throw new NotFoundError("Driver");
+
+  const offers = await DeliveryOffer.find({
+    driver: driver._id,
+    status: "Pending",
+    expiresAt: { $gt: new Date() },
+  }).sort({ createdAt: -1 });
+
+  const pending = await Promise.all(
+    offers.map(async (offer) => {
+      const order = await Order.findById(offer.order);
+      if (!order || order.driver || !["Pending", "Preparing", "ReadyForPickup"].includes(order.status)) return null;
+      const [customer, merchant] = await Promise.all([
+        User.findById(order.customer),
+        Merchant.findById(order.merchant),
+      ]);
+      if (!customer || !merchant) return null;
+      const customerAddress = await Address.findOne({ user: customer._id, isDefault: true });
+      if (!customerAddress) return null;
+      const distance = await computeDistance(
+        customerAddress.location.coordinates as [number, number],
+        merchant.address.location.coordinates as [number, number],
+      );
+      return {
+        offerId: offer._id.toString(),
+        merchantName: merchant.merchantName,
+        merchantAddress: merchant.address,
+        customerAddress,
+        deliveryFee: order.pricing.deliveryFee,
+        estimatedDistance: distance.distanceKm,
+        estimatedDuration: order.estimatedDeliveryTime,
+      };
+    }),
+  );
+
+  return pending.filter((offer) => offer !== null);
 };
 
 export const driverAcceptOffer = async (offerId: string, driverId: string) => {

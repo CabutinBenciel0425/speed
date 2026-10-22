@@ -26,6 +26,14 @@ import {
   useRegions,
 } from "../hooks/usePsgcData"
 
+function LocationLoadError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <p className="mt-1 flex items-center gap-2 text-xs text-destructive" role="alert">
+      Could not load locations. <button type="button" className="underline" onClick={onRetry}>Retry</button>
+    </p>
+  )
+}
+
 function AddressDetailsStep() {
   const { control, setValue } = useFormContext<AddressInput>()
 
@@ -42,22 +50,26 @@ function AddressDetailsStep() {
     null
   )
 
-  const { data: regions = [] } = useRegions()
+  const regionsQuery = useRegions()
+  const { data: regions = [] } = regionsQuery
 
-  const { data: provinces = [] } = useProvincesByRegion(
+  const provincesQuery = useProvincesByRegion(
     selectedRegion?.psgc10DigitCode ?? ""
   )
+  const { data: provinces = [] } = provincesQuery
 
   const regionHasProvinces = Boolean(selectedRegion) && provinces.length > 0
 
-  const { data: citiesMunicipalities = [] } = useCitiesMunicipalities({
+  const citiesQuery = useCitiesMunicipalities({
     regionPsgc10: selectedRegion?.psgc10DigitCode,
     provincePsgc10: selectedProvince?.psgc10DigitCode,
   })
+  const { data: citiesMunicipalities = [] } = citiesQuery
 
-  const { data: barangays = [] } = useBarangays(
+  const barangaysQuery = useBarangays(
     selectedCity?.psgc10DigitCode ?? ""
   )
+  const { data: barangays = [] } = barangaysQuery
 
   const handleRegionChange = (region: PSGCRegion | null) => {
     setSelectedRegion(region)
@@ -93,9 +105,13 @@ function AddressDetailsStep() {
   const cityDisabled = regionHasProvinces ? !selectedProvince : !selectedRegion
   const cityPlaceholder = !selectedRegion
     ? "Select a region first"
-    : regionHasProvinces && !selectedProvince
-      ? "Select a province first"
-      : "Select your City / Municipality"
+    : citiesQuery.isLoading
+      ? "Loading cities / municipalities…"
+      : citiesQuery.isError
+        ? "Cities / municipalities unavailable"
+        : regionHasProvinces && !selectedProvince
+          ? "Select a province first"
+          : "Select your City / Municipality"
   return (
     <>
       <Controller
@@ -152,7 +168,7 @@ function AddressDetailsStep() {
               data-invalid={fieldState.invalid}
             >
               <ComboboxInput
-                placeholder="Select your region"
+                placeholder={regionsQuery.isLoading ? "Loading regions…" : regionsQuery.isError ? "Regions unavailable" : "Select your region"}
                 className="w-full rounded-sm text-xs lg:text-sm"
               />
               <ComboboxContent className="rounded-sm">
@@ -170,6 +186,7 @@ function AddressDetailsStep() {
                 </ComboboxList>
               </ComboboxContent>
             </Combobox>
+            {regionsQuery.isError && <LocationLoadError onRetry={() => void regionsQuery.refetch()} />}
             <FieldStateError fieldState={fieldState} />
           </Field>
         )}
@@ -198,9 +215,13 @@ function AddressDetailsStep() {
                 >
                   <ComboboxInput
                     placeholder={
-                      !selectedRegion
-                        ? "Select a region first"
-                        : "Select your province"
+                      provincesQuery.isLoading
+                        ? "Loading provinces…"
+                        : provincesQuery.isError
+                          ? "Provinces unavailable"
+                          : !selectedRegion
+                            ? "Select a region first"
+                            : "Select your province"
                     }
                     className="w-full rounded-sm text-xs lg:text-sm"
                   />
@@ -219,6 +240,7 @@ function AddressDetailsStep() {
                     </ComboboxList>
                   </ComboboxContent>
                 </Combobox>
+                {provincesQuery.isError && <LocationLoadError onRetry={() => void provincesQuery.refetch()} />}
                 <FieldStateError fieldState={fieldState} />
               </>
             )}
@@ -266,6 +288,7 @@ function AddressDetailsStep() {
                 </ComboboxList>
               </ComboboxContent>
             </Combobox>
+            {citiesQuery.isError && <LocationLoadError onRetry={() => void citiesQuery.refetch()} />}
             <FieldStateError fieldState={fieldState} />
           </Field>
         )}
@@ -291,7 +314,7 @@ function AddressDetailsStep() {
               itemToStringLabel={(item) => item.name}
             >
               <ComboboxInput
-                placeholder="Select your barangay"
+                placeholder={barangaysQuery.isLoading ? "Loading barangays…" : barangaysQuery.isError ? "Barangays unavailable" : "Select your barangay"}
                 className="w-full rounded-sm text-xs lg:text-sm"
               />
               <ComboboxContent className="rounded-sm">
@@ -309,6 +332,7 @@ function AddressDetailsStep() {
                 </ComboboxList>
               </ComboboxContent>
             </Combobox>
+            {barangaysQuery.isError && <LocationLoadError onRetry={() => void barangaysQuery.refetch()} />}
             <FieldStateError fieldState={fieldState} />
           </Field>
         )}

@@ -4,6 +4,10 @@ import { ConflictError, NotFoundError } from "../utils/errors.js";
 import type { DriverUpdateInput } from "../schemas/driver.schema.js";
 import {
   deliveredOrderService,
+  driverMatching,
+  driverAcceptOffer,
+  driverDeclinedOffer,
+  getPendingDriverOffers,
   getDriverProfile,
   headingToMerchantService,
   pickUpOrderService,
@@ -30,6 +34,28 @@ export const getProfile = asyncHandler(async (req: Request, res: Response) => {
     success: true,
     data: driverProfile,
   });
+});
+
+export const getPendingOffers = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) throw new NotFoundError("User");
+  const offers = await getPendingDriverOffers(req.user._id.toString());
+  res.status(200).json({ success: true, data: offers });
+});
+
+export const acceptOffer = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) throw new NotFoundError("User");
+  const driver = await Driver.findOne({ user: req.user._id });
+  if (!driver) throw new NotFoundError("Driver");
+  await driverAcceptOffer(String(req.params.offerId), driver._id.toString());
+  res.status(200).json({ success: true });
+});
+
+export const declineOffer = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user) throw new NotFoundError("User");
+  const driver = await Driver.findOne({ user: req.user._id });
+  if (!driver) throw new NotFoundError("Driver");
+  await driverDeclinedOffer(String(req.params.offerId), driver._id.toString());
+  res.status(200).json({ success: true });
 });
 
 export const updateProfile = asyncHandler(
@@ -89,6 +115,21 @@ export const toggleDriverAvailability = asyncHandler(
     driverProfile.workingStatus = isAvailable ? "Available" : "Offline";
 
     await driverProfile.save();
+
+    if (isAvailable) {
+      const waitingOrders = await Order.find({
+        driver: null,
+        driverMatchingStatus: "NoDriverFound",
+        status: { $in: ["Pending", "Preparing", "ReadyForPickup"] },
+      })
+        .select("_id")
+        .limit(20);
+      for (const order of waitingOrders) {
+        void driverMatching(order._id.toString()).catch((error) =>
+          console.error("Driver matching after going online failed", error),
+        );
+      }
+    }
 
     res.status(200).json({
       success: true,
