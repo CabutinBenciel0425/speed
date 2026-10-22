@@ -47,6 +47,7 @@ function DriverDashboardPage() {
   const [offers, setOffers] = useState<DeliveryOffer[]>([])
   const [deliveredOrder, setDeliveredOrder] = useState<DriverOrder | null>(null)
   const [socketConnected, setSocketConnected] = useState(false)
+  const [socketError, setSocketError] = useState(false)
   const socketRef = useRef<Socket | null>(null)
   const locationSentAt = useRef(0)
   const profileQuery = useDriverProfile(
@@ -65,8 +66,15 @@ function DriverDashboardPage() {
       auth: { activeRole: activeRoleState },
     })
     socketRef.current = socket
-    socket.on("connect", () => setSocketConnected(true))
+    socket.on("connect", () => {
+      setSocketConnected(true)
+      setSocketError(false)
+    })
     socket.on("disconnect", () => setSocketConnected(false))
+    socket.on("connect_error", () => {
+      setSocketConnected(false)
+      setSocketError(true)
+    })
     socket.on("delivery:offer", (offer: DeliveryOffer) =>
       setOffers((current) =>
         current.some((item) => item.offerId === offer.offerId)
@@ -236,6 +244,19 @@ function DriverDashboardPage() {
                 {profile?.status === "Operational"
                   ? "Go online to receive nearby delivery offers."
                   : `Account status: ${profile?.status ?? "Loading"}`}
+              </p>
+              <p
+                className={`mt-1 flex items-center gap-1.5 text-xs ${socketConnected ? "text-emerald-600" : "text-muted-foreground"}`}
+                role="status"
+              >
+                <span
+                  className={`size-1.5 rounded-full ${socketConnected ? "bg-emerald-500" : socketError ? "bg-destructive" : "bg-muted-foreground/60"}`}
+                />
+                {socketConnected
+                  ? "Live offer connection ready"
+                  : socketError
+                    ? "Live offer connection unavailable"
+                    : "Connecting to live offers…"}
               </p>
             </div>
           </div>
