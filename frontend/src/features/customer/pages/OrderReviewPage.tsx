@@ -37,6 +37,7 @@ function OrderReviewPage() {
 
   useEffect(() => {
     if (pendingQRPh.data && !qrPayment && !pendingQRPh.isFetching) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setQrPayment(pendingQRPh.data)
       setQrDialogOpen(true)
     }

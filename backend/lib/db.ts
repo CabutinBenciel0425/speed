@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { MONGODB_URI } from "../config/envVars.js";
-import { startScheduler } from "../jobs/scheduler.js";
 
 export const connectDB = async () => {
   try {
@@ -9,7 +8,6 @@ export const connectDB = async () => {
     }
 
     const conn = await mongoose.connect(MONGODB_URI);
-    startScheduler();
     console.log(`MongoDB connected: ${conn.connection.host}`);
   } catch (error) {
     if (error instanceof Error) {

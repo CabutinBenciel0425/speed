@@ -29,6 +29,7 @@ import PageError from "@/components/common/PageError"
 import PageLoading from "@/components/common/PageLoading"
 import { useAuthStore } from "@/store/authStore"
 import axios from "@/lib/axios"
+import getSocketUrl from "@/utils/socketUrl"
 import type { DeliveryOffer } from "../types/driver"
 import type { DriverOrder } from "../types/driver"
 import DriverDeliveryCompleteDialog from "../components/DriverDeliveryCompleteDialog"
@@ -59,10 +60,10 @@ function DriverDashboardPage() {
 
   useEffect(() => {
     if (!isAuthenticated || activeRoleState !== "Driver") return
-    const socket = io(
-      import.meta.env.DEV ? "http://localhost:5050" : undefined,
-      { withCredentials: true, auth: { activeRole: activeRoleState } }
-    )
+    const socket = io(getSocketUrl(), {
+      withCredentials: true,
+      auth: { activeRole: activeRoleState },
+    })
     socketRef.current = socket
     socket.on("connect", () => setSocketConnected(true))
     socket.on("disconnect", () => setSocketConnected(false))

@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { NavLink, useSearchParams } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/useAuth"
+import getSocketUrl from "@/utils/socketUrl"
 
 import { MapPin, PhilippinePeso } from "lucide-react"
 import type { Socket } from "socket.io-client"
@@ -31,10 +32,10 @@ function MerchantOrdersPage() {
 
   useEffect(() => {
     if (!isAuthenticated || activeRoleState !== "Merchant") return
-    const socket = io(
-      import.meta.env.DEV ? "http://localhost:5050" : undefined,
-      { withCredentials: true, auth: { activeRole: activeRoleState } }
-    )
+    const socket = io(getSocketUrl(), {
+      withCredentials: true,
+      auth: { activeRole: activeRoleState },
+    })
     socketRef.current = socket
 
     const refreshOrder = () => {

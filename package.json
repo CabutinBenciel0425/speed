@@ -5,6 +5,7 @@
   "main": "backend/server.ts",
   "scripts": {
     "dev": "nodemon --ext ts,json --legacy-watch --exec tsx backend/server.ts",
+    "start": "tsx backend/server.ts",
     "migrate": "tsx backend/scripts/migrate-product-merchant.ts",
     "job:merchant-status": "tsx backend/jobs/merchant-status.job.ts",
     "job:cleanup-merchant-fields": "tsx backend/scripts/cleanup-merchant-fields.ts"
@@ -13,6 +14,9 @@
   "author": "",
   "license": "ISC",
   "type": "module",
+  "engines": {
+    "node": ">=22.12.0 <23"
+  },
   "dependencies": {
     "@types/morgan": "^1.9.10",
     "@types/nodemailer": "^8.0.1",
@@ -33,6 +37,7 @@
     "nodemon": "^3.1.14",
     "qs": "^6.16.0",
     "socket.io": "^4.8.3",
+    "tsx": "^4.23.0",
     "stripe": "^22.3.1",
     "zod": "^4.4.3"
   },
@@ -44,7 +49,6 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.2.0",
     "@types/node": "^26.1.1",
-    "tsx": "^4.23.0",
     "typescript": "^7.0.2"
   }
 }

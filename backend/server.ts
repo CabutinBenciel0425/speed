@@ -32,6 +32,10 @@ import reviewRouter from "./routes/review.route.js";
 const app = express();
 const server = http.createServer(app);
 
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 app.use(
   cors({
     origin: CLIENT_URL || "http://localhost:5173",
@@ -81,8 +85,9 @@ const startServer = async () => {
   await createDefaultAdmin();
   startScheduler();
 
-  server.listen(PORT || 3000, () => {
-    console.log(`Server running in port ${PORT}`);
+  const port = Number(PORT) || 10000;
+  server.listen(port, "0.0.0.0", () => {
+    console.log(`Server running on port ${port}`);
   });
 };
 

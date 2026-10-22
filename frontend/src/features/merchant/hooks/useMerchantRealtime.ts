@@ -2,8 +2,7 @@ import { useEffect } from "react"
 import { io } from "socket.io-client"
 import { useQueryClient } from "@tanstack/react-query"
 import { useAuthStore } from "@/store/authStore"
-
-const socketUrl = import.meta.env.DEV ? "http://localhost:5050" : undefined
+import getSocketUrl from "@/utils/socketUrl"
 
 export function useMerchantRealtime() {
   const queryClient = useQueryClient()
@@ -13,7 +12,7 @@ export function useMerchantRealtime() {
   useEffect(() => {
     if (!isAuthenticated || activeRole !== "Merchant") return
 
-    const socket = io(socketUrl, {
+    const socket = io(getSocketUrl(), {
       withCredentials: true,
       auth: { activeRole },
     })

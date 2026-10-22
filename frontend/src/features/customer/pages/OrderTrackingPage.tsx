@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import axios from "@/lib/axios"
+import getSocketUrl from "@/utils/socketUrl"
 import { useAuthStore } from "@/store/authStore"
 import {
   MapContainer,
@@ -190,10 +191,10 @@ function OrderTrackingPage() {
 
   useEffect(() => {
     if (!isAuthenticated || activeRole !== "Customer" || !orderId) return
-    const socket = io(
-      import.meta.env.DEV ? "http://localhost:5050" : undefined,
-      { withCredentials: true, auth: { activeRole } }
-    )
+    const socket = io(getSocketUrl(), {
+      withCredentials: true,
+      auth: { activeRole },
+    })
     const refresh = () => {
       void queryClient.invalidateQueries({
         queryKey: ["customerOrder", orderId],
