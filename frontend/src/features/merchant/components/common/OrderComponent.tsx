@@ -290,7 +290,11 @@ function OrderComponent() {
                 <span
                   className={`w-fit rounded-lg ${data.payment.status === "Cancelled" ? "bg-red-500" : data.payment.status === "Paid" ? "bg-green-400" : "bg-primary"} px-2 py-0.5 text-xs text-white`}
                 >
-                  {data.payment.status}
+                  {data.payment.method === "Cash"
+                    ? isPaymentConfirm
+                      ? "Paid"
+                      : "Pending"
+                    : "Paid"}
                 </span>
               </div>
               <div className="flex flex-row items-start gap-2">
