@@ -252,7 +252,9 @@ function OrderComponent() {
                     data.payment.method === "Cash"
                       ? isPaymentConfirm
                         ? "bg-green-400"
-                        : "bg-red-500"
+                        : data.payment.status === "Pending"
+                          ? "bg-primary"
+                          : "bg-red-500"
                       : "bg-green-400"
                   } px-2 py-0.5 text-xs text-white`}
                 >

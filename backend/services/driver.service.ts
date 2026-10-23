@@ -407,7 +407,7 @@ export const deliveredOrderService = async (
       driverProfile.isAvailable = true;
       order.status = "Delivered";
       order.deliveredAt = new Date();
-      if (order.payment.status === "Pending") {
+      if (order.payment.method === "Cash") {
         order.payment.status = "Paid";
       }
       merchant.completedOrders += 1;

@@ -107,6 +107,7 @@ function CustomerOrderComponent() {
     estimatedPrepTime1 = formatTimeAndDate(prepMs)
     estimatedPrepTime2 = formatTimeAndDate(extendedMs)
   }
+  console.log(order)
   return (
     <div className="flex w-full flex-col items-start gap-5 px-4 pb-10 sm:px-6 xl:flex-row xl:px-10">
       <div className="flex w-full min-w-0 flex-col gap-4 xl:max-w-7xl xl:flex-1">
