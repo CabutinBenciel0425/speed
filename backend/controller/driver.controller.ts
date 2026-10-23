@@ -198,7 +198,7 @@ export const getDriverOrderDetails = asyncHandler(
 
     const driverProfile = await getDriverProfile(user._id.toString());
     const order = await Order.findOne({
-      _id: req.params.orderId,
+      _id: String(req.params.orderId),
       driver: driverProfile._id,
     })
       .populate("customer", "firstName lastName phoneNumber")
@@ -225,8 +225,8 @@ export const getDriverOrderDetails = asyncHandler(
       }
     }
     if (deliveryDistanceKm === null && from?.length === 2 && to?.length === 2) {
-      const [lng1, lat1] = from.map((value) => (value * Math.PI) / 180);
-      const [lng2, lat2] = to.map((value) => (value * Math.PI) / 180);
+      const [lng1, lat1] = from.map((value) => (value * Math.PI) / 180) as [number, number];
+      const [lng2, lat2] = to.map((value) => (value * Math.PI) / 180) as [number, number];
       const dLat = lat2 - lat1;
       const dLng = lng2 - lng1;
       const a =

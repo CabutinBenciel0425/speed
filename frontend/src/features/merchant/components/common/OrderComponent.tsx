@@ -94,7 +94,7 @@ function OrderComponent() {
     estimatedPrepTime1 = formatTimeAndDate(prepMs)
     estimatedPrepTime2 = formatTimeAndDate(extendedMs)
   }
-
+  console.log(data.payment)
   return (
     <div className="relative flex w-full flex-col items-start gap-10 px-4 pb-64 sm:px-6 lg:pb-10 xl:flex-row xl:px-10">
       <div className="flex w-full min-w-0 flex-col gap-4 lg:gap-8 xl:max-w-5xl xl:flex-1">
@@ -220,46 +220,6 @@ function OrderComponent() {
             ))}
           </div>
         </Card>
-
-        {/* Delivery address */}
-        {/* <Card className="w-full divide-y px-4 sm:px-5">
-          <div className="py-2">
-            <p className="flex flex-row items-center gap-2">
-              <MapPin className="size-4" />
-              <span className="text-base font-semibold">Delivery Address</span>
-            </p>
-          </div>
-          <div className="flex flex-col gap-4 pt-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex min-w-0 flex-col gap-4">
-              <div>
-                <p className="mb-2 flex flex-row items-start gap-2">
-                  <User className="size-6 shrink-0" />
-                  <div className="flex flex-col items-center">
-                    <span className="wrap-break-words">
-                      <span className="text-sm text-muted-foreground">
-                        Customer name:
-                      </span>{" "}
-                      <span className="text-base">{customerName}</span>
-                    </span>
-                    {customerName !== data.deliveryAddress.recipientName && (
-                      <span className="wrap-break-words text-base">
-                        <span className="text-sm text-muted-foreground">
-                          Recipient name:
-                        </span>{" "}
-                        <span className="text-base">
-                          {data.deliveryAddress.recipientName}
-                        </span>
-                      </span>
-                    )}
-                  </div>
-                </p>
-                <p className="ml-8 text-xs text-muted-foreground">
-                  {data.customer.phoneNumber}
-                </p>
-              </div>
-            </div>
-          </div>
-        </Card> */}
 
         <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
           <Card className="min-h-37.5 w-full px-4 sm:px-5">

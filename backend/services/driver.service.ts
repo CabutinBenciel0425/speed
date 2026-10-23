@@ -407,6 +407,9 @@ export const deliveredOrderService = async (
       driverProfile.isAvailable = true;
       order.status = "Delivered";
       order.deliveredAt = new Date();
+      if (order.payment.status === "Pending") {
+        order.payment.status = "Paid";
+      }
       merchant.completedOrders += 1;
       merchant.totalRevenue = merchant.totalRevenue + order.pricing.subtotal;
 
@@ -653,13 +656,21 @@ export const getPendingDriverOffers = async (userId: string) => {
   const pending = await Promise.all(
     offers.map(async (offer) => {
       const order = await Order.findById(offer.order);
-      if (!order || order.driver || !["Pending", "Preparing", "ReadyForPickup"].includes(order.status)) return null;
+      if (
+        !order ||
+        order.driver ||
+        !["Pending", "Preparing", "ReadyForPickup"].includes(order.status)
+      )
+        return null;
       const [customer, merchant] = await Promise.all([
         User.findById(order.customer),
         Merchant.findById(order.merchant),
       ]);
       if (!customer || !merchant) return null;
-      const customerAddress = await Address.findOne({ user: customer._id, isDefault: true });
+      const customerAddress = await Address.findOne({
+        user: customer._id,
+        isDefault: true,
+      });
       if (!customerAddress) return null;
       const distance = await computeDistance(
         customerAddress.location.coordinates as [number, number],
