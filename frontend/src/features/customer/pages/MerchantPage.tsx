@@ -1,14 +1,12 @@
 import { useParams } from "react-router-dom"
 import { useMerchant } from "../hooks/useMerchant"
 import MerchantPageHeader from "../components/MerchantPageHeader"
-import MerchantPageContent from "../components/MerchantPageContent"
 import { useProductsByMerchant } from "../hooks/useProductsByMerchant"
-import MerchantPageProducts from "../components/MerchantPageProducts"
 import MerchantPageSkeleton from "@/components/common/Skeleton/MerchantPageSkeleton"
 import { formatOperatingHours } from "@/utils/timeUtils"
 import { useToggleMerchantFavorite } from "../hooks/useToggleMerchantFavorite"
 import { useMerchantFavorite } from "../hooks/useMerchantFavorite"
-import MerchantReviewsSection from "@/features/reviews/components/MerchantReviewsSection"
+import MerchantMenuContentTabs from "../components/MerchantMenuContentTabs"
 
 export type RequestType = "public" | "merchant"
 
@@ -82,6 +80,23 @@ function MerchantPage() {
     }
   }
 
+  const merchantPageContentProps = {
+    logo,
+    merchantName,
+    averageRating,
+    ratingCount,
+    description: description || "",
+    isFavorite: !!isMerchantFavorite,
+    onFavorite: handleFavorite,
+    address,
+  }
+
+  const merchantPageProductsProps = {
+    productsByMerchant: products,
+    isLoadingProducts: isLoadingProducts,
+    errorProducts: errorProducts || null,
+  }
+
   return (
     <div className="relative min-h-screen w-full pb-20">
       <MerchantPageHeader
@@ -95,23 +110,11 @@ function MerchantPage() {
         currentDay={currentDay}
       />
 
-      <MerchantPageContent
-        logo={logo}
-        merchantName={merchantName}
-        averageRating={averageRating}
-        ratingCount={ratingCount}
-        description={description || ""}
-        isFavorite={!!isMerchantFavorite}
-        onFavorite={handleFavorite}
-        address={address}
+      <MerchantMenuContentTabs
+        merchantPageContentProps={merchantPageContentProps}
+        merchantPageProductsProps={merchantPageProductsProps}
+        merchantId={merchantId || ""}
       />
-
-      <MerchantPageProducts
-        productsByMerchant={products}
-        isLoadingProducts={isLoadingProducts}
-        errorProducts={errorProducts || null}
-      />
-      {merchantId && <MerchantReviewsSection merchantId={merchantId} />}
     </div>
   )
 }

@@ -44,10 +44,7 @@ function MerchantPageContent({
             <p className="line-clamp-2 truncate text-xs text-wrap text-muted-foreground lg:text-sm">
               {description}
             </p>
-            <a
-              href="#reviews"
-              className="flex w-fit flex-row items-center justify-start gap-2 rounded-md focus-visible:outline-2 focus-visible:outline-primary"
-            >
+            <div className="flex w-fit flex-row items-center justify-start gap-2 rounded-md focus-visible:outline-2 focus-visible:outline-primary">
               <PiStarFill className="-mt-0.5 size-4 fill-amber-500 md:size-6 xl:size-9" />
               <span className="text-sm lg:text-lg">
                 {averageRating.toFixed(1)}
@@ -56,7 +53,7 @@ function MerchantPageContent({
                 |
               </span>
               <span className="text-sm lg:text-lg">{ratingCount} reviews</span>
-            </a>
+            </div>
             <div className="flex flex-row items-start justify-start gap-2 md:items-center">
               <MapPin className="mt-1 size-4 shrink-0 md:-mt-0.5 md:size-6 lg:size-9" />
               <span className="text-xs lg:text-sm">{addressFormatted}</span>

@@ -19,6 +19,7 @@ export const createNewAddress = async (payload: AddressInput, user: IUser) => {
   }
 
   if (existingLabels.includes(payload.label)) {
+    console.log("TRUE");
     throw new ConflictError(
       `You have an existing address in the type ${payload.label}`,
     );

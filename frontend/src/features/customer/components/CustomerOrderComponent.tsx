@@ -346,7 +346,7 @@ function CustomerOrderComponent() {
                   </div>
                 )}
                 <span
-                  className={`w-fit rounded-lg ${order.payment.status === "Cancelled" ? "bg-red-500" : order.payment.status === "Paid" ? "bg-green-400" : "bg-primary"} px-2 py-0.5 text-xs text-white`}
+                  className={`w-fit rounded-lg ${order.payment.status === "Cancelled" ? "bg-red-500" : order.payment.status === "Paid" ? "bg-green-700" : "bg-primary"} px-2 py-0.5 text-xs text-white`}
                 >
                   {order.payment.status}
                 </span>

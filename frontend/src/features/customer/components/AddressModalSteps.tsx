@@ -13,9 +13,6 @@ import { Spinner } from "@/components/ui/spinner"
 
 const LAST_STEP = ADDRESS_STEP_FIELDS.length - 1
 
-// All panels stay mounted (so local state in AddressDetailsStep survives),
-// inactive ones are simply display:none. Nothing is measured, so there is
-// no dependency on dialog animation timing or container width.
 function StepPanel({
   active,
   children,

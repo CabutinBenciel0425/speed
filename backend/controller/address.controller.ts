@@ -24,10 +24,7 @@ export const getAllAddress = asyncHandler(
     const allAddress = await Address.find({ user: user._id }).select("-user");
 
     if (allAddress.length === 1) {
-      await Address.findOneAndUpdate(
-        { user: user._id },
-        { isDefault: true },
-      );
+      await Address.findOneAndUpdate({ user: user._id }, { isDefault: true });
     }
 
     res.status(200).json({

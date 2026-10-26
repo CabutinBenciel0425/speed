@@ -28,8 +28,14 @@ import {
 
 function LocationLoadError({ onRetry }: { onRetry: () => void }) {
   return (
-    <p className="mt-1 flex items-center gap-2 text-xs text-destructive" role="alert">
-      Could not load locations. <button type="button" className="underline" onClick={onRetry}>Retry</button>
+    <p
+      className="mt-1 flex items-center gap-2 text-xs text-destructive"
+      role="alert"
+    >
+      Could not load locations.{" "}
+      <button type="button" className="underline" onClick={onRetry}>
+        Retry
+      </button>
     </p>
   )
 }
@@ -66,9 +72,7 @@ function AddressDetailsStep() {
   })
   const { data: citiesMunicipalities = [] } = citiesQuery
 
-  const barangaysQuery = useBarangays(
-    selectedCity?.psgc10DigitCode ?? ""
-  )
+  const barangaysQuery = useBarangays(selectedCity?.psgc10DigitCode ?? "")
   const { data: barangays = [] } = barangaysQuery
 
   const handleRegionChange = (region: PSGCRegion | null) => {
@@ -168,25 +172,29 @@ function AddressDetailsStep() {
               data-invalid={fieldState.invalid}
             >
               <ComboboxInput
-                placeholder={regionsQuery.isLoading ? "Loading regions…" : regionsQuery.isError ? "Regions unavailable" : "Select your region"}
+                placeholder={
+                  regionsQuery.isLoading
+                    ? "Loading regions…"
+                    : regionsQuery.isError
+                      ? "Regions unavailable"
+                      : "Select your region"
+                }
                 className="w-full rounded-sm text-xs lg:text-sm"
               />
               <ComboboxContent className="rounded-sm">
                 <ComboboxEmpty>No items found.</ComboboxEmpty>
                 <ComboboxList>
                   {(item) => (
-                    <ComboboxItem
-                      key={item.psgc10DigitCode}
-                      value={item}
-                      className={"text-xs lg:text-sm"}
-                    >
+                    <ComboboxItem key={item.psgc10DigitCode} value={item}>
                       {item.name}
                     </ComboboxItem>
                   )}
                 </ComboboxList>
               </ComboboxContent>
             </Combobox>
-            {regionsQuery.isError && <LocationLoadError onRetry={() => void regionsQuery.refetch()} />}
+            {regionsQuery.isError && (
+              <LocationLoadError onRetry={() => void regionsQuery.refetch()} />
+            )}
             <FieldStateError fieldState={fieldState} />
           </Field>
         )}
@@ -240,7 +248,11 @@ function AddressDetailsStep() {
                     </ComboboxList>
                   </ComboboxContent>
                 </Combobox>
-                {provincesQuery.isError && <LocationLoadError onRetry={() => void provincesQuery.refetch()} />}
+                {provincesQuery.isError && (
+                  <LocationLoadError
+                    onRetry={() => void provincesQuery.refetch()}
+                  />
+                )}
                 <FieldStateError fieldState={fieldState} />
               </>
             )}
@@ -288,7 +300,9 @@ function AddressDetailsStep() {
                 </ComboboxList>
               </ComboboxContent>
             </Combobox>
-            {citiesQuery.isError && <LocationLoadError onRetry={() => void citiesQuery.refetch()} />}
+            {citiesQuery.isError && (
+              <LocationLoadError onRetry={() => void citiesQuery.refetch()} />
+            )}
             <FieldStateError fieldState={fieldState} />
           </Field>
         )}
@@ -314,7 +328,13 @@ function AddressDetailsStep() {
               itemToStringLabel={(item) => item.name}
             >
               <ComboboxInput
-                placeholder={barangaysQuery.isLoading ? "Loading barangays…" : barangaysQuery.isError ? "Barangays unavailable" : "Select your barangay"}
+                placeholder={
+                  barangaysQuery.isLoading
+                    ? "Loading barangays…"
+                    : barangaysQuery.isError
+                      ? "Barangays unavailable"
+                      : "Select your barangay"
+                }
                 className="w-full rounded-sm text-xs lg:text-sm"
               />
               <ComboboxContent className="rounded-sm">
@@ -332,7 +352,11 @@ function AddressDetailsStep() {
                 </ComboboxList>
               </ComboboxContent>
             </Combobox>
-            {barangaysQuery.isError && <LocationLoadError onRetry={() => void barangaysQuery.refetch()} />}
+            {barangaysQuery.isError && (
+              <LocationLoadError
+                onRetry={() => void barangaysQuery.refetch()}
+              />
+            )}
             <FieldStateError fieldState={fieldState} />
           </Field>
         )}

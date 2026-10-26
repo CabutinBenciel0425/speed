@@ -94,7 +94,26 @@ function OrderComponent() {
     estimatedPrepTime1 = formatTimeAndDate(prepMs)
     estimatedPrepTime2 = formatTimeAndDate(extendedMs)
   }
-  console.log(data.payment)
+  const paymentBadgeColor =
+    (data.payment.method === "QRPh" && data.payment.status === "Paid") ||
+    (data.driverConfirmPickedUpAt && data.merchantConfirmPickedUpAt)
+      ? "bg-green-700"
+      : data.payment.status === "Cancelled" ||
+          data.status === "Cancelled" ||
+          data.status === "Rejected"
+        ? "bg-red-500"
+        : "bg-primary"
+  const paymentBadgeText =
+    data.payment.method === "QRPh" && data.payment.status === "Paid"
+      ? "Paid"
+      : data.payment.status === "Cancelled" || data.status === "Cancelled"
+        ? "Cancelled"
+        : data.status === "Rejected"
+          ? "Rejected"
+          : data.driverConfirmPickedUpAt && data.merchantConfirmPickedUpAt
+            ? "Paid"
+            : "Pending"
+  console.log(data)
   return (
     <div className="relative flex w-full flex-col items-start gap-10 px-4 pb-64 sm:px-6 lg:pb-10 xl:flex-row xl:px-10">
       <div className="flex w-full min-w-0 flex-col gap-4 lg:gap-8 xl:max-w-5xl xl:flex-1">
@@ -248,21 +267,9 @@ function OrderComponent() {
                   </div>
                 )}
                 <span
-                  className={`w-fit rounded-lg ${
-                    data.payment.method === "Cash"
-                      ? isPaymentConfirm
-                        ? "bg-green-400"
-                        : data.payment.status === "Pending"
-                          ? "bg-primary"
-                          : "bg-red-500"
-                      : "bg-green-400"
-                  } px-2 py-0.5 text-xs text-white`}
+                  className={`w-fit rounded-lg ${paymentBadgeColor} px-2 py-0.5 text-xs text-white`}
                 >
-                  {data.payment.method === "Cash"
-                    ? isPaymentConfirm
-                      ? "Paid"
-                      : "Pending"
-                    : "Paid"}
+                  {paymentBadgeText}
                 </span>
               </div>
               <div className="flex flex-row items-start gap-2">

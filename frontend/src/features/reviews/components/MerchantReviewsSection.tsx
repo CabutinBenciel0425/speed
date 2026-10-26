@@ -113,14 +113,16 @@ export default function MerchantReviewsSection({
                 <MessageSquare className="size-5" />
               </span>
               <div>
-                <p className="font-semibold tracking-tight">Share your experience</p>
+                <p className="font-semibold tracking-tight">
+                  Share your experience
+                </p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Your delivered orders are ready for a review.
                 </p>
               </div>
             </div>
             <div className="flex flex-wrap gap-2 md:justify-end">
-              {eligibleOrders.slice(0, 3).map((order) => (
+              {eligibleOrders.slice(0, 4).map((order) => (
                 <Button
                   key={order._id}
                   variant="outline"
@@ -129,7 +131,9 @@ export default function MerchantReviewsSection({
                   onClick={() => setOrderToReview(order._id)}
                 >
                   <Star className="size-4 fill-amber-400 text-amber-500" />
-                  <span className="whitespace-nowrap">Review order #{order.orderNumber}</span>
+                  <span className="whitespace-nowrap">
+                    Review order #{order.orderNumber}
+                  </span>
                 </Button>
               ))}
             </div>

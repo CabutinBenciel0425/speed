@@ -1,4 +1,3 @@
-// frontend/src/hooks/usePsgcData.ts
 import { useQuery } from "@tanstack/react-query"
 import { psgcService } from "@/services/psgcService"
 

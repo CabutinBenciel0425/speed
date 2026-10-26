@@ -155,6 +155,7 @@ function AddressCard({
                   variant="destructive"
                   onClick={(e) => {
                     e.stopPropagation()
+                    onHandleAddressDelete(address.label)
                   }}
                 >
                   <TrashIcon />
