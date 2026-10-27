@@ -14,16 +14,19 @@ import { useAuth } from "@/hooks/useAuth"
 import { useToggleProductFavorite } from "../hooks/useToggleProductFavorite"
 import { useProductFavorite } from "../hooks/useProductFavorite"
 import PageError from "@/components/common/PageError"
+import { useAddToCart } from "../hooks/useAddToCart"
 
 function ProductPage() {
   const { isAuthenticated } = useAuth()
-
   const [quantity, setQuantity] = useState(1)
   const { productId } = useParams()
   const { product, isLoading, error, refetch } = useProduct(productId || "")
   const { mutate: toggleProductFavorite } = useToggleProductFavorite()
   const { isProductFavorite } = useProductFavorite(productId || "")
-
+  const { mutate: addToCart, isPending } = useAddToCart({
+    quantity: 1,
+    notes: "",
+  })
   const handleFavorite = () => {
     if (productId) {
       toggleProductFavorite(productId)
@@ -47,7 +50,9 @@ function ProductPage() {
     }
     return (
       <div className="mx-auto flex min-h-[50vh] w-full max-w-3xl flex-col items-center justify-center gap-2 px-4 text-center">
-        <p className="font-medium">{error ? "Unable to load this product" : "Product not found"}</p>
+        <p className="font-medium">
+          {error ? "Unable to load this product" : "Product not found"}
+        </p>
         <p className="text-sm text-muted-foreground">
           This product may have been removed or is no longer available.
         </p>
@@ -66,6 +71,10 @@ function ProductPage() {
       pageName: merchantName || "Merchant",
     },
   ]
+
+  const handleAddToCart = () => {
+    addToCart({ product, quantity: 1, notes: "" })
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col gap-6 px-4 py-4 md:px-6 xl:px-40">
@@ -191,9 +200,12 @@ function ProductPage() {
                   onQuantityChange={setQuantity}
                 />
               </div>
-              <PressButton className="flex-1 gap-2 rounded-lg bg-primary px-6 py-3 text-white shadow-lg transition hover:bg-primary/90 sm:flex-none">
+              <PressButton
+                className="flex-1 gap-2 rounded-lg bg-primary px-6 py-3 text-white shadow-lg hover:bg-primary/90 sm:flex-none"
+                onClick={handleAddToCart}
+              >
                 <ShoppingCart className="size-5" />
-                Add to Cart
+                {isPending ? "Adding to Cart..." : "Add to Cart"}
               </PressButton>
             </div>
           )}

@@ -15,6 +15,8 @@ import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";
 import { formatSortName } from "../utils/formatSortName.js";
 import { imageUpload } from "../utils/imageUpload.js";
 import mongoose, { Types } from "mongoose";
+import type { PreparedOrderDataType } from "./order.service.js";
+import type { IOrder } from "../models/order.model.js";
 
 export const createNewProduct = async (
   merchantId: string,
@@ -301,4 +303,91 @@ export const getProductsService = async (query: any) => {
   const total = await Product.countDocuments(queryData.filter);
 
   return { docs, total, queryData };
+};
+
+export const getFeaturedProductsService = async (query: any) => {
+  const queryData = buildQuery(query);
+
+  const allowedSorts = [
+    "price",
+    "-price",
+    "createdAt",
+    "-createdAt",
+    "name",
+    "-name",
+  ];
+
+  const sort = allowedSorts.includes(queryData.sort)
+    ? queryData.sort
+    : "-createdAt";
+
+  if (queryData.search) {
+    queryData.filter.$or = [
+      {
+        name: {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+      {
+        description: {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+    ];
+  }
+
+  const docs = await Product.find({
+    ...queryData.filter,
+    isFeatured: true,
+    isAvailable: true,
+  })
+    .sort(sort)
+    .select(queryData.select)
+    .skip(queryData.skip)
+    .limit(queryData.limit);
+
+  const total = await Product.countDocuments(queryData.filter);
+
+  return { docs, total, queryData };
+};
+
+export const getBestSellerProductsService = async (query: any) => {
+  const queryData = buildQuery(query);
+
+  const docs = await Product.aggregate([
+    {
+      $match: {
+        ...queryData.filter,
+        isAvailable: true,
+      },
+    },
+    {
+      $sort: { totalSold: -1 },
+    },
+    {
+      $group: {
+        _id: "$merchant",
+        topProducts: { $push: "$$ROOT" },
+      },
+    },
+    {
+      $project: {
+        topProducts: { $slice: ["$topProducts", 2] },
+      },
+    },
+    {
+      $unwind: "$topProducts",
+    },
+    {
+      $replaceRoot: {
+        newRoot: {
+          $mergeObjects: ["$topProducts", { merchant: "$_id" }],
+        },
+      },
+    },
+  ]);
+
+  return { docs };
 };

@@ -101,7 +101,7 @@ function SearchFilterProducts({
               className="w-15 border-none text-center text-sm font-semibold"
               type="number"
               max="500"
-              step="5"
+              step="100"
               min="0"
             />
             <Button

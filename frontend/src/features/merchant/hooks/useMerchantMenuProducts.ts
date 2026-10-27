@@ -72,6 +72,21 @@ export function useMerchantProductActions(merchantId: string | undefined) {
       ),
   })
 
+  const toggleFeature = useMutation({
+    mutationFn: (productId: string) => {
+      if (!merchantId) throw new Error("Merchant profile is unavailable")
+      return axios.patch(`/product/${merchantId}/${productId}/featured/status`)
+    },
+    onSuccess: () => {
+      toast.success("Product featured status has been updated")
+      void invalidateProducts()
+    },
+    onError: (error) =>
+      toast.error(
+        apiErrorMessage(error, "Could not update product featured status.")
+      ),
+  })
+
   const deleteProduct = useMutation({
     mutationFn: (productId: string) => {
       if (!merchantId) throw new Error("Merchant profile is unavailable")
@@ -85,5 +100,5 @@ export function useMerchantProductActions(merchantId: string | undefined) {
       toast.error(apiErrorMessage(error, "Could not delete this product.")),
   })
 
-  return { toggleAvailability, deleteProduct }
+  return { toggleAvailability, deleteProduct, toggleFeature }
 }

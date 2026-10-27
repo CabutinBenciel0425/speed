@@ -8,6 +8,8 @@ import {
 } from "../utils/errors.js";
 import {
   createNewProduct,
+  getBestSellerProductsService,
+  getFeaturedProductsService,
   getProductFavoritesService,
   getProductsService,
   toggleProductFavoriteService,
@@ -299,16 +301,32 @@ export const getProductFavorites = asyncHandler(
 
 export const getFeaturedProducts = asyncHandler(
   async (req: Request, res: Response) => {
-    const featuredProducts = await Product.find({
-      isFeatured: true,
-      isAvailable: true,
-    })
-      .select("-merchantLocation")
-      .sort({ totalSold: -1, createdAt: -1 })
-      .limit(12);
+    const { docs, total, queryData } = await getFeaturedProductsService(
+      req.query,
+    );
+
     res.status(200).json({
       success: true,
-      data: featuredProducts,
+      data: {
+        featuredProducts: docs,
+        pagination: {
+          total,
+          page: queryData.page,
+          limit: queryData.limit,
+          pages: Math.ceil(total / queryData.limit),
+        },
+      },
+    });
+  },
+);
+
+export const getBestSellerProducts = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { docs } = await getBestSellerProductsService(req.query);
+
+    res.status(200).json({
+      success: true,
+      data: docs,
     });
   },
 );

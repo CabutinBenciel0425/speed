@@ -1,4 +1,11 @@
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import {
+  Flag,
+  FlagOff,
+  MoreHorizontal,
+  Pencil,
+  Sparkles,
+  Trash2,
+} from "lucide-react"
 import type { Product } from "@/features/customer/types/products"
 import { Button } from "@/components/ui/button"
 import {
@@ -22,6 +29,7 @@ type MerchantProductCardProps = {
   product: Product
   onEdit: (product: Product) => void
   onDelete: (merchantId: string, productId: string) => void
+  onToggleFeature: (product: Product) => void
   onToggleAvailability: (product: Product) => void
   isUpdating?: boolean
 }
@@ -31,6 +39,7 @@ function MerchantProductCard({
   product,
   onEdit,
   onDelete,
+  onToggleFeature,
   onToggleAvailability,
   isUpdating = false,
 }: MerchantProductCardProps) {
@@ -104,8 +113,20 @@ function MerchantProductCard({
             >
               <Pencil /> Edit
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onToggleFeature(product)}>
+              <Sparkles />
+              {product.isFeatured ? "Unfeature" : "Tag as featured"}
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onToggleAvailability(product)}>
-              {product.isAvailable ? "Mark unavailable" : "Mark available"}
+              {product.isAvailable ? (
+                <>
+                  <FlagOff /> <span>Mark unavailable</span>
+                </>
+              ) : (
+                <>
+                  <Flag /> <span>Mark available</span>
+                </>
+              )}
             </DropdownMenuItem>
             <DropdownMenuItem
               variant="destructive"

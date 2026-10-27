@@ -13,6 +13,7 @@ import {
   getProduct,
   getRandomFromMerchant,
   getProductFavoriteStatus,
+  getBestSellerProducts,
 } from "../controller/product.controller.js";
 import {
   productSchema,
@@ -25,6 +26,7 @@ const productRouter = Router();
 
 //public routes
 productRouter.get("/featured", getFeaturedProducts);
+productRouter.get("/bestsellers", getBestSellerProducts);
 productRouter.get("/:productId/details", getProduct);
 productRouter.get("/", getProducts);
 productRouter.post("/random-cart", getRandomFromMerchant);

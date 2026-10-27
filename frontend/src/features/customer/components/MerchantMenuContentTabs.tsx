@@ -61,14 +61,18 @@ function MerchantMenuContentTabs({
       <TabsList className={"rounded-sm"}>
         <TabsTrigger
           value="menu"
-          className={"rounded-sm px-20 text-lg tracking-wider"}
+          className={
+            "rounded-sm px-5 text-sm sm:px-8 sm:tracking-wide md:px-12 md:text-base lg:px-20 lg:text-lg lg:tracking-wider"
+          }
         >
           <SquareMenu />
           Menu
         </TabsTrigger>
         <TabsTrigger
           value="reviews"
-          className={"rounded-sm px-20 text-lg tracking-wider"}
+          className={
+            "rounded-sm px-5 text-sm sm:px-8 sm:tracking-wide md:px-12 md:text-base lg:px-20 lg:text-lg lg:tracking-wider"
+          }
         >
           <MessageSquareMore />
           Reviews

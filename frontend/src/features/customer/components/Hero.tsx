@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react"
 import heroImage from "@/assets/hero.png"
 import { motion } from "framer-motion"
 import PressButton from "@/components/common/PressButton"
+import { NavLink } from "react-router-dom"
 
 function Hero() {
   return (
@@ -25,10 +26,15 @@ function Hero() {
           </p>
 
           <PressButton className="h-8 w-fit rounded-xl bg-primary px-2 text-white lg:h-12 lg:px-4">
-            <span className="px-2 text-xs font-normal lg:text-base xl:text-lg">
-              Order now
-            </span>
-            <ArrowRight className="size-4 md:size-5 lg:size-6" />
+            <NavLink
+              to="/featured"
+              className={"inline-flex items-center gap-1"}
+            >
+              <span className="px-2 text-xs font-normal lg:text-base xl:text-lg">
+                Order now
+              </span>
+              <ArrowRight className="size-4 md:size-5 lg:size-6" />
+            </NavLink>
           </PressButton>
         </div>
 

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
 import { useSearchParams } from "react-router-dom"
-import { Dot, Plus } from "lucide-react"
+import { Dot, Plus, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { Product } from "@/features/customer/types/products"
 import { useCategories } from "@/features/customer/hooks/useCategories"
@@ -21,6 +21,7 @@ import { useDeleteProduct } from "../hooks/useDeleteProduct"
 import PageLoading from "@/components/common/PageLoading"
 import PageError from "@/components/common/PageError"
 import { SkeletonProductCard } from "@/components/common/Skeleton/SkeletonProductCard"
+import { Separator } from "@/components/ui/separator"
 
 function MerchantMenuPage() {
   const {
@@ -46,6 +47,7 @@ function MerchantMenuPage() {
   const updateProductMutation = useUpdateMerchantProduct(merchant?._id)
   const { mutate: deleteProduct } = useDeleteProduct()
   const {
+    toggleFeature: toggleFeatureMutation,
     toggleAvailability: toggleAvailabilityMutation,
     deleteProduct: deleteProductMutation,
   } = useMerchantProductActions(merchant?._id)
@@ -58,7 +60,10 @@ function MerchantMenuPage() {
       slug: category.slug,
     }))
 
-  const allProducts = allProductsQuery.data ?? []
+  const allProducts = useMemo(
+    () => allProductsQuery.data ?? [],
+    [allProductsQuery.data]
+  )
   const products = useMemo(
     () =>
       categoryId
@@ -123,6 +128,13 @@ function MerchantMenuPage() {
     )
   }
 
+  const featuredProducts = products.filter((product) => product.isFeatured)
+  const unfeaturedProducts = products
+    .filter((product) => !product.isFeatured)
+    .sort((a, b) => Number(b.isAvailable) - Number(a.isAvailable))
+
+  console.log(featuredProducts)
+  console.log(unfeaturedProducts)
   return (
     <main className="page-shell page-stack max-w-7xl">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -240,25 +252,62 @@ function MerchantMenuPage() {
               : "No products yet. Add your first menu item."}
           </p>
         ) : (
-          <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-            {products.map((product) => (
-              <MerchantProductCard
-                key={product._id}
-                merchantId={merchant?._id}
-                product={product}
-                onEdit={openEditDialog}
-                onToggleAvailability={(item) =>
-                  toggleAvailabilityMutation.mutate(item._id)
-                }
-                onDelete={(merchantId, productId) => {
-                  deleteProduct({ merchantId, productId })
-                }}
-                isUpdating={
-                  toggleAvailabilityMutation.isPending ||
-                  deleteProductMutation.isPending
-                }
-              />
-            ))}
+          <div className="flex flex-col items-start">
+            <p className="inline-flex gap-2 py-4 text-lg font-semibold text-primary">
+              <Sparkles /> Featured products
+            </p>
+            <div className="mb-5 grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+              {featuredProducts.map((product) => (
+                <MerchantProductCard
+                  key={product._id}
+                  merchantId={merchant?._id}
+                  product={product}
+                  onEdit={openEditDialog}
+                  onToggleFeature={(item) =>
+                    toggleFeatureMutation.mutate(item._id)
+                  }
+                  onToggleAvailability={(item) =>
+                    toggleAvailabilityMutation.mutate(item._id)
+                  }
+                  onDelete={(merchantId, productId) => {
+                    deleteProduct({ merchantId, productId })
+                  }}
+                  isUpdating={
+                    toggleAvailabilityMutation.isPending ||
+                    deleteProductMutation.isPending
+                  }
+                />
+              ))}
+            </div>
+
+            <Separator />
+
+            <p className="inline-flex gap-2 pt-4 text-lg font-semibold">
+              Regular products
+            </p>
+            <div className="grid grid-cols-1 gap-4 pt-5 min-[360px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+              {unfeaturedProducts.map((product) => (
+                <MerchantProductCard
+                  key={product._id}
+                  merchantId={merchant?._id}
+                  product={product}
+                  onEdit={openEditDialog}
+                  onToggleFeature={(item) =>
+                    toggleFeatureMutation.mutate(item._id)
+                  }
+                  onToggleAvailability={(item) =>
+                    toggleAvailabilityMutation.mutate(item._id)
+                  }
+                  onDelete={(merchantId, productId) => {
+                    deleteProduct({ merchantId, productId })
+                  }}
+                  isUpdating={
+                    toggleAvailabilityMutation.isPending ||
+                    deleteProductMutation.isPending
+                  }
+                />
+              ))}
+            </div>
           </div>
         )}
       </section>

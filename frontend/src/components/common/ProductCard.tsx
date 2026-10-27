@@ -24,7 +24,6 @@ function ProductCard({ product }: { product: Product }) {
   const { isAuthenticated } = useAuth()
   const { existingOrder } = useExistingOrder()
   const { mutate, isPending } = useAddToCart({
-    product,
     quantity: 1,
     notes: "",
   })
