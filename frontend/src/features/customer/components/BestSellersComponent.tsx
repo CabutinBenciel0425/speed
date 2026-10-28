@@ -1,6 +1,6 @@
 import ProductCard from "@/components/common/ProductCard"
 import { SkeletonProductCard } from "@/components/common/Skeleton/SkeletonProductCard"
-import type { Product } from "../types/products"
+import type { BestSellerProducts } from "../hooks/useBestSellerProducts"
 
 function BestSellersComponent({
   isLoadingBestSellers,
@@ -9,7 +9,7 @@ function BestSellersComponent({
 }: {
   isLoadingBestSellers: boolean
   errorBestSellers?: Error | null
-  bestSellerProductsData?: Product[]
+  bestSellerProductsData?: BestSellerProducts
 }) {
   return (
     <div className="flex-1 overflow-hidden py-10">
@@ -28,14 +28,14 @@ function BestSellersComponent({
         )}
         {!isLoadingBestSellers &&
           !errorBestSellers &&
-          bestSellerProductsData?.map((product) => (
+          bestSellerProductsData?.bestSellerProducts.map((product) => (
             <ProductCard key={product._id} product={product} />
           ))}
       </div>
 
       {!isLoadingBestSellers &&
         !errorBestSellers &&
-        bestSellerProductsData?.length === 0 && (
+        bestSellerProductsData?.bestSellerProducts.length === 0 && (
           <div className="flex h-40 items-center justify-center">
             <p className="text-gray-500">No products found in this category</p>
           </div>

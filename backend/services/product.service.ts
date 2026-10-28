@@ -17,6 +17,7 @@ import { imageUpload } from "../utils/imageUpload.js";
 import mongoose, { Types } from "mongoose";
 import type { PreparedOrderDataType } from "./order.service.js";
 import type { IOrder } from "../models/order.model.js";
+import { type PipelineStage } from "mongoose";
 
 export const createNewProduct = async (
   merchantId: string,
@@ -356,7 +357,11 @@ export const getFeaturedProductsService = async (query: any) => {
 export const getBestSellerProductsService = async (query: any) => {
   const queryData = buildQuery(query);
 
-  const docs = await Product.aggregate([
+  const page = Math.max(1, Number(query.page) || 1);
+  const limit = Math.min(24, Math.max(1, Number(query.limit) || 12));
+  const skip = (page - 1) * limit;
+
+  const pipeline: PipelineStage[] = [
     {
       $match: {
         ...queryData.filter,
@@ -364,7 +369,11 @@ export const getBestSellerProductsService = async (query: any) => {
       },
     },
     {
-      $sort: { totalSold: -1 },
+      $sort: {
+        totalSold: -1,
+        createdAt: -1,
+        _id: -1,
+      },
     },
     {
       $group: {
@@ -387,7 +396,29 @@ export const getBestSellerProductsService = async (query: any) => {
         },
       },
     },
+    {
+      $sort: {
+        totalSold: -1,
+        createdAt: -1,
+        _id: -1,
+      },
+    },
+  ];
+
+  const [docs, countResult] = await Promise.all([
+    Product.aggregate([...pipeline, { $skip: skip }, { $limit: limit }]),
+    Product.aggregate([...pipeline, { $count: "total" }]),
   ]);
 
-  return { docs };
+  const total = countResult[0]?.total ?? 0;
+
+  return {
+    docs,
+    pagination: {
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit),
+    },
+  };
 };

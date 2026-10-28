@@ -11,25 +11,38 @@ import PageControls from "@/components/common/PageControls"
 
 function FeaturedProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const page = Math.max(1, Number(searchParams.get("page")) || 1)
+  const featuredPage = Math.max(
+    1,
+    Number(searchParams.get("featuredPage")) || 1
+  )
+
+  const bestSellerPage = Math.max(
+    1,
+    Number(searchParams.get("bestSellerPage")) || 1
+  )
 
   const {
     data: featuredProductsData,
     isLoading: isLoadingFeatured,
     error: errorFeatured,
-  } = useFeaturedProducts({ page })
+  } = useFeaturedProducts({ page: featuredPage })
   const {
     data: bestSellerProductsData,
     isLoading: isLoadingBestSellers,
     error: errorBestSellers,
-  } = useBestSellerProducts()
+  } = useBestSellerProducts({ page: bestSellerPage })
 
-  const setPage = (nextPage: number) => {
+  const setFeaturedPage = (nextPage: number) => {
     const params = new URLSearchParams(searchParams)
-    params.set("page", String(nextPage))
+    params.set("featuredPage", String(nextPage))
     setSearchParams(params)
   }
 
+  const setBestSellerPage = (nextPage: number) => {
+    const params = new URLSearchParams(searchParams)
+    params.set("bestSellerPage", String(nextPage))
+    setSearchParams(params)
+  }
   return (
     <div className="px-5 lg:px-15">
       <h1 className="text-sm font-semibold md:text-base lg:text-lg">
@@ -74,10 +87,10 @@ function FeaturedProductsPage() {
               <SkeletonPagination />
             ) : (
               <PageControls
-                page={featuredProductsData?.pagination.page ?? page}
+                page={featuredProductsData?.pagination.page ?? featuredPage}
                 pages={featuredProductsData?.pagination.pages ?? 0}
                 total={featuredProductsData?.pagination.total ?? 0}
-                onPageChange={setPage}
+                onPageChange={setFeaturedPage}
               />
             )}
           </div>
@@ -88,6 +101,18 @@ function FeaturedProductsPage() {
             errorBestSellers={errorBestSellers}
             bestSellerProductsData={bestSellerProductsData}
           />
+          <div className="shrink-0 px-8">
+            {isLoadingBestSellers ? (
+              <SkeletonPagination />
+            ) : (
+              <PageControls
+                page={bestSellerProductsData?.pagination.page ?? bestSellerPage}
+                pages={bestSellerProductsData?.pagination.pages ?? 0}
+                total={bestSellerProductsData?.pagination.total ?? 0}
+                onPageChange={setBestSellerPage}
+              />
+            )}
+          </div>
         </TabsContent>
       </Tabs>
     </div>

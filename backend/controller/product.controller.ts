@@ -322,11 +322,19 @@ export const getFeaturedProducts = asyncHandler(
 
 export const getBestSellerProducts = asyncHandler(
   async (req: Request, res: Response) => {
-    const { docs } = await getBestSellerProductsService(req.query);
+    const { docs, pagination } = await getBestSellerProductsService(req.query);
 
     res.status(200).json({
       success: true,
-      data: docs,
+      data: {
+        bestSellerProducts: docs,
+        pagination: {
+          total: pagination.total,
+          page: pagination.page,
+          limit: pagination.limit,
+          pages: pagination.limit,
+        },
+      },
     });
   },
 );
