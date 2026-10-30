@@ -16,6 +16,7 @@ import { ApiError } from "../utils/apiError.js";
 import type { CreateNotificationInput } from "../models/notification.model.js";
 import { createNotification } from "./notification.service.js";
 import { io } from "../server.js";
+import Product from "../models/product.model.js";
 
 const QRPH_EXPIRY_SECONDS = 900;
 
@@ -474,9 +475,6 @@ export const handleExpiredQRPhPaymentService = async (
     );
   }
 
-  // PayMongo may deliver an expiry event for an older QR after a replacement
-  // QR was attached to this same intent. Only expire it when the intent is
-  // actually waiting for a new payment method.
   const intent = await retrievePaymentIntent(paymentIntentId);
   if (!isQRReadyForRetry(intent)) return payment;
 
@@ -553,7 +551,8 @@ const retrievePaymentIntent = async (paymentIntentId: string) => {
     return {
       status: attributes.status as string,
       qrExpiresAt: attributes.next_action?.code?.expires_at as
-        string | undefined,
+        | string
+        | undefined,
       payments: (attributes.payments ?? []) as Array<{
         id?: string;
         status?: string;
@@ -574,13 +573,11 @@ const retrievePaymentIntent = async (paymentIntentId: string) => {
 
 const isQRReadyForRetry = (intent: {
   status: string;
-  qrExpiresAt?: string;
+  qrExpiresAt?: string | undefined;
   payments: Array<{ id?: string; status?: string; amount?: number }>;
 }) => {
   if (intent.status === "awaiting_payment_method") return true;
-  // Test mode can leave the intent at awaiting_next_action after its QR source
-  // expires. The QR expiry timestamp plus an empty payments list is the
-  // provider evidence that this attempt can be retried safely.
+
   if (intent.status !== "awaiting_next_action" || intent.payments.length > 0) {
     return false;
   }

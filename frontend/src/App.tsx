@@ -15,6 +15,7 @@ import { getRoleHomePath } from "@/utils/roleRoutes"
 import DriverLayout from "./features/driver/components/DriverLayout"
 import PageLoading from "./components/common/PageLoading"
 import RouteErrorBoundary from "./components/common/RouteErrorBoundary"
+import CustomerProfilePage from "./features/customer/pages/CustomerProfilePage"
 
 const Dashboard = lazy(() => import("./features/customer/pages/Dashboard"))
 const CategoryProductsPage = lazy(
@@ -38,6 +39,9 @@ const SearchMerchantsAll = lazy(
   () => import("./features/customer/components/SearchMerchantsAll")
 )
 const CartPage = lazy(() => import("./features/customer/pages/CartPage"))
+const FeaturedProductsPage = lazy(
+  () => import("./features/customer/pages/FeaturedProductsPage")
+)
 const FavoritesPage = lazy(
   () => import("./features/customer/pages/FavoritesPage")
 )
@@ -127,235 +131,264 @@ export function App() {
       <ScrollToTop />
       <RouteErrorBoundary>
         <Suspense
-          fallback={<PageLoading label="Loading page…" className="min-h-screen" />}
+          fallback={
+            <PageLoading label="Loading page…" className="min-h-screen" />
+          }
         >
           <Routes>
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<AdminDashboardPage />} />
-            <Route path="notifications" element={<AdminNotificationsPage />} />
-            <Route path="analytics" element={<AdminAnalyticsPage />} />
-            <Route path=":section" element={<AdminResourcePage />} />
-          </Route>
-          <Route path="/merchant" element={<MerchantLayout />}>
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<MerchantDashboard />} />
-            <Route path="menu" element={<MerchantMenuPage />} />
-            <Route path="orders" element={<MerchantOrdersPage />} />
-            <Route path="orders/:orderId" element={<OrderComponent />} />
-            <Route path="reviews" element={<MerchantReviewsPage />} />
-            <Route
-              path="analytics"
-              element={
-                <Suspense
-                  fallback={<PageLoading label="Loading analytics…" />}
-                >
-                  <MerchantAnalyticsPage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="notifications"
-              element={<MerchantNotificationsPage />}
-            />
-            <Route path="settings" element={<MerchantSettingsPage />} />
-          </Route>
-          <Route path="/driver" element={<DriverLayout />}>
-            <Route
-              index
-              element={
-                <Suspense
-                  fallback={<PageLoading label="Loading deliveries…" />}
-                >
-                  <DriverDashboardPage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="history"
-              element={
-                <Suspense
-                  fallback={<PageLoading label="Loading history…" />}
-                >
-                  <DriverHistoryPage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="orders/:orderId"
-              element={
-                <Suspense fallback={<PageLoading label="Loading order details…" />}>
-                  <DriverOrderPage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="reviews"
-              element={
-                <Suspense
-                  fallback={<PageLoading label="Loading reviews…" />}
-                >
-                  <DriverReviewsPage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="profile"
-              element={
-                <Suspense
-                  fallback={<PageLoading label="Loading profile…" />}
-                >
-                  <DriverProfilePage />
-                </Suspense>
-              }
-            />
-          </Route>
-          <Route element={<AuthLayout />}>
-            <Route
-              path="/login"
-              element={
-                !isAuthenticated ? (
-                  <LoginPage />
-                ) : (
-                  <Navigate to={getRoleHomePath(activeRole)} replace />
-                )
-              }
-            />
-            <Route
-              path="/register"
-              element={
-                !isAuthenticated ? (
-                  <RegisterPage />
-                ) : (
-                  <Navigate to={getRoleHomePath(activeRole)} replace />
-                )
-              }
-            />
-            <Route
-              path="/select-role"
-              element={
-                !isAuthenticated ? (
-                  <RoleSelectorPage />
-                ) : (
-                  <Navigate to={getRoleHomePath(activeRole)} replace />
-                )
-              }
-            />
-          </Route>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<AdminDashboardPage />} />
+              <Route
+                path="notifications"
+                element={<AdminNotificationsPage />}
+              />
+              <Route path="analytics" element={<AdminAnalyticsPage />} />
+              <Route path=":section" element={<AdminResourcePage />} />
+            </Route>
+            <Route path="/merchant" element={<MerchantLayout />}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<MerchantDashboard />} />
+              <Route path="menu" element={<MerchantMenuPage />} />
+              <Route path="orders" element={<MerchantOrdersPage />} />
+              <Route path="orders/:orderId" element={<OrderComponent />} />
+              <Route path="reviews" element={<MerchantReviewsPage />} />
+              <Route
+                path="analytics"
+                element={
+                  <Suspense
+                    fallback={<PageLoading label="Loading analytics…" />}
+                  >
+                    <MerchantAnalyticsPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="notifications"
+                element={<MerchantNotificationsPage />}
+              />
+              <Route path="settings" element={<MerchantSettingsPage />} />
+            </Route>
+            <Route path="/driver" element={<DriverLayout />}>
+              <Route
+                index
+                element={
+                  <Suspense
+                    fallback={<PageLoading label="Loading deliveries…" />}
+                  >
+                    <DriverDashboardPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="history"
+                element={
+                  <Suspense fallback={<PageLoading label="Loading history…" />}>
+                    <DriverHistoryPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="orders/:orderId"
+                element={
+                  <Suspense
+                    fallback={<PageLoading label="Loading order details…" />}
+                  >
+                    <DriverOrderPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="reviews"
+                element={
+                  <Suspense fallback={<PageLoading label="Loading reviews…" />}>
+                    <DriverReviewsPage />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="profile"
+                element={
+                  <Suspense fallback={<PageLoading label="Loading profile…" />}>
+                    <DriverProfilePage />
+                  </Suspense>
+                }
+              />
+            </Route>
+            <Route element={<AuthLayout />}>
+              <Route
+                path="/login"
+                element={
+                  !isAuthenticated ? (
+                    <LoginPage />
+                  ) : (
+                    <Navigate to={getRoleHomePath(activeRole)} replace />
+                  )
+                }
+              />
+              <Route
+                path="/register"
+                element={
+                  !isAuthenticated ? (
+                    <RegisterPage />
+                  ) : (
+                    <Navigate to={getRoleHomePath(activeRole)} replace />
+                  )
+                }
+              />
+              <Route
+                path="/select-role"
+                element={
+                  !isAuthenticated ? (
+                    <RoleSelectorPage />
+                  ) : (
+                    <Navigate to={getRoleHomePath(activeRole)} replace />
+                  )
+                }
+              />
+            </Route>
 
-          <Route element={<CustomerLayout />}>
-            <Route
-              path="/checkout/review"
-              element={
-                isAuthenticated ? (
-                  <OrderReviewPage />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-            <Route
-              path="/orders/tracking/:orderId"
-              element={
-                isAuthenticated ? (
-                  <OrderTrackingPage />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
+            <Route element={<CustomerLayout />}>
+              <Route
+                path="/checkout/review"
+                element={
+                  isAuthenticated ? (
+                    <OrderReviewPage />
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
+              <Route
+                path="/orders/tracking/:orderId"
+                element={
+                  isAuthenticated ? (
+                    <OrderTrackingPage />
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
 
-            <Route
-              path="/orders/:orderId"
-              element={
-                isAuthenticated ? (
-                  <CustomerOrderComponent />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-            <Route path="/register/merchant" element={<MerchantSignupPage />} />
-            <Route path="/register/driver" element={<DriverSignupPage />} />
-            <Route path="/" element={<Dashboard />} />
-            <Route
-              path="/verify-email"
-              element={
-                !isVerified ? <EmailVerificationPage /> : <Navigate to="/" />
-              }
-            />
-            <Route
-              path="/input-otp"
-              element={!isVerified ? <InputCodePage /> : <Navigate to="/" />}
-            />
-            <Route
-              path="/category/:categoryId"
-              element={<CategoryProductsPage />}
-            />
-            <Route path="/merchant/:merchantId" element={<MerchantPage />} />
-            <Route
-              path="/merchant/:merchantId/:productId"
-              element={<ProductPage />}
-            />
-            <Route path="/search" element={<SearchPage />} />
-            <Route path="/search/products" element={<SearchProductsAll />} />
-            <Route path="/search/merchants" element={<SearchMerchantsAll />} />
-            <Route
-              path="/cart"
-              element={isAuthenticated ? <CartPage /> : <Navigate to="/" />}
-            />
-            <Route
-              path="/favorites"
-              element={
-                isAuthenticated ? <FavoritesPage /> : <Navigate to="/" />
-              }
-            />
-            <Route
-              path="/reviews"
-              element={
-                isAuthenticated ? (
-                  <CustomerReviewsPage />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
-            <Route
-              path="/favorites/merchants"
-              element={
-                isAuthenticated ? <MerchantFavoritesAll /> : <Navigate to="/" />
-              }
-            />
-            <Route
-              path="/favorites/products"
-              element={
-                isAuthenticated ? <ProductFavoritesAll /> : <Navigate to="/" />
-              }
-            />
+              <Route
+                path="/orders/:orderId"
+                element={
+                  isAuthenticated ? (
+                    <CustomerOrderComponent />
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
+              <Route
+                path="/register/merchant"
+                element={<MerchantSignupPage />}
+              />
+              <Route path="/register/driver" element={<DriverSignupPage />} />
+              <Route path="/" element={<Dashboard />} />
+              <Route
+                path="/verify-email"
+                element={
+                  !isVerified ? <EmailVerificationPage /> : <Navigate to="/" />
+                }
+              />
+              <Route
+                path="/input-otp"
+                element={!isVerified ? <InputCodePage /> : <Navigate to="/" />}
+              />
+              <Route
+                path="/category/:categoryId"
+                element={<CategoryProductsPage />}
+              />
+              <Route path="/merchant/:merchantId" element={<MerchantPage />} />
+              <Route
+                path="/merchant/:merchantId/:productId"
+                element={<ProductPage />}
+              />
+              <Route path="/search" element={<SearchPage />} />
+              <Route path="/search/products" element={<SearchProductsAll />} />
+              <Route
+                path="/search/merchants"
+                element={<SearchMerchantsAll />}
+              />
+              <Route
+                path="/cart"
+                element={isAuthenticated ? <CartPage /> : <Navigate to="/" />}
+              />
+              <Route path="/featured" element={<FeaturedProductsPage />} />
+              <Route
+                path="/favorites"
+                element={
+                  isAuthenticated ? <FavoritesPage /> : <Navigate to="/" />
+                }
+              />
+              <Route
+                path="/reviews"
+                element={
+                  isAuthenticated ? (
+                    <CustomerReviewsPage />
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
+              <Route
+                path="/favorites/merchants"
+                element={
+                  isAuthenticated ? (
+                    <MerchantFavoritesAll />
+                  ) : (
+                    <Navigate to="/" />
+                  )
+                }
+              />
+              <Route
+                path="/favorites/products"
+                element={
+                  isAuthenticated ? (
+                    <ProductFavoritesAll />
+                  ) : (
+                    <Navigate to="/" />
+                  )
+                }
+              />
 
-            <Route
-              path="/address"
-              element={isAuthenticated ? <AddressPage /> : <Navigate to="/" />}
-            />
+              <Route
+                path="/address"
+                element={
+                  isAuthenticated ? <AddressPage /> : <Navigate to="/" />
+                }
+              />
 
-            <Route
-              path="/notifications"
-              element={
-                isAuthenticated ? (
-                  <CustomerNotificationsPage />
-                ) : (
-                  <Navigate to="/" />
-                )
-              }
-            />
+              <Route
+                path="/notifications"
+                element={
+                  isAuthenticated ? (
+                    <CustomerNotificationsPage />
+                  ) : (
+                    <Navigate to="/" />
+                  )
+                }
+              />
 
-            <Route
-              path="/orders"
-              element={
-                isAuthenticated ? <CustomerOrdersPage /> : <Navigate to="/" />
-              }
-            />
-          </Route>
+              <Route
+                path="/profile"
+                element={
+                  isAuthenticated ? (
+                    <CustomerProfilePage />
+                  ) : (
+                    <Navigate to="/" />
+                  )
+                }
+              />
+
+              <Route
+                path="/orders"
+                element={
+                  isAuthenticated ? <CustomerOrdersPage /> : <Navigate to="/" />
+                }
+              />
+            </Route>
           </Routes>
         </Suspense>
       </RouteErrorBoundary>

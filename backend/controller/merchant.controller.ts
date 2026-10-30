@@ -36,6 +36,7 @@ export const getMyMerchant = asyncHandler(
     if (!req.user) throw new UnauthorizedError("Unauthorized user");
     const merchant = await Merchant.findOne({ owner: req.user._id });
     if (!merchant) throw new NotFoundError("Merchant");
+    console.log("MY MERCHANT", merchant);
     res.status(200).json({ success: true, data: merchant });
   },
 );

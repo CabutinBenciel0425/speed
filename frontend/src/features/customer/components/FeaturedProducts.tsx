@@ -1,6 +1,6 @@
 import ViewAllButton from "@/components/common/ViewAllButton"
 import ProductCard from "@/components/common/ProductCard"
-import { useFeaturedProducts } from "../hooks/useProducts"
+import { useFeaturedProducts } from "../hooks/useFeaturedProducts"
 import { SkeletonProductCard } from "@/components/common/Skeleton/SkeletonProductCard"
 import {
   Carousel,
@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/carousel"
 
 function FeaturedProducts() {
-  const { featuredProducts, isLoading, error } = useFeaturedProducts()
+  const { data: featuredProductsData, isLoading, error } = useFeaturedProducts()
   return (
     <div className="flex w-full flex-col gap-5 px-10 lg:px-20">
       <div className="flex items-center justify-between">
@@ -37,7 +37,7 @@ function FeaturedProducts() {
           <CarouselPrevious />
           {!isLoading && !error && (
             <CarouselContent className="py-3">
-              {featuredProducts.map((product) => (
+              {featuredProductsData?.featuredProducts.map((product) => (
                 <CarouselItem
                   key={product._id}
                   className="basis-1/1 md:basis-1/2 xl:basis-1/4"

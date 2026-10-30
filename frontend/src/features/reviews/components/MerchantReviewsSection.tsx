@@ -113,7 +113,7 @@ export default function MerchantReviewsSection({
                 <MessageSquare className="size-5" />
               </span>
               <div>
-                <p className="font-semibold tracking-tight">
+                <p className="text-lg font-semibold tracking-tight">
                   Share your experience
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">

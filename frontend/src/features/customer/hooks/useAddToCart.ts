@@ -11,10 +11,11 @@ export const addToCart = async ({
   quantity,
   notes = "",
 }: {
-  product: Product
+  product: Product | null | undefined
   quantity: number
   notes?: string
 }): Promise<CartResult> => {
+  if (!product) throw new Error("Product is missing")
   const { data } = await axios.post("/cart", {
     product: product._id,
     quantity,
@@ -24,11 +25,9 @@ export const addToCart = async ({
 }
 
 export const useAddToCart = ({
-  product,
   quantity,
   notes,
 }: {
-  product: Product
   quantity: number
   notes?: string
 }) => {
@@ -36,14 +35,16 @@ export const useAddToCart = ({
   const { addItem } = useCartStore()
   return useMutation({
     mutationFn: addToCart,
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       toast.success("Item added to cart")
-      addItem({
-        id: product._id,
-        product,
-        quantity,
-        notes,
-      })
+      if (variables.product) {
+        addItem({
+          id: variables.product._id,
+          product: variables.product,
+          quantity,
+          notes,
+        })
+      }
 
       queryClient.invalidateQueries({ queryKey: ["cart"] })
     },

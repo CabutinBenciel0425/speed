@@ -43,17 +43,18 @@ export default function ReviewCard({
     .join("")
     .toUpperCase()
   const date = review.createdAt ? new Date(review.createdAt) : null
-  const dateLabel = date && !Number.isNaN(date.getTime())
-    ? format(date, "MMM d, yyyy")
-    : "Recent review"
+  const dateLabel =
+    date && !Number.isNaN(date.getTime())
+      ? format(date, "MMM d, yyyy")
+      : "Recent review"
   const rating = Math.max(0, Math.min(5, review.rating))
 
   return (
     <Card className="group h-full overflow-hidden rounded-2xl border-border/70 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md">
-      <CardContent className="flex h-full flex-col gap-4 p-4 sm:p-5">
+      <CardContent className="relative flex h-full flex-col gap-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
-            <Avatar className="size-11 ring-2 ring-background shadow-sm sm:size-12">
+            <Avatar className="size-11 shadow-sm ring-2 ring-background sm:size-12">
               <AvatarImage src={reviewer?.avatar} alt={name} />
               <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
                 {initials}
@@ -77,10 +78,10 @@ export default function ReviewCard({
               {review.targetType === "Driver" &&
                 reviewee &&
                 typeof reviewee !== "string" && (
-                <p className="mt-1 truncate text-xs text-muted-foreground">
-                  Driver: {reviewee.firstName} {reviewee.lastName}
-                </p>
-              )}
+                  <p className="mt-1 truncate text-xs text-muted-foreground">
+                    Driver: {reviewee.firstName} {reviewee.lastName}
+                  </p>
+                )}
             </div>
           </div>
           {canHide && (
@@ -108,7 +109,7 @@ export default function ReviewCard({
                   : "Customer rating"}
           </span>
         </div>
-        <p className="min-h-10 flex-1 text-sm leading-6 break-words whitespace-pre-wrap text-foreground/85">
+        <p className="wrap-break-words min-h-10 flex-1 text-sm leading-6 whitespace-pre-wrap text-foreground/85">
           {review.comment || "The customer left a rating without a comment."}
         </p>
         {order?.orderNumber && (
@@ -120,8 +121,7 @@ export default function ReviewCard({
               <span className="font-medium text-foreground/80">
                 Verified order
               </span>
-              <span className="mx-1.5 text-border">·</span>
-              #{order.orderNumber}
+              <span className="mx-1.5 text-border">·</span>#{order.orderNumber}
             </span>
             <BadgeCheck className="ml-auto size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
           </div>
@@ -131,8 +131,8 @@ export default function ReviewCard({
             {editable && (
               <Button
                 size="sm"
-                variant="outline"
-                className="h-10 flex-1 rounded-xl font-medium shadow-sm transition-colors hover:border-primary/40 hover:bg-primary/5"
+                variant="ghost"
+                className="h-10 flex-1 rounded-xl font-medium shadow-sm transition-colors hover:border-muted-foreground/40 hover:bg-primary/5"
                 onClick={onEdit}
               >
                 <MessageSquareText className="size-4" />
@@ -142,7 +142,7 @@ export default function ReviewCard({
             {editable && (
               <Button
                 size="sm"
-                variant="outline"
+                variant="ghost"
                 className="h-10 flex-1 rounded-xl border-destructive/25 font-medium text-destructive shadow-sm transition-colors hover:border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
                 onClick={onDelete}
               >
@@ -154,7 +154,7 @@ export default function ReviewCard({
               <Button
                 size="sm"
                 variant="outline"
-                className="h-10 w-full rounded-xl font-medium shadow-sm transition-colors hover:border-primary/40 hover:bg-primary/5"
+                className="h-8 w-full font-medium text-muted-foreground/60"
                 onClick={onToggleHide}
               >
                 {review.isHidden ? (

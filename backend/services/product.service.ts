@@ -15,6 +15,9 @@ import { extractPublicIdFromUrl } from "../utils/extractPublicIdFromUrl.js";
 import { formatSortName } from "../utils/formatSortName.js";
 import { imageUpload } from "../utils/imageUpload.js";
 import mongoose, { Types } from "mongoose";
+import type { PreparedOrderDataType } from "./order.service.js";
+import type { IOrder } from "../models/order.model.js";
+import { type PipelineStage } from "mongoose";
 
 export const createNewProduct = async (
   merchantId: string,
@@ -301,4 +304,121 @@ export const getProductsService = async (query: any) => {
   const total = await Product.countDocuments(queryData.filter);
 
   return { docs, total, queryData };
+};
+
+export const getFeaturedProductsService = async (query: any) => {
+  const queryData = buildQuery(query);
+
+  const allowedSorts = [
+    "price",
+    "-price",
+    "createdAt",
+    "-createdAt",
+    "name",
+    "-name",
+  ];
+
+  const sort = allowedSorts.includes(queryData.sort)
+    ? queryData.sort
+    : "-createdAt";
+
+  if (queryData.search) {
+    queryData.filter.$or = [
+      {
+        name: {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+      {
+        description: {
+          $regex: queryData.search,
+          $options: "i",
+        },
+      },
+    ];
+  }
+
+  const docs = await Product.find({
+    ...queryData.filter,
+    isFeatured: true,
+    isAvailable: true,
+  })
+    .sort(sort)
+    .select(queryData.select)
+    .skip(queryData.skip)
+    .limit(queryData.limit);
+
+  const total = await Product.countDocuments(queryData.filter);
+
+  return { docs, total, queryData };
+};
+
+export const getBestSellerProductsService = async (query: any) => {
+  const queryData = buildQuery(query);
+
+  const page = Math.max(1, Number(query.page) || 1);
+  const limit = Math.min(24, Math.max(1, Number(query.limit) || 12));
+  const skip = (page - 1) * limit;
+
+  const pipeline: PipelineStage[] = [
+    {
+      $match: {
+        ...queryData.filter,
+        isAvailable: true,
+      },
+    },
+    {
+      $sort: {
+        totalSold: -1,
+        createdAt: -1,
+        _id: -1,
+      },
+    },
+    {
+      $group: {
+        _id: "$merchant",
+        topProducts: { $push: "$$ROOT" },
+      },
+    },
+    {
+      $project: {
+        topProducts: { $slice: ["$topProducts", 2] },
+      },
+    },
+    {
+      $unwind: "$topProducts",
+    },
+    {
+      $replaceRoot: {
+        newRoot: {
+          $mergeObjects: ["$topProducts", { merchant: "$_id" }],
+        },
+      },
+    },
+    {
+      $sort: {
+        totalSold: -1,
+        createdAt: -1,
+        _id: -1,
+      },
+    },
+  ];
+
+  const [docs, countResult] = await Promise.all([
+    Product.aggregate([...pipeline, { $skip: skip }, { $limit: limit }]),
+    Product.aggregate([...pipeline, { $count: "total" }]),
+  ]);
+
+  const total = countResult[0]?.total ?? 0;
+
+  return {
+    docs,
+    pagination: {
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit),
+    },
+  };
 };
