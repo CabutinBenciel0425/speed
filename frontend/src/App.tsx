@@ -15,6 +15,7 @@ import { getRoleHomePath } from "@/utils/roleRoutes"
 import DriverLayout from "./features/driver/components/DriverLayout"
 import PageLoading from "./components/common/PageLoading"
 import RouteErrorBoundary from "./components/common/RouteErrorBoundary"
+import CustomerProfilePage from "./features/customer/pages/CustomerProfilePage"
 
 const Dashboard = lazy(() => import("./features/customer/pages/Dashboard"))
 const CategoryProductsPage = lazy(
@@ -364,6 +365,17 @@ export function App() {
                 element={
                   isAuthenticated ? (
                     <CustomerNotificationsPage />
+                  ) : (
+                    <Navigate to="/" />
+                  )
+                }
+              />
+
+              <Route
+                path="/profile"
+                element={
+                  isAuthenticated ? (
+                    <CustomerProfilePage />
                   ) : (
                     <Navigate to="/" />
                   )

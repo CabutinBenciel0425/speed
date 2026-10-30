@@ -78,6 +78,12 @@ export function ProfileButton() {
                   <span className="text-xs md:text-sm">Addresses</span>
                 </NavLink>
               </DropdownMenuItem>
+              <DropdownMenuItem>
+                <NavLink to="/profile" className={"flex flex-row gap-2"}>
+                  <Pin className="size-4" />
+                  <span className="text-xs md:text-sm">Profile</span>
+                </NavLink>
+              </DropdownMenuItem>
             </>
           )}
         </DropdownMenuGroup>
