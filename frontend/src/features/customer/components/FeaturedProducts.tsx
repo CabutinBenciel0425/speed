@@ -1,4 +1,3 @@
-import ViewAllButton from "@/components/common/ViewAllButton"
 import ProductCard from "@/components/common/ProductCard"
 import { useFeaturedProducts } from "../hooks/useFeaturedProducts"
 import { SkeletonProductCard } from "@/components/common/Skeleton/SkeletonProductCard"
@@ -14,9 +13,8 @@ function FeaturedProducts() {
   const { data: featuredProductsData, isLoading, error } = useFeaturedProducts()
   return (
     <div className="flex w-full flex-col gap-5 px-10 lg:px-20">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-start">
         <p className="block text-lg font-semibold">Featured Products</p>
-        <ViewAllButton />
       </div>
       <div className="w-full px-5 lg:px-10 2xl:px-15">
         {isLoading && (

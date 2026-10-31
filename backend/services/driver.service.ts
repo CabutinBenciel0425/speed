@@ -230,7 +230,7 @@ export const driverArrivedAtMerchant = async (
       order: order._id,
     });
   }
-  console.log(order);
+
   io.to(`merchant:${order.merchant._id.toString()}`).emit(
     "driver:arrived-at-merchant",
   );

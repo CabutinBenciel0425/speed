@@ -133,8 +133,6 @@ function MerchantMenuPage() {
     .filter((product) => !product.isFeatured)
     .sort((a, b) => Number(b.isAvailable) - Number(a.isAvailable))
 
-  console.log(featuredProducts)
-  console.log(unfeaturedProducts)
   return (
     <main className="page-shell page-stack max-w-7xl">
       <div className="flex flex-wrap items-center justify-between gap-4">

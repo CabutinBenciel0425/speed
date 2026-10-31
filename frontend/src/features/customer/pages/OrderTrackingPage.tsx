@@ -335,7 +335,6 @@ function OrderTrackingPage() {
   }
 
   const handleShowReviewModal = () => {
-    console.log("Review show clicked")
     setIsSuccessModalOpen(false)
     setIsReviewModalOpen(true)
   }

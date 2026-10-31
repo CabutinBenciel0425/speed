@@ -243,7 +243,7 @@ function MerchantDashboard() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between gap-4 pl-[3.25rem] sm:pl-0">
+                    <div className="flex items-center justify-between gap-4 pl-13 sm:pl-0">
                       <span
                         className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusClass(order.status)}`}
                       >

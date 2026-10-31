@@ -55,7 +55,9 @@ function DriverDashboardPage() {
     isAuthenticated && activeRole === "Driver"
   )
   const pendingOffersQuery = useDriverPendingOffers(
-    isAuthenticated && activeRole === "Driver" && Boolean(profileQuery.data?.isAvailable)
+    isAuthenticated &&
+      activeRole === "Driver" &&
+      Boolean(profileQuery.data?.isAvailable)
   )
   const orderQuery = useDriverCurrentOrder(
     isAuthenticated && activeRole === "Driver"
@@ -105,18 +107,15 @@ function DriverDashboardPage() {
     socket.on("order:merchantAccepted", refreshOrder)
     socket.on("driver:arrived-at-merchant", refreshOrder)
     socket.on("order:ready", () => {
-      console.log("ORDER IS READY FOR PICK UP")
       toast.info("Order is ready for pick up")
       refreshOrder()
     })
     socket.on("order:cancel", () => {
-      console.log("ORDER IS CANCELLED")
       toast.warning("Order has been cancelled")
       refreshOrder()
     })
 
     socket.on("order:rejected", () => {
-      console.log("ORDER IS REJECTED")
       toast.warning("Order has been rejected")
       refreshOrder()
     })
@@ -188,21 +187,29 @@ function DriverDashboardPage() {
     currentOrder && typeof currentOrder.merchant !== "string"
       ? currentOrder.merchant.merchantName
       : "Store"
-  const visibleOffers = [
-    ...(pendingOffersQuery.data ?? []),
-    ...offers,
-  ].filter((offer, index, list) => list.findIndex((item) => item.offerId === offer.offerId) === index)
+  const visibleOffers = [...(pendingOffersQuery.data ?? []), ...offers].filter(
+    (offer, index, list) =>
+      list.findIndex((item) => item.offerId === offer.offerId) === index
+  )
   const offerAction = async (offerId: string, accepted: boolean) => {
     try {
-      await axios.post(`/driver/offers/${offerId}/${accepted ? "accept" : "decline"}`)
-      setOffers((current) => current.filter((offer) => offer.offerId !== offerId))
+      await axios.post(
+        `/driver/offers/${offerId}/${accepted ? "accept" : "decline"}`
+      )
+      setOffers((current) =>
+        current.filter((offer) => offer.offerId !== offerId)
+      )
       void queryClient.invalidateQueries({ queryKey: ["driverOffers"] })
       if (accepted) {
         void queryClient.invalidateQueries({ queryKey: ["driverCurrentOrder"] })
         void queryClient.invalidateQueries({ queryKey: ["driverProfile"] })
       }
     } catch {
-      toast.error(accepted ? "Could not accept this offer. It may have expired." : "Could not decline this offer.")
+      toast.error(
+        accepted
+          ? "Could not accept this offer. It may have expired."
+          : "Could not decline this offer."
+      )
     }
   }
   const changeAvailability = (available: boolean) => {
@@ -464,12 +471,15 @@ function DriverDashboardPage() {
               <Button
                 className="w-full sm:w-auto"
                 onClick={() =>
-                  orderAction.mutate({
-                    orderId: currentOrder._id,
-                    action: "delivered",
-                  }, {
-                    onSuccess: () => setDeliveredOrder(currentOrder),
-                  })
+                  orderAction.mutate(
+                    {
+                      orderId: currentOrder._id,
+                      action: "delivered",
+                    },
+                    {
+                      onSuccess: () => setDeliveredOrder(currentOrder),
+                    }
+                  )
                 }
                 disabled={orderAction.isPending}
               >

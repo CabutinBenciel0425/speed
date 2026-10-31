@@ -5,7 +5,6 @@ import type { Address } from "@/types/address"
 import axios from "@/lib/axios"
 
 const addNewAddress = async (addressValues: AddressInput): Promise<Address> => {
-  console.log(addressValues)
   const { data } = await axios.post("/address", addressValues)
 
   return data.data

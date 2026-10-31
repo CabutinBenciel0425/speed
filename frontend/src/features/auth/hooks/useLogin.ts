@@ -24,17 +24,12 @@ export const useLogin = () => {
       }
     },
     onError: () => {
-      toast.error("Something went wrong. Please try again later.")
+      console.error("Something went wrong. Please try again later.")
     },
   })
 }
 
 const loginUser = async (payload: LoginInput) => {
-  try {
-    const res = await axios.post("auth/login", payload)
-
-    return res.data
-  } catch (error) {
-    throw error
-  }
+  const res = await axios.post("auth/login", payload)
+  return res.data
 }

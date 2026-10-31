@@ -178,7 +178,6 @@ export const loginUser = async ({ email, password }: LoginInput) => {
   }
 
   const isPasswordValid = await user.comparePassword(password);
-
   if (!isPasswordValid) {
     throw new UnauthorizedError("Invalid email or password");
   }

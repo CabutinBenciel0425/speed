@@ -113,7 +113,7 @@ function OrderComponent() {
           : data.driverConfirmPickedUpAt && data.merchantConfirmPickedUpAt
             ? "Paid"
             : "Pending"
-  console.log(data)
+
   return (
     <div className="relative flex w-full flex-col items-start gap-10 px-4 pb-64 sm:px-6 lg:pb-10 xl:flex-row xl:px-10">
       <div className="flex w-full min-w-0 flex-col gap-4 lg:gap-8 xl:max-w-5xl xl:flex-1">

@@ -107,7 +107,9 @@ export function LoginPage() {
             </Field>
             {error && (
               <p className="mt-5 block text-center text-red-500">
-                {error.message}
+                {error.message.includes("Request failed with status code 401")
+                  ? "Invalid credentials"
+                  : "Something went wrong"}
               </p>
             )}
           </CardFooter>
