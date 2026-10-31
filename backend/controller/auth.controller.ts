@@ -343,18 +343,20 @@ export const sendVerificationCode = asyncHandler(
     if (!email) {
       throw new ApiError(400, "Email is required");
     }
-
-    const user = await User.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
-      throw new NotFoundError("User");
+      return res
+        .status(200)
+        .json({ success: true, message: "Verification email sent" });
     }
 
     if (user.isVerified) {
       throw new ConflictError("User is already verified");
     }
 
-    await sendCodeFn(email);
+    await sendCodeFn(normalizedEmail);
 
     res.status(200).json({
       success: true,

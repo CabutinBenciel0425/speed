@@ -1,5 +1,4 @@
 import { RefreshCwIcon } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -31,26 +30,42 @@ function InputCodeCard() {
   const location = useLocation()
   const pendingEmail = (location.state as { email?: string } | null)?.email
   const [otp, setOtp] = useState("")
+  const [localError, setLocalError] = useState<string | null>(null)
+
   const { user } = useAuth()
+
   const {
     mutate: verifyCode,
     isPending: isVerifying,
     isSuccess: isVerified,
     error: verifyCodeError,
   } = useVerifyCode()
+
   const {
     mutate: resendCode,
     isPending: isResending,
     error: verifyEmailError,
   } = useVerifyEmail()
+
   const { seconds, reset, isRunning } = useCountdown(60)
   const email = user?.email ?? pendingEmail ?? ""
+
+  useEffect(() => {
+    if (verifyCodeError) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLocalError(verifyCodeError.message || "Invalid verification code")
+    }
+    if (verifyEmailError) {
+      setLocalError(verifyEmailError.message || "Failed to resend code")
+    }
+  }, [verifyCodeError, verifyEmailError])
 
   const handleSubmit = (data: VerificationCodeInput) => {
     if (!data.email) {
       toast.error("User email not found")
       return
     }
+    setLocalError(null)
     verifyCode(data)
   }
 
@@ -59,12 +74,19 @@ function InputCodeCard() {
       toast.warning(`Please wait ${seconds} seconds before resending`)
       return
     }
-
     if (!email) {
       toast.error("Enter your email address to request a verification code.")
       return
     }
+    setLocalError(null)
     resendCode({ email }, { onSuccess: () => reset(60) })
+  }
+
+  const handleChangeOtp = (newValue: string) => {
+    setOtp(newValue)
+    if (localError) {
+      setLocalError(null)
+    }
   }
 
   useEffect(() => {
@@ -122,15 +144,16 @@ function InputCodeCard() {
                 className="mx-auto w-full"
                 pattern={REGEXP_ONLY_DIGITS}
                 value={otp}
-                onChange={setOtp}
+                onChange={(newValue) => handleChangeOtp(newValue)}
               >
                 <InputOTPGroup className="*:data-[slot=input-otp-slot]:h-12 *:data-[slot=input-otp-slot]:w-11 *:data-[slot=input-otp-slot]:text-xl">
-                  <InputOTPSlot index={0} />
-                  <InputOTPSlot index={1} />
-                  <InputOTPSlot index={2} />
-                  <InputOTPSlot index={3} />
-                  <InputOTPSlot index={4} />
-                  <InputOTPSlot index={5} />
+                  {[...Array(6)].map((_, index) => (
+                    <InputOTPSlot
+                      key={index}
+                      index={index}
+                      className={`${localError && otp ? "border border-destructive" : ""}`}
+                    />
+                  ))}
                 </InputOTPGroup>
               </InputOTP>
             </div>
@@ -153,11 +176,10 @@ function InputCodeCard() {
                 </>
               )}
             </Button>
-            {verifyCodeError || verifyEmailError ? (
-              <p className="text-sm text-destructive">
-                {verifyCodeError?.message ||
-                  verifyEmailError?.message ||
-                  "Something went wrong"}
+
+            {localError && otp ? (
+              <p className="mx-auto text-center text-sm text-destructive">
+                {localError}
               </p>
             ) : null}
           </Field>
