@@ -31,6 +31,7 @@ import { protectRoute } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/upload.middleware.js";
 import { merchantSchema } from "../schemas/merchant.schema.js";
 import { driverSchema } from "../schemas/driver.schema.js";
+import { limiter } from "../lib/rateLimiter.js";
 
 export const userRoute = Router();
 
@@ -79,13 +80,12 @@ userRoute.patch(
 );
 userRoute.post(
   "/send-code",
-  protectRoute,
+  limiter,
   validate(emailVerifySchema),
   sendVerificationCode,
 );
 userRoute.post(
   "/verify-code",
-  protectRoute,
   validate(verificationCodeSchema),
   codeVerification,
 );
