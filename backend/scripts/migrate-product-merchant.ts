@@ -8,7 +8,6 @@ dotenv.config();
 const migrate = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI!);
-    console.log("Connected to DB");
 
     const products = await Product.find().populate<{
       merchant: {
@@ -39,7 +38,6 @@ const migrate = async () => {
       }
     }
 
-    console.log(`✅ Successfully updated ${updatedCount} products`);
     process.exit(0);
   } catch (error) {
     console.error("❌ Migration failed:", error);

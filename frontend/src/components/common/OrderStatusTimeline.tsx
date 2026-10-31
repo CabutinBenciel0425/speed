@@ -36,7 +36,6 @@ function StepDot({ state }: { state: TimelineStep["state"] }) {
 }
 
 function OrderStatusTimeline({ order }: { order: OrderTimelineInput }) {
-  console.log(order)
   const steps = buildOrderTimeline(order)
   const header = getOrderStatusHeader(order)
   const isFailed = order.status === "Rejected" || order.status === "Cancelled"

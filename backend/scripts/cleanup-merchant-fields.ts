@@ -18,7 +18,6 @@ const FIELDS_TO_REMOVE = [
 const cleanup = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI!);
-    console.log("Connected to DB");
 
     const unsetObj = FIELDS_TO_REMOVE.reduce<Record<string, "">>(
       (acc, field) => {

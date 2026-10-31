@@ -12,7 +12,6 @@ const actionMutation = async ({
   orderId: string
   action: "accept" | "reject" | "cancel" | "picked-up"
 }) => {
-  console.log(action)
   if (!merchantId) throw new Error("Merchant profile is unavailable")
   const { data } = await axios.patch(
     `/merchant/${merchantId}/orders/${orderId}/${action}`,

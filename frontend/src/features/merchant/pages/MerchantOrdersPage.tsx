@@ -46,19 +46,15 @@ function MerchantOrdersPage() {
     socket.on("order:merchantAccepted", refreshOrder)
     socket.on("driver:arrived-at-merchant", refreshOrder)
     socket.on("order:ready", () => {
-      console.log("ORDER READY")
       refreshOrder()
     })
     socket.on("order:pickedUp", () => {
-      console.log("ORDER PICKEDUP")
       refreshOrder()
     })
     socket.on("order:delivered", () => {
-      console.log("ORDER DELIVERED")
       refreshOrder()
     })
     socket.on("order:cancel", () => {
-      console.log("ORDER CANCELLED")
       refreshOrder()
     })
     socket.on("order:rejected", refreshOrder)

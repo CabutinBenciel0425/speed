@@ -1,5 +1,4 @@
 import MerchantCard from "@/components/common/MerchantCard"
-import ViewAllButton from "@/components/common/ViewAllButton"
 import { useMerchants } from "../hooks/useMerchants"
 import { SkeletonMerchantCard } from "@/components/common/Skeleton/SkeletonMerchantCard"
 import {
@@ -15,9 +14,8 @@ function Merchant() {
 
   return (
     <div className="flex flex-col gap-5 px-10 lg:px-20">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-start">
         <p className="block text-lg font-semibold">Popular Restaurants</p>
-        <ViewAllButton />
       </div>
       <div className="w-full px-5 lg:px-10 2xl:px-15">
         {isLoading && (
