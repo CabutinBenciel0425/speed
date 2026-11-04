@@ -289,7 +289,6 @@ export const pickUpOrderService = async (
           "Driver's active order does not match the order id",
         );
 
-      // Status stays ReadyForPickup until both sides confirm
       if (order.status !== "ReadyForPickup")
         throw new ConflictError("Order status must be ready to pick up");
 

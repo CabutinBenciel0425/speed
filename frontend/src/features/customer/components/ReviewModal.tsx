@@ -28,6 +28,7 @@ function ReviewModal({
 
   useEffect(() => {
     if (!isReviewModalOpen) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRating(0)
     setReview("")
     setIsReviewSuccess(false)
