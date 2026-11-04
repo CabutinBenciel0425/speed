@@ -4,7 +4,7 @@
 
 A full-stack food delivery platform for Metro Manila. Customers order from local merchants, drivers are dispatched in real time, and delivery fees are computed from actual road distance.
 
-**Live demo:** <add your Render URL here>
+**Live demo:** https://speed-1-n1fc.onrender.com/
 
 ## Features
 
@@ -62,8 +62,8 @@ A full-stack food delivery platform for Metro Manila. Customers order from local
 ### 1. Clone and install
 
 ```powershell
-git clone https://github.com/<your-username>/<your-repo>.git
-cd <your-repo>
+git clone https://github.com/CabutinBenciel0425/speed.git
+cd speed
 npm install
 cd frontend
 npm install
