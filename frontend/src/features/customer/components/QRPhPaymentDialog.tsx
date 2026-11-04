@@ -38,6 +38,7 @@ export default function QRPhPaymentDialog({
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [secondsLeft, setSecondsLeft] = useState(0)
+  const [now, setNow] = useState(() => Date.now())
   const statusQuery = useQRPhPaymentStatus(payment?.paymentId ?? "", !!payment)
   const paymentStatus = statusQuery.data?.status ?? "Pending"
   const isAwaitingPayment =
@@ -61,6 +62,16 @@ export default function QRPhPaymentDialog({
   }, [payment])
 
   useEffect(() => {
+    if (!payment) return
+
+    const intervalId = setInterval(() => {
+      setNow(Date.now())
+    }, 1000)
+
+    return () => clearInterval(intervalId)
+  }, [payment])
+
+  useEffect(() => {
     if (paymentStatus !== "Paid" || !statusQuery.data?.order) return
     void queryClient.invalidateQueries({ queryKey: ["cart"] })
     void queryClient.invalidateQueries({ queryKey: ["customerOrders"] })
@@ -75,7 +86,7 @@ export default function QRPhPaymentDialog({
   const qrExpiredLocally =
     !!payment &&
     secondsLeft <= 0 &&
-    Date.now() >= new Date(payment.expiresAt).getTime()
+    now >= new Date(payment.expiresAt).getTime()
   const minutes = Math.floor(secondsLeft / 60)
   const seconds = String(secondsLeft % 60).padStart(2, "0")
 

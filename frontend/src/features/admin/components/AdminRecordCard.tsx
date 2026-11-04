@@ -26,7 +26,7 @@ const userName = (value: unknown) => {
   const person = value as Record<string, unknown>
   return [person.firstName, person.lastName].filter(Boolean).join(" ")
 }
-
+// eslint-disable-next-line react-refresh/only-export-components
 export const adminRecordTitle = (section: AdminSection, row: AdminRecord) => {
   if (section === "users") return userName(row) || text(row.email)
   if (section === "merchants") return text(row.merchantName)

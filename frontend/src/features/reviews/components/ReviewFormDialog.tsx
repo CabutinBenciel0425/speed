@@ -42,6 +42,7 @@ export default function ReviewFormDialog({
 
   useEffect(() => {
     if (!open) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRating(review?.rating ?? 0)
     setComment(review?.comment ?? "")
   }, [open, review])
@@ -98,7 +99,10 @@ export default function ReviewFormDialog({
               )
             })}
           </div>
-          <p className="-mt-3 text-center text-sm font-medium text-muted-foreground" aria-live="polite">
+          <p
+            className="-mt-3 text-center text-sm font-medium text-muted-foreground"
+            aria-live="polite"
+          >
             {ratingLabel || "Choose a rating"}
           </p>
           <Textarea
@@ -117,11 +121,7 @@ export default function ReviewFormDialog({
               onClick={submit}
               disabled={!rating || !comment.trim() || isPending}
             >
-              {isPending
-                ? "Saving…"
-                : review
-                  ? "Save changes"
-                  : "Post review"}
+              {isPending ? "Saving…" : review ? "Save changes" : "Post review"}
             </Button>
           </div>
         </div>
