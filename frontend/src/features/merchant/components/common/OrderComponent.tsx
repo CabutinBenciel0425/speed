@@ -125,8 +125,8 @@ function OrderComponent() {
           <span className="text-sm">Back to Orders</span>
         </NavLink>
 
-        <Card className="flex w-full flex-col gap-5 p-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex min-w-0 flex-1 flex-col justify-around gap-2">
+        <Card className="flex w-full flex-col gap-5 p-4 lg:flex-row lg:items-center lg:justify-between xl:flex-col xl:items-start 2xl:flex-row 2xl:items-center">
+          <div className="flex min-w-93.75 flex-1 shrink-0 flex-col justify-around gap-2">
             {data.status === "Pending" && (
               <span className="mb-3 w-fit rounded-lg bg-primary px-3 py-1.5 text-sm text-white sm:mb-5">
                 New Order
@@ -269,7 +269,9 @@ function OrderComponent() {
                 <span
                   className={`w-fit rounded-lg ${paymentBadgeColor} px-2 py-0.5 text-xs text-white`}
                 >
-                  {paymentBadgeText}
+                  {paymentBadgeText === "Paid" && data.payment.method === "Cash"
+                    ? `${paymentBadgeText} - by the courier`
+                    : paymentBadgeText}
                 </span>
               </div>
               <div className="flex flex-row items-start gap-2">
@@ -325,7 +327,7 @@ function OrderComponent() {
         </div>
       </div>
 
-      <div className="flex w-full flex-col items-stretch gap-4 lg:gap-8 xl:mt-15 xl:w-104 xl:shrink-0 2xl:w-lg">
+      <div className="flex w-full flex-col items-stretch gap-4 lg:gap-8 xl:mt-15 xl:w-95 xl:shrink-0 2xl:w-105">
         <OrderStatusTimeline order={data} />
 
         {!data.driver &&

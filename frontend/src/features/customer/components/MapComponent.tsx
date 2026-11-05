@@ -52,7 +52,10 @@ function MapComponent({
   const initialPosition: [number, number] = [14.577997, 121.036213]
 
   return (
-    <>
+    <div
+      className="relative isolate z-0 w-full"
+      style={{ height: height || "400px", width: "100%" }}
+    >
       <MapContainer
         center={initialPosition}
         zoom={11.25}
@@ -75,7 +78,7 @@ function MapComponent({
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
       </MapContainer>
-    </>
+    </div>
   )
 }
 
