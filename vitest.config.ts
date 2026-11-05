@@ -4,11 +4,13 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["backend/**/*.test.ts"],
+    setupFiles: ["./backend/tests/setup.ts"],
     env: {
       NODE_ENV: "test",
       PORT: "5050",
       CLIENT_URL: "http://localhost:5173",
 
+      // Dummy values only. Tests must never depend on, or reach, real services.
       MONGODB_URI: "mongodb://127.0.0.1:27017/speed-test",
       REDIS_URL: "redis://localhost:6379",
 
