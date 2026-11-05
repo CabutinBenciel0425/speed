@@ -8,7 +8,9 @@
     "start": "tsx backend/server.ts",
     "migrate": "tsx backend/scripts/migrate-product-merchant.ts",
     "job:merchant-status": "tsx backend/jobs/merchant-status.job.ts",
-    "job:cleanup-merchant-fields": "tsx backend/scripts/cleanup-merchant-fields.ts"
+    "job:cleanup-merchant-fields": "tsx backend/scripts/cleanup-merchant-fields.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [],
   "author": "",
@@ -51,6 +53,9 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.2.0",
     "@types/node": "^26.1.1",
-    "typescript": "^7.0.2"
+    "@types/supertest": "^7.2.1",
+    "supertest": "^7.3.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
   }
 }

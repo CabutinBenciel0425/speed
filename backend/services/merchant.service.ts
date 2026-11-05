@@ -3,7 +3,7 @@ import Order, { type IOrder } from "../models/order.model.js";
 import { ConflictError, NotFoundError } from "../utils/errors.js";
 import Merchant, { type IMerchant } from "../models/merchant.model.js";
 import Driver from "../models/driver.model.js";
-import { io } from "../server.js";
+
 import User, { type IUser } from "../models/user.model.js";
 import { buildQuery } from "../utils/buildQuery.js";
 import type { merchantUpdateInput } from "../schemas/merchant.schema.js";
@@ -18,6 +18,7 @@ import { EARTH_RADIUS } from "../config/constants.js";
 import { formatSortName } from "../utils/formatSortName.js";
 import type { RequestType } from "../controller/merchant.controller.js";
 import { createNotification } from "./notification.service.js";
+import { io } from "../socket/io.js";
 
 export const merchantRejectOrder = async (
   orderId: string,
