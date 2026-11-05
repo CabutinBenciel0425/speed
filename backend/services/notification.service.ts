@@ -7,7 +7,7 @@ import Notification from "../models/notification.model.js";
 import User from "../models/user.model.js";
 import { ConflictError } from "../utils/errors.js";
 import mongoose from "mongoose";
-import { io } from "../server.js";
+import { io } from "../socket/io.js";
 
 type NotificationTargetType = CreateNotificationInput["targetType"];
 

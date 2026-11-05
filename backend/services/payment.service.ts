@@ -15,8 +15,8 @@ import { driverMatching } from "./driver.service.js";
 import { ApiError } from "../utils/apiError.js";
 import type { CreateNotificationInput } from "../models/notification.model.js";
 import { createNotification } from "./notification.service.js";
-import { io } from "../server.js";
 import Product from "../models/product.model.js";
+import { io } from "../socket/io.js";
 
 const QRPH_EXPIRY_SECONDS = 900;
 

@@ -7,11 +7,11 @@ import { recalculateCart } from "./cart.service.js";
 import Cart from "../models/cart.model.js";
 import { generateOrderNumber } from "../utils/generateOrderNumber.js";
 import Driver from "../models/driver.model.js";
-import { io } from "../server.js";
 import Product from "../models/product.model.js";
 import Payment from "../models/payment.model.js";
 import { driverMatching } from "./driver.service.js";
 import { createNotification, notifyAdmins } from "./notification.service.js";
+import { io } from "../socket/io.js";
 
 type CartItemType = {
   product: Types.ObjectId;

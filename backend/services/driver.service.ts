@@ -11,7 +11,7 @@ import { imageUpload } from "../utils/imageUpload.js";
 import Order from "../models/order.model.js";
 import Merchant from "../models/merchant.model.js";
 import DeliveryOffer from "../models/deliveryOffer.model.js";
-import { io } from "../server.js";
+
 import { computeDistance } from "./delivery.service.js";
 import Address from "../models/address.model.js";
 import { pendingOffers } from "../utils/offerWaiting.js";
@@ -19,6 +19,7 @@ import Product from "../models/product.model.js";
 import { createNotification } from "./notification.service.js";
 import type { CreateNotificationInput } from "../models/notification.model.js";
 import { redisClient } from "../lib/redis.js";
+import { io } from "../socket/io.js";
 
 export const updateDriverProfile = async (
   { vehicleType, plateNumber, avatar }: UpdateDriverInputWithImage,
