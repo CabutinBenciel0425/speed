@@ -1,6 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { extractPublicIdFromUrl } from "../../utils/extractPublicIdFromUrl";
-import { formatSortName } from "../../utils/formatSortName";
+import { formatSortName } from "../../../utils/formatSortName";
 
 describe("formatting sort names", () => {
   test("returns error if sort name is not valid", () => {

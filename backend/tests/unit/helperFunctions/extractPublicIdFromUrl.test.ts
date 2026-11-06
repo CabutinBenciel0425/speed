@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { extractPublicIdFromUrl } from "../../utils/extractPublicIdFromUrl";
+import { extractPublicIdFromUrl } from "../../../utils/extractPublicIdFromUrl";
 
 describe("Extracting public id from url - cloudinary", () => {
   test("returns error if url is not valid", () => {

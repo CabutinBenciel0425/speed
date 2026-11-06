@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { folderPathIdentifier } from "../../utils/forlderPathIdentifier";
+import { folderPathIdentifier } from "../../../utils/forlderPathIdentifier";
 
 describe("Identify the folder path - cloudinary", () => {
   test("returns /images if parameter is not recognized as valid", () => {
