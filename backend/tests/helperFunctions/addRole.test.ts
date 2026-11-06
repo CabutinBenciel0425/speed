@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { addUserRole } from "../utils/addRole";
-import User from "../models/user.model";
+import { addUserRole } from "../../utils/addRole";
+import User from "../../models/user.model";
 
-vi.mock("../models/user.model.js", () => ({
+vi.mock("../../models/user.model.js", () => ({
   default: {
     findByIdAndUpdate: vi.fn(),
   },
