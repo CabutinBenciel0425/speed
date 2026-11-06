@@ -1,12 +1,14 @@
 import { NotFoundError } from "./errors.js";
 import User from "../models/user.model.js";
+import { ApiError } from "./apiError.js";
 
 const VALID_ROLES = ["Customer", "Merchant", "Driver", "Admin"] as const;
 
 export const addUserRole = async (userId: string, role: string) => {
   try {
     if (!VALID_ROLES.includes(role as any)) {
-      throw new Error(
+      throw new ApiError(
+        400,
         `Invalid role: ${role}. Valid roles: ${VALID_ROLES.join(", ")}`,
       );
     }
