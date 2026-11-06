@@ -1,11 +1,5 @@
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, test } from "vitest";
 import { extractPublicIdFromUrl } from "../../utils/extractPublicIdFromUrl";
-
-vi.mock("../../models/user.model.js", () => ({
-  default: {
-    findByIdAndUpdate: vi.fn(),
-  },
-}));
 
 describe("Extracting public id from url - cloudinary", () => {
   test("returns error if url is not valid", () => {
