@@ -4,8 +4,6 @@ import { type Response } from "express";
 const authCookieOptions = {
   httpOnly: true,
   secure: NODE_ENV === "production",
-  // The Render frontend and API use different origins, so production auth
-  // cookies must be sent with credentialed cross-origin requests.
   sameSite: (NODE_ENV === "production" ? "none" : "strict") as
     | "none"
     | "strict",
