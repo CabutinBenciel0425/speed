@@ -2,27 +2,26 @@ import { describe, expect, test } from "vitest";
 import { formatSortName } from "../../../utils/formatSortName";
 
 describe("formatting sort names", () => {
-  test("returns error if sort name is not valid", () => {
-    const prefix = "product";
-    const sortName = "invalid";
-    expect(formatSortName(sortName, prefix)).toBe("product.invalid");
+  test("throws if the sort name is not valid", () => {
+    expect(() => formatSortName("bad field", "product")).toThrow(
+      /Invalid sort field/,
+    );
   });
 
-  test("returns error if prefix is not valid", () => {
-    const sortName = "name";
-    const prefix = "invalid";
-    expect(formatSortName(sortName, prefix)).toBe("invalid.name");
+  test("throws if the prefix is not valid", () => {
+    expect(() => formatSortName("name", "bad prefix")).toThrow(
+      /Invalid prefix/,
+    );
   });
 
-  test("returns error if the symbol is other than '-'", () => {
-    const sortName = "+merchantName";
-    const prefix = "merchant";
-    expect(formatSortName(sortName, prefix)).toBe("merchant.+merchantName");
+  test("throws if the symbol is other than '-'", () => {
+    expect(() => formatSortName("+merchantName", "merchant")).toThrow(
+      /only '-'/,
+    );
   });
 
   test("returns a valid sort variable", () => {
-    const sortName = "name";
-    const prefix = "product";
-    expect(formatSortName(sortName, prefix)).toBe("product.name");
+    expect(formatSortName("name", "product")).toBe("product.name");
+    expect(formatSortName("-name", "product")).toBe("-product.name");
   });
 });

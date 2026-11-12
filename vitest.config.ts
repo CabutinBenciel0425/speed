@@ -5,6 +5,7 @@ export default defineConfig({
     environment: "node",
     include: ["backend/**/*.test.ts"],
     setupFiles: ["./backend/tests/setup.ts"],
+    clearMocks: true,
     env: {
       NODE_ENV: "test",
       PORT: "5050",
