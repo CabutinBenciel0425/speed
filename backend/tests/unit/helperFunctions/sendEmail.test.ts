@@ -27,11 +27,11 @@ describe("email verification to sign up user - nodeMailer", () => {
 
   test("should send email and token to user", async () => {
     vi.mocked(transporter.sendMail).mockResolvedValueOnce({
-      messageId: "123",
+      message: "Success",
     } as any);
     const result = await sendEmail("test@test.com", "123456");
 
-    expect(result).toEqual({ messageId: "123" });
+    expect(result).toEqual({ message: "Success" });
 
     expect(transporter.sendMail).toHaveBeenCalledWith(
       expect.objectContaining({

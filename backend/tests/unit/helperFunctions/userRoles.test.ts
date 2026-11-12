@@ -1,5 +1,4 @@
 import { describe, expect, test } from "vitest";
-import { formatSortName } from "../../../utils/formatSortName";
 import { normalizeUserRoles } from "../../../utils/userRoles";
 
 describe("Normalizing user roles", () => {
