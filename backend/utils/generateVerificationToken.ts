@@ -1,4 +1,9 @@
+import { ConflictError } from "./errors";
+
 export const generateVerificationToken = (length: number) => {
+  if (length <= 0) {
+    throw new ConflictError("Provided token length is invalid");
+  }
   const chars = "0123456789";
   let result = "";
   const randomValues = new Uint32Array(length);

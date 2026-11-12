@@ -14,13 +14,12 @@ export const imageUpload = (
       },
       (error, result) => {
         if (error) {
+          console.error("Cloudinary upload failed:", error);
           return reject(new Error("Image cannot upload. Please try again."));
         }
-
         if (!result) {
           return reject(new Error("Cloudinary returned no result."));
         }
-
         resolve(result.secure_url);
       },
     );

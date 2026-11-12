@@ -190,6 +190,10 @@ export const getProductFavoritesService = async (
 
   const updatedSort = query.sort ? formatSortName(query.sort, "product") : "";
 
+  if (!updatedSort) {
+    throw new ApiError(400, "Invalid sort parameters");
+  }
+
   const allowedSorts = [
     "product.price",
     "-product.price",
