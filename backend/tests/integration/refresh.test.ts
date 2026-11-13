@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { app } from "../app.js";
-import { redisClient } from "../lib/redis.js";
+import { app } from "../../app";
+import { redisClient } from "../../lib/redis.js";
 
 const REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET_KEY ?? "";
 
@@ -31,8 +31,8 @@ const expectAuthCookiesCleared = (res: {
   headers: Record<string, unknown>;
 }) => {
   const cookies = cookiesOf(res);
-  expect(cookies.some((c) => c.startsWith("refreshToken=;"))).toBe(true);
-  expect(cookies.some((c) => c.startsWith("accessToken=;"))).toBe(true);
+  expect(cookies).toContainEqual(expect.stringMatching(/^refreshToken=;/));
+  expect(cookies).toContainEqual(expect.stringMatching(/^accessToken=;/));
 };
 
 describe("POST /api/v1/auth/refresh", () => {
