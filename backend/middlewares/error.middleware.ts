@@ -75,7 +75,7 @@ export const errorMiddleware = (
 
   if (err instanceof Error && err.name === "ZodError") {
     const zodError = err as any;
-    const errors = zodError.errors.map((e: any) => ({
+    const errors = zodError.issues.map((e: any) => ({
       field: e.path.join("."),
       message: e.message,
       code: e.code,
@@ -101,6 +101,16 @@ export const errorMiddleware = (
 
   if (err instanceof SyntaxError && (err as any).status === 400) {
     res.status(400).json({
+      success: false,
+      message: "Invalid JSON payload",
+      errors: [],
+      stack: NODE_ENV === "development" ? err.stack : undefined,
+    });
+    return;
+  }
+
+  if (err instanceof SyntaxError) {
+    res.status(500).json({
       success: false,
       message: "Invalid JSON payload",
       errors: [],

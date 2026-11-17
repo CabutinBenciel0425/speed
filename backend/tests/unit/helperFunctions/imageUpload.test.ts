@@ -34,7 +34,7 @@ describe("Image upload - cloudinary", () => {
     expect(result).toBe("https://example.com/test.jpg");
   });
 
-  test("should throw a custom error if cloudinary fails", async () => {
+  test("should throw an error if cloudinary fails", async () => {
     const cloudinaryMock = vi.mocked(cloudinary.uploader.upload_stream) as any;
 
     cloudinaryMock.mockImplementationOnce((_options: any, callback: any) => {
