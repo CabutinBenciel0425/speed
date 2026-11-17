@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import { extractPublicIdFromUrl } from "../../../utils/extractPublicIdFromUrl";
 
 describe("Extracting public id from url - cloudinary", () => {
-  test("returns error if url is not valid", () => {
+  test("returns null if url is not valid", () => {
     const url = "this-is-not-a-valid-url";
     expect(extractPublicIdFromUrl(url)).toBeNull();
   });
