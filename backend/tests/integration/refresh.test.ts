@@ -4,6 +4,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { app } from "../../app";
 import { redisClient } from "../../lib/redis.js";
 
+vi.mock("../../lib/redis.js", () => ({
+  redisClient: {
+    get: vi.fn(),
+    set: vi.fn(),
+    del: vi.fn(),
+    on: vi.fn(),
+    call: vi.fn().mockResolvedValue("mock-script-sha"),
+  },
+}));
+
 const REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET_KEY ?? "";
 
 const signRefreshToken = (
