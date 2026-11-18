@@ -3,8 +3,31 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     environment: "node",
-    include: ["backend/**/*.test.ts"],
-    setupFiles: ["./backend/tests/setup.ts"],
+    projects: [
+      {
+        test: {
+          name: "unit",
+          include: ["backend/tests/unit/**/*.test.ts"],
+          setupFiles: ["backend/tests/setup.unit.ts"],
+          environment: "node",
+          isolate: true,
+        },
+      },
+      {
+        test: {
+          name: "integration",
+          include: ["backend/tests/integration/**/*.test.ts"],
+          setupFiles: ["backend/tests/setup.integration.ts"],
+          environment: "node",
+          isolate: false,
+          pool: "forks",
+          hookTimeout: 120_000,
+          testTimeout: 30_000,
+        },
+      },
+    ],
+    hookTimeout: 60000,
+    fileParallelism: false,
     clearMocks: true,
     env: {
       NODE_ENV: "test",
