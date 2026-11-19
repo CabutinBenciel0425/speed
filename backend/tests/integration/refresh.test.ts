@@ -2,17 +2,12 @@ import jwt from "jsonwebtoken";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { app } from "../../app";
-import { redisClient } from "../../lib/redis.js";
 
-vi.mock("../../lib/redis.js", () => ({
-  redisClient: {
-    get: vi.fn(),
-    set: vi.fn(),
-    del: vi.fn(),
-    on: vi.fn(),
-    call: vi.fn().mockResolvedValue("mock-script-sha"),
-  },
-}));
+const { redisClient } = await vi.hoisted(async () => {
+  const { createFakeRedis } = await import("../helpers/fakeRedis.js");
+  return createFakeRedis();
+});
+vi.mock("../../lib/redis.js", () => ({ redisClient }));
 
 const REFRESH_SECRET = process.env.REFRESH_TOKEN_SECRET_KEY ?? "";
 
@@ -107,5 +102,9 @@ describe("POST /api/v1/auth/refresh", () => {
 
     expect(res.status).toBe(401);
     expectAuthCookiesCleared(res);
+    expect(res.body.message).toBe("Invalid refresh token");
+    expect(redisClient.get).toHaveBeenCalledWith(
+      "refresh_token:user123-Customer",
+    );
   });
 });

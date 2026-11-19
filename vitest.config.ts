@@ -19,7 +19,7 @@ export default defineConfig({
           include: ["backend/tests/integration/**/*.test.ts"],
           setupFiles: ["backend/tests/setup.integration.ts"],
           environment: "node",
-          isolate: false,
+          isolate: true,
           pool: "forks",
           hookTimeout: 120_000,
           testTimeout: 30_000,
