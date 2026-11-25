@@ -24,7 +24,7 @@ beforeAll(async () => {
   await Promise.all(Object.values(mongoose.models).map((m) => m.init()));
 });
 
-const validSignup = {
+export const validSignup = {
   firstName: "Juan",
   lastName: "Dela Cruz",
   email: "juan@example.com",
